@@ -54,13 +54,13 @@ export default function CustomerDetailHeader({
     : `${NO_TIER_STYLE.bg} text-[#5f6368] dark:text-[#a9b4c7]`;
 
   return (
-    <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-      <div className="flex min-w-0 items-center gap-3">
+    <div className="mb-6 flex  justify-between gap-4 flex-row sm:items-center">
+      <div className="flex min-w-0 flex-row  items-center gap-3">
         <button
           onClick={onBack}
           aria-label="Back to customers"
           title="Back to customers"
-          className="flex h-9 w-9 shrink-0 cursor-pointer dark:bg-white/5 items-center justify-center rounded-full border border-[#dadce0] bg-white text-[#5f6368] transition-colors hover:bg-[#f8f9fa] hover:text-[#3c4043] dark:border-white/15 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
+          className="hidden sm:flex h-9 w-9 shrink-0 cursor-pointer dark:bg-white/5 items-center justify-center rounded-full border border-[#dadce0] bg-white text-[#5f6368] transition-colors hover:bg-[#f8f9fa] hover:text-[#3c4043] dark:border-white/15 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
         >
           <ArrowLeft size={16} />
         </button>
@@ -92,8 +92,8 @@ export default function CustomerDetailHeader({
           </div>
         )}
 
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
+        <div className="min-w-0 ">
+          <div className="flex items-center gap-2 ">
             <h1 className="truncate text-lg font-semibold tracking-tight md:text-2xl text-[#3c4043] dark:text-[#e8ecf4]">
               {customer.name}
             </h1>
@@ -105,19 +105,23 @@ export default function CustomerDetailHeader({
           </div>
 
           {/* Everything that identifies this customer, on one muted line. */}
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
+          <div className="mt-1 w-[70%] sm:w-full flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
             <Meta
               icon={Hash}
               value={`${customer.id.slice(0, 8)}…`}
               title={`Customer ID: ${customer.id}`}
             />
-            {customer.phone && <Meta icon={Phone} value={customer.phone} />}
-            {customer.email && <Meta icon={Mail} value={customer.email} />}
+            <span className="hidden sm:block">
+              {customer.phone && <Meta icon={Phone} value={customer.phone} />}
+            </span>
+            <span className="hidden sm:block">
+              {customer.email && <Meta icon={Mail} value={customer.email} />}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex  w-fit shrink-0 items-center gap-3">
         <span
           className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold ${tierClass}`}
         >

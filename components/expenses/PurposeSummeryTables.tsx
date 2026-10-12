@@ -8,21 +8,12 @@ import {
   Pencil,
   Trash2,
   Search,
-  AlertTriangle,
-  Loader2,
   Receipt,
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import ModalShell from "@/components/ui/ModalShell";
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import {
   getPurposeColor,
   Transaction,
@@ -109,38 +100,49 @@ function TransactionModal({
     }
   };
 
-  return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-sm font-semibold text-gray-900 flex items-center gap-2 dark:text-[#e8ecf4]">
-            <span
-              className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
-              style={{
-                backgroundColor:
-                  getPurposeColor(purposeIcon, purposeName) + "20",
-              }}
-            >
-              <PurposeIcon
-                icon={purposeIcon}
-                name={purposeName}
-                color={getPurposeColor(purposeIcon, purposeName)}
-              />
-            </span>
-            {purposeName} — {type}
-          </DialogTitle>
-        </DialogHeader>
+  const isExpense = type === "expense";
 
+  return (
+    <>
+      <ModalShell
+        open={open}
+        onClose={onClose}
+        busy={deleting}
+        maxWidth="max-w-md"
+        // The old dialog scrolled its whole self, header included; ModalShell
+        // scrolls the body and leaves the title in place, which is what you
+        // want of a list you are scanning.
+        bodyMaxHeight="max-h-[70vh]"
+        title={`${purposeName} — ${type}`}
+        subtitle={`Every ${type} recorded against this purpose`}
+        /* The purpose's own icon, so the modal is recognisably the row that
+           was clicked. Its per-purpose hue does not come with it: ModalShell
+           takes the tile's colours as class names, and `getPurposeColor`
+           returns a hex that Tailwind cannot generate a class for. The tint
+           says expense or income instead, which is the other half of the
+           title. */
+        icon={getPurposeIcon(purposeIcon, purposeName)}
+        iconColor={
+          isExpense
+            ? "text-red-600 dark:text-red-400"
+            : "text-emerald-600 dark:text-emerald-400"
+        }
+        iconBgColor={
+          isExpense
+            ? "bg-red-50 dark:bg-red-400/10"
+            : "bg-emerald-50 dark:bg-emerald-400/10"
+        }
+      >
         <div className="relative mb-3">
           <Search
             size={13}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400  dark:text-[#7b869b]"
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search remarks..."
-            className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15"
+            className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:bg-[#0F1420]"
           />
         </div>
 
@@ -215,7 +217,7 @@ function TransactionModal({
             ))
           )}
         </div>
-      </DialogContent>
+      </ModalShell>
 
       {/* ── Edit transaction form ── */}
       <ExpenseIncomeForm
@@ -223,54 +225,27 @@ function TransactionModal({
         onEditSuccess={() => setEditTransaction(null)}
       />
 
-      {/* ── Delete confirmation modal ── */}
-      <Dialog
+      {/* ── Delete confirmation ──
+          The shared dialog rather than another hand-built one: it is the same
+          red badge, the same Delete / Deleting… labels and the same busy
+          handling, and it keeps "cannot be undone" in its own warning line
+          instead of trailing the sentence. */}
+      <DeleteConfirmDialog
         open={deleteTarget !== null}
         onOpenChange={(o) => {
           if (!o && !deleting) setDeleteTarget(null);
         }}
-      >
-        <DialogContent className="max-w-sm" showCloseButton={!deleting}>
-          <DialogHeader>
-            <div className="mx-auto mb-2 w-12 h-12 rounded-full bg-red-50 flex items-center justify-center dark:bg-red-400/10">
-              <AlertTriangle className="h-6 w-6 text-red-500 dark:text-red-400" />
-            </div>
-            <DialogTitle className="text-base font-semibold text-center text-gray-900 dark:text-[#e8ecf4]">
-              Delete transaction?
-            </DialogTitle>
-            <DialogDescription className="text-center text-sm text-gray-500 dark:text-[#9aa6bd]">
-              {deleteTarget
-                ? `“${deleteTarget.remark || purposeName}” will be permanently removed. This action cannot be undone.`
-                : "This transaction will be permanently removed."}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex-row gap-2 sm:justify-center">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteTarget(null)}
-              disabled={deleting}
-              className="flex-1 sm:flex-none"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={deleting}
-              className="flex-1 sm:flex-none bg-red-600 text-white hover:bg-red-700"
-            >
-              {deleting ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" /> Deleting...
-                </>
-              ) : (
-                "Delete"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </Dialog>
+        title="Delete transaction?"
+        description={
+          deleteTarget
+            ? `“${deleteTarget.remark || purposeName}” will be permanently removed.`
+            : "This transaction will be permanently removed."
+        }
+        warning="This action cannot be undone."
+        onConfirm={handleDelete}
+        isPending={deleting}
+      />
+    </>
   );
 }
 
@@ -318,7 +293,7 @@ function SummaryTable({ type }: { type: TransactionType }) {
         </colgroup>
         <thead>
           <tr className="border-b text-[11px] tracking-wider border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
-            <th className="text-left pb-3 pt-3 px-4 font-normal">Purpose</th>
+            <th className="text-left pb-3 pt-3 pl-4  font-normal">Purpose</th>
             <th className="text-center pb-3 pt-3 px-4 font-normal">
               Transactions
             </th>
@@ -357,7 +332,7 @@ function SummaryTable({ type }: { type: TransactionType }) {
                   onClick={() => setSelected(purposeId)}
                   className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors dark:border-white/5 dark:hover:bg-white/10"
                 >
-                  <td className="py-3 px-4">
+                  <td className="py-3 pl-3">
                     <div className="flex items-center gap-2">
                       <span
                         className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
@@ -473,8 +448,8 @@ export default function PurposeSummaryTables() {
   };
 
   return (
-    <div className="bg-white dark:bg-transparent p-5">
-      <div className="flex flex-col sm:flex-row items-center  mb-4">
+    <div className="bg-white dark:bg-transparent py-5">
+      <div className="flex flex-col sm:flex-row items-start  mb-4">
         <ComponentHeader
           title="Purpose Summary"
           subHeader="View your expense and income by purpose"
@@ -517,7 +492,7 @@ export default function PurposeSummaryTables() {
                 }`}
               >
                 <Icon size={14} className="shrink-0" />
-                {tab.label}
+                <span className="hidden sm:block"> {tab.label}</span>
                 <span className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 bg-[#e4f2fe] text-blue-950 ring-blue-900 dark:bg-white/10 dark:text-[#e8ecf4] dark:ring-white/20">
                   {tab.count}
                 </span>

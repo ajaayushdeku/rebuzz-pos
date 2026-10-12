@@ -5,7 +5,7 @@ import { Loader2, Radar, Calculator } from "lucide-react";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { CardInfo } from "../../chartCard";
+import { ChartCard } from "../../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 import {
   PERFORMANCE_TARGETS,
@@ -706,31 +706,22 @@ export default function PerformanceRadar({
 
   if (loading) {
     return (
-      <div className="mb-6 w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
-        <div className="flex items-center gap-3 mb-6">
-          <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
-            style={{ borderColor: "#dbeafe", backgroundColor: "#eff6ff" }}
-          >
-            <Radar size={16} className="text-[#1a73e8] dark:text-[#7ba2e3]" />
-          </div>
-
-          <div className="min-w-0">
-            <h3 className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
-              Performance Radar
-            </h3>
-            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
-              Loading metrics…
-            </p>
-          </div>
-        </div>
+      <ChartCard
+        icon={Radar}
+        iconColor="#1a73e8"
+        iconBorder="#dbeafe"
+        iconBg="#eff6ff"
+        title="Performance Radar"
+        subtitle="Loading metrics…"
+        className="mb-6"
+      >
         <div className="flex items-center justify-center py-12">
           <Loader2
             size={20}
             className="animate-spin text-[#9aa0a6] dark:text-[#9aa6bd]"
           />
         </div>
-      </div>
+      </ChartCard>
     );
   }
 
@@ -738,25 +729,15 @@ export default function PerformanceRadar({
 
   if (error) {
     return (
-      <div className="h-full w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
-        <div className="flex items-center gap-3 mb-6">
-          <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
-            style={{ borderColor: "#dbeafe", backgroundColor: "#eff6ff" }}
-          >
-            <Radar size={16} className="text-[#1a73e8] dark:text-[#7ba2e3]" />
-          </div>
-
-          <div className="min-w-0">
-            <h3 className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
-              Performance Radar
-            </h3>
-            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
-              Unable to load data
-            </p>
-          </div>
-        </div>
-
+      <ChartCard
+        icon={Radar}
+        iconColor="#1a73e8"
+        iconBorder="#dbeafe"
+        iconBg="#eff6ff"
+        title="Performance Radar"
+        subtitle="Unable to load data"
+        className="h-full"
+      >
         <div className="text-center py-8">
           <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3 dark:bg-red-400/10">
             <svg
@@ -831,7 +812,7 @@ export default function PerformanceRadar({
             Retry
           </button>
         </div>
-      </div>
+      </ChartCard>
     );
   }
 
@@ -839,25 +820,15 @@ export default function PerformanceRadar({
 
   if (chartData.length === 0) {
     return (
-      <div className="h-full w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
-        <div className="flex items-center gap-3 mb-6">
-          <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
-            style={{ borderColor: "#dbeafe", backgroundColor: "#eff6ff" }}
-          >
-            <Radar size={16} className="text-[#1a73e8] dark:text-[#7ba2e3]" />
-          </div>
-
-          <div className="min-w-0">
-            <h3 className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
-              Performance Radar
-            </h3>
-            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
-              No data available
-            </p>
-          </div>
-        </div>
-
+      <ChartCard
+        icon={Radar}
+        iconColor="#1a73e8"
+        iconBorder="#dbeafe"
+        iconBg="#eff6ff"
+        title="Performance Radar"
+        subtitle="No data available"
+        className="h-full"
+      >
         <div className="text-center py-8">
           <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3 dark:bg-white/10">
             <Radar size={24} className="text-gray-500 dark:text-[#9aa6bd]" />
@@ -869,7 +840,7 @@ export default function PerformanceRadar({
             No sales or billing data for this period
           </p>
         </div>
-      </div>
+      </ChartCard>
     );
   }
 
@@ -882,68 +853,78 @@ export default function PerformanceRadar({
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="h-full w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
-      {/* Header */}
-      <div className="flex items-center justify-between ">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
-            style={{ borderColor: "#dbeafe", backgroundColor: "#eff6ff" }}
-          >
-            <Radar size={16} className="text-[#1a73e8] dark:text-[#7ba2e3]" />
-          </div>
-
-          <div className="min-w-0">
-            <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
-              Performance Radar
-              <CardInfo
-                heading="Reading this chart"
-                label="Performance Radar"
-                // Each axis is scored 0–100 against the other employees.
-                body="Six measures over the date range at the top of the page, each scored out of 100 against the rest of the team — so 100 means best of the team on that axis, not perfect. A wider shape is a stronger all-round shift. Hover a point for what it was measured against."
-              />
-            </h3>
-            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
-              {`${dateRange.startDate} to ${dateRange.endDate}`}
-            </p>
-          </div>
-        </div>
-
-        <div className="relative flex items-center gap-0.5">
+    <ChartCard
+      icon={Radar}
+      iconColor="#1a73e8"
+      iconBorder="#dbeafe"
+      iconBg="#eff6ff"
+      title="Performance Radar"
+      info={{
+        heading: "Reading this chart",
+        // Each axis is scored 0–100 against the other employees.
+        body: "Six measures over the date range at the top of the page, each scored out of 100 against the rest of the team — so 100 means best of the team on that axis, not perfect. A wider shape is a stronger all-round shift. Hover a point for what it was measured against.",
+      }}
+      subtitle={`${dateRange.startDate} to ${dateRange.endDate}`}
+      className="h-full"
+      rangeBadge={true}
+      buttons={
+        <button
+          type="button"
+          onClick={() => setShowBaseline(!showBaseline)}
+          aria-expanded={showBaseline}
+          className="cursor-pointer rounded-lg py-0.5  transition-colors hover:bg-[#f1f3f4] dark:hover:bg-white/10"
+          title="How scores are calculated"
+        >
+          <Calculator
+            size={16}
+            className={
+              showBaseline
+                ? "text-[#1a73e8] dark:text-[#7ba2e3]"
+                : "text-[#9aa0a6] dark:text-[#9aa6bd]"
+            }
+          />
+        </button>
+      }
+      controls={
+        <>
           {/* A calculator, not another ⓘ: the one beside the title explains
               how to read the card, this one opens the working behind the
               scores — two identical icons read as the same control. */}
-          <button
-            onClick={() => setShowBaseline(!showBaseline)}
-            aria-expanded={showBaseline}
-            className="cursor-pointer rounded-lg p-1.5 transition-colors hover:bg-[#f1f3f4] dark:hover:bg-white/10"
-            title="How scores are calculated"
-          >
-            <Calculator
-              size={15}
-              className={
-                showBaseline
-                  ? "text-[#1a73e8] dark:text-[#7ba2e3]"
-                  : "text-[#9aa0a6] dark:text-[#9aa6bd]"
-              }
-            />
-          </button>
-          <div className="flex items-center gap-1.5 bg-blue-50 px-3 py-1.5 rounded-lg dark:bg-blue-400/10">
-            <span className="text-[11px] text-gray-500 font-medium dark:text-[#9aa6bd]">
+          <span className="hidden md:block">
+            {" "}
+            <button
+              type="button"
+              onClick={() => setShowBaseline(!showBaseline)}
+              aria-expanded={showBaseline}
+              className="cursor-pointer rounded-lg p-1.5 transition-colors hover:bg-[#f1f3f4] dark:hover:bg-white/10"
+              title="How scores are calculated"
+            >
+              <Calculator
+                size={15}
+                className={
+                  showBaseline
+                    ? "text-[#1a73e8] dark:text-[#7ba2e3]"
+                    : "text-[#9aa0a6] dark:text-[#9aa6bd]"
+                }
+              />
+            </button>
+          </span>
+
+          <div className="flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-1.5 dark:bg-blue-400/10">
+            <span className="text-[9px] sm:text-[11px] font-medium text-gray-500 dark:text-[#9aa6bd]">
               Avg Score
             </span>
-            <span className="text-sm font-bold text-blue-600 dark:text-[#7ba2e3]">
+            <span className="text-xs sm:text-sm font-bold text-blue-600 dark:text-[#7ba2e3]">
               {avgScore}
             </span>
           </div>
 
-          <RangeBadge
-            variant="pill"
-            className="absolute bottom-[-30px] right-0"
-          />
-        </div>
-      </div>
-
+          <span className="hidden md:block">
+            <RangeBadge variant="pill" />
+          </span>
+        </>
+      }
+    >
       {/* Baseline info panel */}
       {showBaseline && (
         <div className=" p-3 mt-3.5 rounded-xl bg-gray-50 border border-gray-100 dark:bg-white/5 dark:border-white/10">
@@ -986,6 +967,6 @@ export default function PerformanceRadar({
           />
         )}
       </div>
-    </div>
+    </ChartCard>
   );
 }

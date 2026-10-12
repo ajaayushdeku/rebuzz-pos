@@ -17,7 +17,6 @@ import { parseNepalDateTime, type BillItem } from "./staffDetailHelpers";
 import { Loader2 } from "lucide-react";
 import { BarChart3 } from "lucide-react";
 import {
-  AXIS_TICK,
   BAR_RADIUS,
   CHART_PALETTE,
   ChartCard,
@@ -197,6 +196,21 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
 
   const AXIS_TICK = getAxisTick(isDark);
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
   return (
     <ChartCard
       icon={BarChart3}
@@ -292,9 +306,9 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
                 axisLine={false}
                 tickLine={false}
                 tick={AXIS_TICK}
-                width={70}
+                width={isSmallScreen ? 35 : 70}
                 domain={[0, yMax]}
-                label={yAxisTitle("Sales")}
+                label={!isSmallScreen ? yAxisTitle("Sales") : undefined}
               />
               <Tooltip
                 content={<CustomTooltip currency={currency} />}

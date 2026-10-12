@@ -9,6 +9,7 @@ import { fetchArchivedInvoicesClient } from "@/services/apiArchivedInvoice.clien
 import { fetchInvoicesClient } from "@/services/apiInvoice.client";
 import { useInvoiceStore } from "@/stores/invoiceStore";
 import { useQuery } from "@tanstack/react-query";
+import { Archive, FileText } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 type TabKey = "invoices" | "archived";
@@ -45,16 +46,23 @@ export default function Page() {
     }
   }, [invoices, setInvoices]);
 
-  const tabs: Array<{ key: TabKey; label: string; count: number | null }> = [
+  const tabs: Array<{
+    key: TabKey;
+    label: string;
+    count: number | null;
+    icon: React.ElementType;
+  }> = [
     {
       key: "invoices",
       label: "Invoices",
       count: isLoading ? null : invoices.length,
+      icon: FileText,
     },
     {
       key: "archived",
       label: "Archived",
       count: archivedLoading ? null : archivedInvoices.length,
+      icon: Archive,
     },
   ];
 
@@ -75,7 +83,7 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
+    <div className="min-h-screen bg-surface-page px-6 py-5 sm:py-8 md:px-10 dark:bg-[#0f1420]">
       <div className="w-full mx-auto ">
         <InvoiceHeader />
 
@@ -107,7 +115,7 @@ export default function Page() {
               >
                 {tabs.map((tab, i) => {
                   const selected = tab.key === activeTab;
-
+                  const Icon = tab.icon;
                   return (
                     <button
                       key={tab.key}
@@ -127,7 +135,8 @@ export default function Page() {
                           : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white"
                       }`}
                     >
-                      {tab.label}
+                      <Icon size={16} className="shrink-0" />
+                      <span className="hidden sm:block"> {tab.label}</span>
                       <span
                         className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 
                          bg-[#e4f2fe] text-blue-950 ring-blue-900 dark:bg-white/10 dark:text-[#e8ecf4] dark:ring-white/20"

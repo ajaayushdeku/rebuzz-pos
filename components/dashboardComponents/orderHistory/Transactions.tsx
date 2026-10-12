@@ -10,7 +10,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Receipt,
+  CheckCircle,
+  ArrowLeftRight,
 } from "lucide-react";
+
 import { useCurrency } from "@/providers/CurrencyContext";
 import { Transaction } from "./transaction-columns";
 // import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
@@ -314,11 +317,30 @@ export default function Transactions({
     );
 
   // ── Tabs ────────────────────────────────────────────────────────────────
-
-  const tabs: Array<{ key: TabKey; label: string; count: number }> = [
-    { key: "completed", label: "Paid", count: counts.completed },
-    { key: "refunded", label: "Refunded", count: counts.refunded },
-    { key: "all", label: "All", count: counts.all },
+  const tabs: Array<{
+    key: TabKey;
+    label: string;
+    count: number;
+    icon: React.ElementType;
+  }> = [
+    {
+      key: "completed",
+      label: "Paid",
+      count: counts.completed,
+      icon: CheckCircle,
+    },
+    {
+      key: "refunded",
+      label: "Refunded",
+      count: counts.refunded,
+      icon: RotateCcw,
+    },
+    {
+      key: "all",
+      label: "All",
+      count: counts.all,
+      icon: ArrowLeftRight,
+    },
   ];
 
   const selectTab = (key: TabKey) => {
@@ -375,7 +397,7 @@ export default function Transactions({
         >
           {tabs.map((tab, i) => {
             const selected = tab.key === activeTab;
-
+            const Icon = tab.icon;
             return (
               <button
                 key={tab.key}
@@ -395,7 +417,8 @@ export default function Transactions({
                     : "font-semibold text-blue-800 hover:text-blue-950 dark:text-blue-200"
                 }`}
               >
-                {tab.label}
+                <Icon size={16} className="shrink-0" />
+                <span className="hidden sm:block"> {tab.label}</span>
                 <span className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 bg-[#e4f2fe]  text-blue-950 ring-blue-900 dark:bg-white/10 dark:text-[#e8ecf4] dark:ring-white/20">
                   {tab.count}
                 </span>
@@ -407,7 +430,7 @@ export default function Transactions({
 
       {/* Search + Filters — stay put across tabs */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-8 mb-4">
-        <div className="relative flex-1">
+        <div className="relative flex-1 w-full">
           <Search
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#9aa6bd]"
@@ -423,63 +446,68 @@ export default function Transactions({
           />
         </div>
 
-        <div ref={paymentRef} className="relative w-full sm:w-[160px]">
-          <button
-            type="button"
-            onClick={() => setPaymentOpen((o) => !o)}
-            className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition dark:border-white/15 dark:text-[#a9b4c7]"
-          >
-            <span>
-              {paymentFilter === "all" ? "All Payment" : paymentFilter}
-            </span>
-            <ChevronDown
-              size={14}
-              className={`text-gray-400 transition-transform duration-200 ${
-                paymentOpen ? "rotate-180" : ""
-              } dark:text-[#9aa6bd]`}
-            />
-          </button>
-
+        <div className="flex flex-row w-full sm:w-fit items-center justify-between gap-3">
+          {" "}
           <div
-            className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white dark:bg-[#1b2436] shadow-lg p-1 transition-all duration-200 ${
-              paymentOpen
-                ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-                : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
-            } dark:border-white/15`}
+            ref={paymentRef}
+            className="relative  w-full sm:w-[150px] md:w-[170px]"
           >
-            {[
-              { value: "all", label: "All Payment" },
-              { value: "Card", label: "Card" },
-              { value: "Cash", label: "Cash" },
-              { value: "QR", label: "QR Payment" },
-            ].map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => {
-                  setPaymentFilter(opt.value);
-                  setPage(0);
-                  setPaymentOpen(false);
-                }}
-                className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors cursor-pointer ${
-                  paymentFilter === opt.value
-                    ? "bg-blue-50 text-blue-700 font-medium dark:text-blue-300 dark:bg-blue-400/10"
-                    : "text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
+            <button
+              type="button"
+              onClick={() => setPaymentOpen((o) => !o)}
+              className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition dark:border-white/15 dark:text-[#a9b4c7]"
+            >
+              <span>
+                {paymentFilter === "all" ? "All Payment" : paymentFilter}
+              </span>
+              <ChevronDown
+                size={14}
+                className={`text-gray-400 transition-transform duration-200 ${
+                  paymentOpen ? "rotate-180" : ""
+                } dark:text-[#9aa6bd]`}
+              />
+            </button>
 
-        <ColumnPicker
-          columns={TRANSACTION_COLUMNS}
-          visible={visibleColumns}
-          onChange={handleColumnsChange}
-          minVisible={MIN_COLUMNS}
-          className="w-full sm:w-[150px]"
-        />
+            <div
+              className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white dark:bg-[#1b2436] shadow-lg p-1 transition-all duration-200 ${
+                paymentOpen
+                  ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+                  : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
+              } dark:border-white/15`}
+            >
+              {[
+                { value: "all", label: "All Payment" },
+                { value: "Card", label: "Card" },
+                { value: "Cash", label: "Cash" },
+                { value: "QR", label: "QR Payment" },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    setPaymentFilter(opt.value);
+                    setPage(0);
+                    setPaymentOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors cursor-pointer ${
+                    paymentFilter === opt.value
+                      ? "bg-blue-50 text-blue-700 font-medium dark:text-blue-300 dark:bg-blue-400/10"
+                      : "text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <ColumnPicker
+            columns={TRANSACTION_COLUMNS}
+            visible={visibleColumns}
+            onChange={handleColumnsChange}
+            minVisible={MIN_COLUMNS}
+            className="w-full sm:w-[150px] md:w-[170px]"
+          />
+        </div>
       </div>
 
       {/* Table — horizontally scrollable on mobile */}
@@ -744,7 +772,7 @@ export default function Transactions({
         <button
           onClick={() => setPage(Math.max(0, page - 1))}
           disabled={page === 0}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
             page === 0
               ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
               : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
@@ -754,14 +782,14 @@ export default function Transactions({
           Previous
         </button>
 
-        <span className="text-xs text-gray-400 font-medium dark:text-[#9aa6bd]">
+        <span className="text-[10px] sm:text-xs text-gray-400 font-medium dark:text-[#9aa6bd]">
           Page {page + 1} of {totalPages} · {sorted.length} transactions
         </span>
 
         <button
           onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
           disabled={page >= totalPages - 1}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
             page >= totalPages - 1
               ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
               : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:text-[#a9b4c7]"

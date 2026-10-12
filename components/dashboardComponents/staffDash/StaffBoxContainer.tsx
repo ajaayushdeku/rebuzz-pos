@@ -5,7 +5,7 @@ import { Search, User, UserCog, Users } from "lucide-react";
 import StaffStatBox, {
   StaffBoxProps,
 } from "@/components/dashboardComponents/staffDash/StaffStatBox";
-import RangeBadge from "@/components/ui/RangeBadge";
+
 import SegmentedControl from "@/components/ui/SegmentedControl";
 
 const ROLE_OPTIONS = [
@@ -61,7 +61,7 @@ export default function StaffBoxContainer({
       `}</style>
 
       {/* Filter bar: role buttons + search */}
-      <div className="w-full flex flex-row items-center sm:items-center justify-between gap-3 mb-4 mt-6 px-2 sm:px-0">
+      <div className="w-full flex flex-row items-center sm:items-center justify-between gap-3 mb-4 px-2 sm:px-0">
         {/* Search */}
         <div className="relative w-full ">
           <Search
@@ -77,11 +77,10 @@ export default function StaffBoxContainer({
           />
         </div>
 
-        <div className=" h-6 w-px shrink-0 bg-[#dadce0] dark:bg-white/15" />
+        <div className=" h-6 w-px shrink-0 bg-[#dadce0] dark:bg-white/90" />
 
         {/* Role filter */}
         <div className="relative flex  items-center  gap-2">
-          <RangeBadge variant="pill" className="absolute top-[-30px] right-0" />{" "}
           <SegmentedControl
             label="Role:"
             accent="blue"

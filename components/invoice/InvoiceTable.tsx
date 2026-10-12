@@ -349,77 +349,82 @@ export default function InvoiceTable({
             className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]"
           />
         </div>
-        <FilterSelect
-          value={dueDateFilter}
-          options={DUE_DATE_FILTER_OPTIONS}
-          onChange={(v) => {
-            setDueDateFilter(v as DueDateFilter);
-            // Otherwise a narrower result set leaves you on a page that no
-            // longer exists, looking at an empty table.
-            setPage(0);
-          }}
-          className="w-full sm:w-[170px]"
-        />
 
-        {/* Hidden where the page already splits invoices into its own tabs —
+        <div className="flex flex-row w-full sm:w-fit items-center justify-between gap-3">
+          <FilterSelect
+            value={dueDateFilter}
+            options={DUE_DATE_FILTER_OPTIONS}
+            onChange={(v) => {
+              setDueDateFilter(v as DueDateFilter);
+              // Otherwise a narrower result set leaves you on a page that no
+              // longer exists, looking at an empty table.
+              setPage(0);
+            }}
+            className="w-full sm:w-[150px] md:w-[170px]"
+          />
+
+          {/* Hidden where the page already splits invoices into its own tabs —
             a second filter there just gives two ways to narrow the same list
             and two states that can disagree. */}
-        <div
-          ref={statusRef}
-          className={`relative w-full sm:w-[150px] ${showStatusFilter ? "" : "hidden"}`}
-        >
-          <button
-            type="button"
-            onClick={() => setStatusOpen((o) => !o)}
-            className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition capitalize dark:border-white/15 dark:text-[#a9b4c7]"
-          >
-            <span>{statusFilter === "all" ? "All Status" : statusFilter}</span>
-            <ChevronDown
-              size={14}
-              className={`text-gray-400 transition-transform duration-200 ${
-                statusOpen ? "rotate-180" : ""
-              } dark:text-[#9aa6bd]`}
-            />
-          </button>
-
           <div
-            className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white dark:bg-[#1b2436] shadow-lg p-1 transition-all duration-200 ${
-              statusOpen
-                ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-                : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
-            } dark:border-white/15`}
+            ref={statusRef}
+            className={`relative w-full sm:w-[150px] ${showStatusFilter ? "" : "hidden"}`}
           >
-            {[
-              { value: "all", label: "All Status" },
-              ...STATUS_FILTER_OPTIONS.map((s) => ({ value: s, label: s })),
-            ].map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => {
-                  setStatusFilter(opt.value);
-                  setPage(0);
-                  setStatusOpen(false);
-                }}
-                className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors cursor-pointer capitalize ${
-                  statusFilter === opt.value
-                    ? "bg-blue-50 text-blue-700 font-medium dark:text-blue-300 dark:bg-blue-400/10"
-                    : "text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
+            <button
+              type="button"
+              onClick={() => setStatusOpen((o) => !o)}
+              className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition capitalize dark:border-white/15 dark:text-[#a9b4c7]"
+            >
+              <span>
+                {statusFilter === "all" ? "All Status" : statusFilter}
+              </span>
+              <ChevronDown
+                size={14}
+                className={`text-gray-400 transition-transform duration-200 ${
+                  statusOpen ? "rotate-180" : ""
+                } dark:text-[#9aa6bd]`}
+              />
+            </button>
 
-        <ColumnPicker
-          columns={INVOICE_COLUMNS}
-          visible={visibleColumns}
-          onChange={handleColumnsChange}
-          minVisible={MIN_COLUMNS}
-          className="w-full sm:w-[150px]"
-        />
+            <div
+              className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white dark:bg-[#1b2436] shadow-lg p-1 transition-all duration-200 ${
+                statusOpen
+                  ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+                  : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
+              } dark:border-white/15`}
+            >
+              {[
+                { value: "all", label: "All Status" },
+                ...STATUS_FILTER_OPTIONS.map((s) => ({ value: s, label: s })),
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    setStatusFilter(opt.value);
+                    setPage(0);
+                    setStatusOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors cursor-pointer capitalize ${
+                    statusFilter === opt.value
+                      ? "bg-blue-50 text-blue-700 font-medium dark:text-blue-300 dark:bg-blue-400/10"
+                      : "text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <ColumnPicker
+            columns={INVOICE_COLUMNS}
+            visible={visibleColumns}
+            onChange={handleColumnsChange}
+            minVisible={MIN_COLUMNS}
+            className="w-full sm:w-[150px] md:w-[170px]"
+          />
+        </div>
       </div>
 
       {/* Table — horizontally scrollable on mobile */}
@@ -936,7 +941,7 @@ export default function InvoiceTable({
         <button
           onClick={() => setPage(Math.max(0, page - 1))}
           disabled={page === 0}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
             page === 0
               ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
               : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
@@ -946,14 +951,14 @@ export default function InvoiceTable({
           Previous
         </button>
 
-        <span className="text-xs text-gray-400 font-medium dark:text-[#9aa6bd]">
+        <span className="text-[10px] sm:text-xs text-gray-400 font-medium dark:text-[#9aa6bd]">
           Page {page + 1} of {totalPages} · {sorted.length} invoices
         </span>
 
         <button
           onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
           disabled={page >= totalPages - 1}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
             page >= totalPages - 1
               ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
               : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:text-[#a9b4c7]"

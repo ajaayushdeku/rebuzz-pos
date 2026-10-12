@@ -193,7 +193,7 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
     (longest, d) => Math.max(longest, d.tier.length),
     0,
   );
-  const yAxisWidth = Math.min(120, Math.max(62, longestLabel * 7 + 12));
+  const yAxisWidth = Math.min(75, Math.max(62, longestLabel * 7 + 12));
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -229,9 +229,9 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
         body: "How many enrolled customers sit in each loyalty tier. Bars are measured against the largest tier in the whole ladder, so they stay comparable as you page through, and each tier keeps the colour it was given in loyalty settings. Enrolled counts every tier, not just this page.",
       }}
       subtitle="Members by loyalty status"
-      controls={
+      buttons={
         !isEmpty && (
-          <div className="relative flex flex-row items-center gap-2 mb-4">
+          <div className="relative flex flex-row items-center gap-2">
             <div className="flex items-center gap-1 rounded-xl bg-[#e4f2fe] p-1 dark:bg-white/10">
               {ORDERS.map(({ id, label, icon, hint }) => (
                 <button
@@ -257,20 +257,7 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
               ))}
             </div>
 
-            <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
-
-            {/* Enrolled total — the chart shows the split but never the size
-                of the programme it is splitting. */}
-            <div className="flex flex-col items-end">
-              <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
-                Enrolled
-              </span>
-              <p className="mt-0.5 text-base font-semibold leading-tight tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
-                {totalMembers.toLocaleString()}
-              </p>
-            </div>
-
-            <div className="absolute right-0 bottom-[-30px]">
+            <div className="hidden sm:block">
               {totalPages > 1 && (
                 <ChartPager
                   first={safePage * PAGE_SIZE + 1}
@@ -282,8 +269,36 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
                 />
               )}
             </div>
+
+            {/* <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" /> */}
           </div>
         )
+      }
+      controls={
+        <>
+          {" "}
+          <div className="block sm:hidden">
+            {totalPages > 1 && (
+              <ChartPager
+                first={safePage * PAGE_SIZE + 1}
+                last={Math.min((safePage + 1) * PAGE_SIZE, ordered.length)}
+                total={ordered.length}
+                onPrev={() => setPage(Math.max(0, safePage - 1))}
+                onNext={() => setPage(Math.min(totalPages - 1, safePage + 1))}
+                itemLabel="tiers"
+              />
+            )}
+          </div>
+          <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
+          <div className="flex flex-col items-end">
+            <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
+              Enrolled
+            </span>
+            <p className="mt-0.5 text-base font-semibold leading-tight tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
+              {totalMembers.toLocaleString()}
+            </p>
+          </div>
+        </>
       }
       className="min-w-0"
     >
@@ -302,14 +317,14 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
           </p>
         </div>
       ) : (
-        <div className="mt-4 h-44 sm:h-56 md:h-64">
+        <div className="mt-2 md:mt-10 h-44 sm:h-56 md:h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={visible}
               layout="vertical"
               margin={{
                 top: 0,
-                right: 44,
+                right: 30,
                 left: 0,
                 bottom: 0,
               }}

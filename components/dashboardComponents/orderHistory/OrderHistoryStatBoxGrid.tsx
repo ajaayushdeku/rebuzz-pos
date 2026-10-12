@@ -2,6 +2,7 @@
 
 import { LucideIcon } from "lucide-react";
 import OrderHistoryStatBox from "./OrderHistoryStatBox";
+import { STAT_ROW } from "../overviewDash/statRow";
 
 interface StatItem {
   label: string;
@@ -24,7 +25,7 @@ const OrderHistoryStatBoxGrid = ({
   isLoading = false,
 }: OrderHistoryStatBoxGridProps) => {
   return (
-    <div className="pb-2 grid grid-cols-1 mb-4 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className={`pb-2 ${STAT_ROW}`}>
       {stats.map((stat, index) => (
         <OrderHistoryStatBox
           key={index}

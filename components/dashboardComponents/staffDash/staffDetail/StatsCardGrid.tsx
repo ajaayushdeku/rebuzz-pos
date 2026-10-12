@@ -321,7 +321,7 @@ export default function StatsCardGrid({
 
   return (
     <div className="mb-6">
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="grid gird-cols-1 sm:grid-cols-2 gap-4 md:grid-cols-4">
         {visibleCards.map(({ key, ...spec }) => (
           <StatCard key={key} {...spec} />
         ))}

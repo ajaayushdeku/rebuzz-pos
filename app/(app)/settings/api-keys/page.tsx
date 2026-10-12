@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "API Keys" };
  */
 export default function Page() {
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 mx-auto w-full dark:bg-[#0f1420]">
+    <div className="min-h-screen bg-surface-page px-6 py-5 sm:py-8 md:px-10 mx-auto w-full dark:bg-[#0f1420]">
       {/* The header's own actions slot: opposite the title on desktop, under
           it on a phone — visible either way without competing with the form. */}
       <PageHeader

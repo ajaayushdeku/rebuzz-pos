@@ -83,9 +83,15 @@ const DiscountTable = ({
                 <div className="flex flex-col items-center justify-center py-12">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 dark:bg-white/10">
                     {discountType == "fixed" ? (
-                      <DollarSign size={24} className="text-gray-500 dark:text-[#9aa6bd]" />
+                      <DollarSign
+                        size={24}
+                        className="text-gray-500 dark:text-[#9aa6bd]"
+                      />
                     ) : (
-                      <Percent size={24} className="text-gray-500 dark:text-[#9aa6bd]" />
+                      <Percent
+                        size={24}
+                        className="text-gray-500 dark:text-[#9aa6bd]"
+                      />
                     )}
                   </div>
                   <p className="text-sm font-medium text-gray-500 dark:text-[#c3ccdc]">
@@ -145,7 +151,7 @@ const DiscountTable = ({
           <button
             onClick={() => setPage(Math.max(0, effectivePage - 1))}
             disabled={effectivePage === 0}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
               effectivePage === 0
                 ? "text-gray-300 cursor-not-allowed dark:text-[#4a5468]"
                 : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#9aa6bd] dark:hover:bg-white/10 dark:hover:text-white"
@@ -154,13 +160,13 @@ const DiscountTable = ({
             <ChevronLeft size={14} />
             Previous
           </button>
-          <span className="text-xs text-gray-400 font-medium dark:text-[#7b869b]">
+          <span className="text-[10px] sm:text-xs text-gray-400 font-medium dark:text-[#7b869b]">
             Page {effectivePage + 1} of {totalPages} · {filtered.length} items
           </span>
           <button
             onClick={() => setPage(Math.min(totalPages - 1, effectivePage + 1))}
             disabled={effectivePage >= totalPages - 1}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
               effectivePage >= totalPages - 1
                 ? "text-gray-300 cursor-not-allowed dark:text-[#4a5468]"
                 : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#9aa6bd] dark:hover:bg-white/10 dark:hover:text-white"

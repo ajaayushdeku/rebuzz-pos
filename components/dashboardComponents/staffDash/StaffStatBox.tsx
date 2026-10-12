@@ -4,15 +4,17 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import Link from "next/link";
 import {
-  Crown,
   User,
   ShoppingCart,
   TrendingUp,
   Clock,
   ArrowRight,
   ShieldCheck,
+  CalendarRange,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+
+import { RangeHint } from "@/components/ui/RangeBadge";
 
 export interface StaffBoxProps {
   staffId: string;
@@ -81,14 +83,34 @@ function Metric({
   icon: Icon,
   value,
   label,
+  ranged = false,
 }: {
   icon: LucideIcon;
   value: string | number;
   label: string;
+  ranged?: boolean;
 }) {
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center gap-1 px-1">
-      <Icon size={13} className="text-[#9aa0a6] dark:text-[#9aa6bd]" />
+      {/* `inline-flex relative` around the icon alone, so the mark below is
+          positioned against the 13px glyph rather than against a full-width
+          row — which is what `right-8` was compensating for. */}
+      <span className="relative inline-flex items-center justify-center mb-2">
+        <Icon size={13} className="text-[#9aa0a6] dark:text-[#9aa6bd]" />
+        {ranged && (
+          /* Tucked under the icon's bottom-right corner. It carries the card's
+             own background so it reads as a separate mark where the two
+             overlap, and `interactive={false}` because this sits inside the
+             card's link — see RangeHint. */
+          <RangeHint
+            scope="range"
+            interactive={false}
+            className="absolute -bottom-1 -right-1.5 rounded-full bg-white p-[1px] text-[#9aa0a6] dark:bg-[#161d2e] dark:text-[#9aa6bd]"
+          >
+            <CalendarRange size={9} />
+          </RangeHint>
+        )}
+      </span>
       <p className="truncate text-[15px] font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
         {value}
       </p>
@@ -131,8 +153,8 @@ export default function StaffStatBox({
               {staffInitials}
             </div>
             {roleKey === "Admin" && (
-              <div className="absolute -right-1 -top-1 rounded-full bg-green-500 p-0.5 shadow">
-                <ShieldCheck size={10} className="text-white" />
+              <div className="absolute -right-1 -top-1 rounded-full bg-[#00A63E] p-0.5 shadow">
+                <ShieldCheck size={12} className="text-white" />
               </div>
             )}
           </div>
@@ -166,11 +188,17 @@ export default function StaffStatBox({
         <Metric icon={ShoppingCart} value={ordersTaken} label="Orders" />
         {roleKey !== "Staff" && (
           <>
-            <Metric icon={TrendingUp} value={salesTaken} label="Sales" />
+            <Metric
+              icon={TrendingUp}
+              value={salesTaken}
+              label="Sales"
+              ranged={true}
+            />
             <Metric
               icon={Clock}
               value={avgTime && avgTime !== "—" ? avgTime : "—"}
               label="Avg Time"
+              ranged={true}
             />
           </>
         )}

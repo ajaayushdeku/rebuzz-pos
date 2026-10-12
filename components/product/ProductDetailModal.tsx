@@ -58,7 +58,7 @@ function Section({
 }) {
   return (
     <section>
-      <div className="flex items-baseline justify-between mb-2.5">
+      <div className="flex items-baseline justify-between gap-3 mb-2.5">
         <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#9aa6bd]">
           {title}
         </h3>
@@ -97,7 +97,7 @@ function Figure({
         >
           {label}
         </p>
-        <p className="text-[22px] font-semibold tracking-tight text-slate-900 tabular-nums leading-snug truncate dark:text-[#e8ecf4]">
+        <p className="text-[20px] sm:text-[22px] font-semibold tracking-tight text-slate-900 tabular-nums leading-snug truncate dark:text-[#e8ecf4]">
           {value}
         </p>
         {sub && (
@@ -119,7 +119,7 @@ function MetaRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-2.5">
+    <div className="flex items-center justify-between gap-3 py-2.5 sm:gap-4">
       <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 shrink-0 dark:text-[#9aa6bd]">
         {label}
       </span>
@@ -229,24 +229,25 @@ export default function ProductDetailModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 dark:bg-black/70"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-0 sm:items-center sm:p-4 dark:bg-black/70"
       onClick={onClose}
     >
-      {/* Panel — wide enough for the five-column variant table, and capped in
-          height so the body scrolls rather than the page. */}
+      {/* Panel — a bottom sheet on a phone, a centred card from sm up where
+          there is width for the five-column variant table. Capped in height
+          either way so the body scrolls rather than the page. */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="product-detail-title"
-        className="relative flex w-full max-w-3xl max-h-[85vh] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-in fade-in-0 zoom-in-95 duration-200 dark:bg-[#161d2e] dark:ring-1 dark:ring-white/10"
+        className="relative flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl animate-in fade-in-0 slide-in-from-bottom-4 duration-200 sm:max-h-[85vh] sm:rounded-2xl sm:slide-in-from-bottom-0 sm:zoom-in-95 dark:bg-[#161d2e] dark:ring-1 dark:ring-white/10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ── */}
-        <header className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5 dark:border-white/10">
-          <div className="flex gap-4 min-w-0">
+        <header className="flex items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 sm:gap-4 sm:px-6 sm:py-5 dark:border-white/10">
+          <div className="flex gap-3 min-w-0 sm:gap-4">
             {/* Product Image */}
             {product.image ? (
-              <div className="shrink-0 w-16 h-16 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 dark:border-white/15 dark:bg-white/5">
+              <div className="shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 dark:border-white/15 dark:bg-white/5">
                 <Image
                   src={product.image}
                   alt={product.name}
@@ -256,19 +257,21 @@ export default function ProductDetailModal({
                 />
               </div>
             ) : (
-              <div className="shrink-0 w-16 h-16 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center dark:border-white/15 dark:bg-white/5">
-                <ImageOff className="h-6 w-6 text-slate-300 dark:text-[#6b7588]" />
+              <div className="shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center dark:border-white/15 dark:bg-white/5">
+                <ImageOff className="h-5 w-5 sm:h-6 sm:w-6 text-slate-300 dark:text-[#6b7588]" />
               </div>
             )}
 
             <div className="min-w-0">
               <h2
                 id="product-detail-title"
-                className="text-lg font-bold text-slate-800 dark:text-[#e8ecf4]"
+                className="text-base font-bold text-slate-800 break-words sm:text-lg dark:text-[#e8ecf4]"
               >
                 {product.name}
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
+              {/* Clamped on a phone: a long description would otherwise push
+                  the figures off the first screenful. */}
+              <p className="text-xs text-slate-500 mt-0.5 line-clamp-2 sm:line-clamp-none dark:text-[#9aa6bd]">
                 {product.description || "Product details"}
               </p>
             </div>
@@ -285,9 +288,11 @@ export default function ProductDetailModal({
         </header>
 
         {/* ── Body ── */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-7">
-          {/* Headline figures */}
-          <div className="grid grid-cols-3 gap-5">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide px-4 py-4 space-y-5 sm:px-6 sm:py-5 sm:space-y-7">
+          {/* Headline figures — stacked on a phone rather than squeezed into
+              three columns: a span like "Rs 500 – Rs 1,200" needs the full
+              width, and truncated to a third of it says nothing. */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
             <Figure
               domain="price"
               label="Price"
@@ -361,7 +366,7 @@ export default function ProductDetailModal({
           {/* Margin — one line, and only when there's a single price pair to
               compare. With variants it belongs per row, in the table below. */}
           {flatMargin !== null && (
-            <div className="flex items-center justify-between border-t border-slate-100 pt-4 dark:border-white/10">
+            <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-4 dark:border-white/10">
               <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 dark:text-[#9aa6bd]">
                 Margin per unit
               </span>
@@ -402,19 +407,22 @@ export default function ProductDetailModal({
                   {/* Sticks to the modal body's scroll container */}
                   <thead className="sticky top-0 z-10 bg-slate-50 dark:bg-[#1b2436]">
                     <tr className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400 dark:text-[#9aa6bd]">
-                      <th className="px-3 py-2 text-left font-semibold">
+                      <th className="px-2.5 py-2 text-left font-semibold sm:px-3">
                         Variant
                       </th>
-                      <th className="px-3 py-2 text-right font-semibold">
+                      <th className="px-2.5 py-2 text-right font-semibold sm:px-3">
                         Price
                       </th>
-                      <th className="px-3 py-2 text-right font-semibold">
+                      {/* Cost and margin fold into the variant cell below sm.
+                          Five columns on a phone means a sideways scroll, and
+                          a table you scroll hides the numbers it is for. */}
+                      <th className="hidden px-3 py-2 text-right font-semibold sm:table-cell">
                         Cost
                       </th>
-                      <th className="px-3 py-2 text-right font-semibold">
+                      <th className="hidden px-3 py-2 text-right font-semibold sm:table-cell">
                         Margin
                       </th>
-                      <th className="px-3 py-2 text-right font-semibold">
+                      <th className="px-2.5 py-2 text-right font-semibold sm:px-3">
                         Stock
                       </th>
                     </tr>
@@ -433,7 +441,7 @@ export default function ProductDetailModal({
                           key={v.id}
                           className={unavailable ? "opacity-55" : undefined}
                         >
-                          <td className="px-3 py-2.5">
+                          <td className="px-2.5 py-2.5 sm:px-3">
                             <div className="flex min-w-0 items-center gap-2">
                               <span
                                 className={`h-3.5 w-1 rounded-full shrink-0 ${DOMAIN.variant.rail}`}
@@ -446,20 +454,45 @@ export default function ProductDetailModal({
                                 <Ban className="h-3 w-3 shrink-0 text-slate-400 dark:text-[#9aa6bd]" />
                               )}
                             </div>
+                            {/* The two dropped columns, as a second line under
+                                the variant name. */}
+                            <p className="mt-1 pl-3 text-[10px] tabular-nums text-slate-400 sm:hidden dark:text-[#9aa6bd]">
+                              Cost{" "}
+                              {(v.costPrice ?? 0) > 0
+                                ? fmt(v.costPrice as number)
+                                : "—"}
+                              <span className="px-1 text-slate-300 dark:text-[#4a5468]">
+                                ·
+                              </span>
+                              Margin{" "}
+                              <span
+                                className={
+                                  m === null
+                                    ? undefined
+                                    : m >= 0
+                                      ? "font-medium text-emerald-600 dark:text-emerald-300"
+                                      : "font-medium text-rose-600 dark:text-rose-300"
+                                }
+                              >
+                                {m === null ? "—" : fmt(m)}
+                              </span>
+                            </p>
                           </td>
 
-                          <td className="px-3 py-2.5 text-right font-semibold tabular-nums text-slate-900 dark:text-[#e8ecf4]">
+                          {/* Top-aligned below sm so the figures sit level with
+                              the variant name, not with its second line. */}
+                          <td className="px-2.5 py-2.5 text-right align-top font-semibold tabular-nums text-slate-900 sm:px-3 sm:align-middle dark:text-[#e8ecf4]">
                             {fmt(v.price)}
                           </td>
 
-                          <td className="px-3 py-2.5 text-right tabular-nums text-slate-500 dark:text-[#9aa6bd]">
+                          <td className="hidden px-3 py-2.5 text-right tabular-nums text-slate-500 sm:table-cell dark:text-[#9aa6bd]">
                             {(v.costPrice ?? 0) > 0
                               ? fmt(v.costPrice as number)
                               : "—"}
                           </td>
 
                           <td
-                            className={`px-3 py-2.5 text-right font-medium tabular-nums ${
+                            className={`hidden px-3 py-2.5 text-right font-medium tabular-nums sm:table-cell ${
                               m === null
                                 ? "text-slate-300 dark:text-[#6b7588]"
                                 : m >= 0
@@ -470,7 +503,7 @@ export default function ProductDetailModal({
                             {m === null ? "—" : fmt(m)}
                           </td>
 
-                          <td className="px-3 py-2.5 text-right tabular-nums">
+                          <td className="px-2.5 py-2.5 text-right align-top tabular-nums sm:px-3 sm:align-middle">
                             <span
                               className={
                                 low
@@ -515,7 +548,7 @@ export default function ProductDetailModal({
                   className={
                     product.isTaxable
                       ? "inline-flex items-center gap-1.5 font-medium text-emerald-700 dark:text-emerald-300"
-                      : "text-slate-400 flex flex-row  items-center gap-1.5 dark:text-[#9aa6bd]"
+                      : "inline-flex items-center gap-1.5 text-slate-400 dark:text-[#9aa6bd]"
                   }
                 >
                   <Percent className="h-3 w-3" />
@@ -558,11 +591,13 @@ export default function ProductDetailModal({
         </div>
 
         {/* ── Footer ── */}
-        <footer className="flex justify-end border-t border-slate-100 bg-slate-50/60 px-6 py-2 dark:border-white/10 dark:bg-white/5">
+        {/* On a phone the sheet's bottom edge is the screen's, so the padding
+            has to clear the home indicator. */}
+        <footer className="flex justify-end border-t border-slate-100 bg-slate-50/60 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-2 dark:border-white/10 dark:bg-white/5">
           <button
             type="button"
             onClick={onClose}
-            className="w-fit px-4 py-2 bg-white dark:bg-white/5 text-gray-700 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-xs cursor-pointer border border-gray-300 hover:text-white hover:border-red-500 hover:shadow-lg dark:border-white/20 dark:text-[#c3ccdc]"
+            className="w-full sm:w-fit px-4 py-2 bg-white dark:bg-white/5 text-gray-700 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-xs cursor-pointer border border-gray-300 hover:text-white hover:border-red-500 hover:shadow-lg dark:border-white/20 dark:text-[#c3ccdc]"
           >
             Done
           </button>

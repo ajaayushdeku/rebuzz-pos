@@ -8,6 +8,8 @@ import StatCard, {
   StatCardSkeleton,
   type StatSpec,
 } from "@/components/ui/StatCard";
+import { STAT_ROW } from "@/components/dashboardComponents/overviewDash/statRow";
+import { cn } from "@/lib/utils";
 
 /**
  * The four headline figures, built from a spec list and rendered through the
@@ -33,7 +35,7 @@ export default function CustomerDetailStats({
 
   if (loading) {
     return (
-      <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className={STAT_ROW}>
         {Array.from({ length: 4 }).map((_, i) => (
           <StatCardSkeleton key={i} />
         ))}
@@ -98,7 +100,7 @@ export default function CustomerDetailStats({
   ];
 
   return (
-    <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+    <div className={cn("mb-6", STAT_ROW)}>
       {stats.map(({ key, ...spec }) => (
         <StatCard key={key} {...spec} />
       ))}

@@ -655,7 +655,7 @@ export default function ProductTable({
         <button
           onClick={() => setPage(Math.max(0, safePage - 1))}
           disabled={safePage === 0}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
             safePage === 0
               ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
               : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
@@ -665,7 +665,7 @@ export default function ProductTable({
           Previous
         </button>
 
-        <span className="text-xs text-gray-400 font-medium tabular-nums dark:text-[#9aa6bd]">
+        <span className="text-[10px] sm:text-xs text-gray-400 font-medium tabular-nums dark:text-[#9aa6bd]">
           Page {safePage + 1} of {totalPages} · {rowCount} product
           {rowCount === 1 ? "" : "s"}
           {totalVariants > 0 && `, ${totalVariants} variants`}
@@ -674,7 +674,7 @@ export default function ProductTable({
         <button
           onClick={() => setPage(Math.min(totalPages - 1, safePage + 1))}
           disabled={safePage >= totalPages - 1}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
             safePage >= totalPages - 1
               ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
               : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"

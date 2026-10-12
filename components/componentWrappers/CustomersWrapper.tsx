@@ -14,6 +14,7 @@ import CustomerTrendChart from "../dashboardComponents/customersDash/CustomerTre
 import TopCustomer from "../dashboardComponents/customersDash/TopCustomer";
 import AtRiskCustomer from "../dashboardComponents/customersDash/AtRiskCustomer";
 import ReferralTracking from "../dashboardComponents/customersDash/ReferralTrecking";
+import { STAT_ROW } from "../dashboardComponents/overviewDash/statRow";
 
 const getActiveLabel = (range?: string, startDate?: string): string => {
   if (!range && !startDate) return "Active This Month";
@@ -52,7 +53,7 @@ export const CustomerStatsWrapper = async ({
     ...customerStat[config.key],
   }));
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-4 ">
+    <div className={STAT_ROW}>
       {stats.map(({ key, ...stat }) => (
         <CustomerStatBox key={key} {...stat} />
       ))}

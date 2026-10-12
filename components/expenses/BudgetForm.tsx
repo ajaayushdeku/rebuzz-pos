@@ -117,7 +117,7 @@ export default function BudgetForm() {
       <Button
         variant="outline"
         onClick={() => setOpen(true)}
-        className="border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg flex items-center gap-2 dark:border-white/15 dark:text-[#c3ccdc] dark:hover:bg-white/10"
+        className="border-gray-200 h-8.5 text-gray-700 hover:bg-gray-50 rounded-lg flex items-center gap-2  dark:border-white/15 dark:text-[#c3ccdc] dark:hover:bg-white/10"
       >
         <Wallet className="h-4 w-4" />
         <span className="hidden lg:block"> Set Budget</span>

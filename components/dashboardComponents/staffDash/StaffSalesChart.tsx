@@ -8,7 +8,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
+  // Legend,
   ResponsiveContainer,
 } from "recharts";
 import type {
@@ -27,6 +27,8 @@ import StaffFilterModal from "./StaffFilterModal";
 import {
   CHART_PALETTE,
   ChartCard,
+  // ChartLegend,
+  ChartLegendEmployee,
   ChartTooltipBox,
   getAxisTick,
   yAxisTitle,
@@ -119,25 +121,25 @@ const CustomTooltip = ({
 
 // ── Legend ────────────────────────────────────────────────────────────────
 
-const CustomLegend = ({
-  staffLines,
-}: {
-  staffLines: { key: string; color: string }[];
-}) => (
-  <div className="mt-3 flex flex-wrap items-center justify-end gap-x-5 gap-y-1.5 pr-2">
-    {staffLines.map(({ key, color }) => (
-      <span key={key} className="flex items-center gap-1.5">
-        <span
-          className="h-2.5 w-2.5 shrink-0 rounded-full"
-          style={{ backgroundColor: color }}
-        />
-        <span className="text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
-          {key}
-        </span>
-      </span>
-    ))}
-  </div>
-);
+// const CustomLegend = ({
+//   staffLines,
+// }: {
+//   staffLines: { key: string; color: string }[];
+// }) => (
+//   <div className="mt-3 flex flex-wrap items-center justify-end gap-x-5 gap-y-1.5 pr-2">
+//     {staffLines.map(({ key, color }) => (
+//       <span key={key} className="flex items-center gap-1.5">
+//         <span
+//           className="h-2.5 w-2.5 shrink-0 rounded-full"
+//           style={{ backgroundColor: color }}
+//         />
+//         <span className="text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
+//           {key}
+//         </span>
+//       </span>
+//     ))}
+//   </div>
+// );
 
 // ── Main chart ────────────────────────────────────────────────────────────
 
@@ -250,6 +252,7 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
       selectedStaff.map((name) => ({
         key: name,
         color: colorMap.get(name) ?? "#6b7280",
+        shape: "dot" as const,
       })),
     [selectedStaff, colorMap],
   );
@@ -552,7 +555,7 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
                   label={!isSmallScreen ? yAxisTitle("Bills Taken") : undefined}
                 />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend content={<CustomLegend staffLines={staffLines} />} />
+
                 {staffLines.map(({ key, color }) => (
                   <Line
                     key={key}
@@ -574,6 +577,8 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
             </ResponsiveContainer>
           </div>
         </div>
+        {/* <Legend content={<CustomLegend staffLines={staffLines} />} /> */}
+        <ChartLegendEmployee items={staffLines} />
       </div>
 
       {/* Filter modal */}

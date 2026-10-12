@@ -9,11 +9,10 @@ import {
   normalizePaymentMethod,
   paymentMethodStyle,
 } from "@/lib/config/transaction";
-import { CardInfo } from "@/components/dashboardComponents/chartCard";
+import { ChartCard } from "@/components/dashboardComponents/chartCard";
 import StatusPill from "@/components/ui/StatusPill";
 import { OrderHistoryTableSkeleton } from "@/components/customer/CustomerDetailSkeletons";
 import TablePagination from "@/components/ui/TablePagination";
-import { DETAIL_CARD, CardHeader } from "./DetailCardShell";
 import { nepalStamp, timeAgo } from "@/lib/nepalDate";
 import { type PurchaseHistoryItem } from "./customerDetailHelpers";
 
@@ -38,33 +37,25 @@ export default function OrderHistorySection({
   const paged = history.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
 
   return (
-    <div className={`${DETAIL_CARD} mt-6`}>
-      <CardHeader
-        icon={Calendar}
-        iconColor="text-blue-500"
-        iconBg="bg-blue-50 dark:bg-blue-400/10"
-        action={
-          <span className="shrink-0 rounded-full border border-[#dadce0] bg-white dark:bg-white/5 px-3 py-1 text-[11px] tabular-nums text-[#3c4043] dark:border-white/15 dark:text-[#e8ecf4]">
-            {history.length} {history.length === 1 ? "order" : "orders"}
-          </span>
-        }
-      >
-        <div className="min-w-0">
-          <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
-            Order History
-            <CardInfo
-              heading="Reading this table"
-              label="Order History"
-              // Rows open the invoice; times are Nepal time.
-              body="Every order this customer has paid for, newest page first. Times are Nepal time, with the 12-hour reading beside them. Click a row to open its invoice."
-            />
-          </h3>
-          <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
-            All orders placed by this customer
-          </p>
-        </div>
-      </CardHeader>
-
+    <ChartCard
+      icon={Calendar}
+      iconColor="#3b82f6"
+      iconBorder="#bfdbfe"
+      iconBg="#eff6ff"
+      title="Order History"
+      info={{
+        heading: "Reading this table",
+        // Rows open the invoice; times are Nepal time.
+        body: "Every order this customer has paid for, newest page first. Times are Nepal time, with the 12-hour reading beside them. Click a row to open its invoice.",
+      }}
+      subtitle="All orders placed by this customer"
+      className="mt-6"
+      buttons={
+        <span className="shrink-0 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] tabular-nums text-[#3c4043] dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]">
+          {history.length} {history.length === 1 ? "order" : "orders"}
+        </span>
+      }
+    >
       {loading ? (
         <OrderHistoryTableSkeleton />
       ) : history.length === 0 ? (
@@ -157,7 +148,7 @@ export default function OrderHistorySection({
                       }
                       className="cursor-pointer border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa] dark:border-white/10 dark:hover:bg-white/10"
                     >
-                      <td className="px-3 py-3 text-xs tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
+                      <td className="pr-3 pl-4 py-3 text-xs tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                         {safePage * PAGE_SIZE + idx + 1}
                       </td>
                       <td className="px-3 py-3">
@@ -235,6 +226,6 @@ export default function OrderHistorySection({
           )}
         </>
       )}
-    </div>
+    </ChartCard>
   );
 }

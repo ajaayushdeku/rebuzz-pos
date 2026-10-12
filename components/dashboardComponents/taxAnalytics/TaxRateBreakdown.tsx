@@ -10,7 +10,7 @@ import type {
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useMonthlyTaxTrend, type TaxTotal } from "@/hooks/useMonthlyTaxTrend";
-import { Percent } from "lucide-react";
+import { ChevronDown, Percent } from "lucide-react";
 import { CHART_PALETTE, ChartCard, ChartTooltipBox } from "../chartCard";
 import { TaxRateBreakdownSkeleton } from "./TaxAnalyticsSkeletons";
 
@@ -68,6 +68,8 @@ const PieTooltip = ({
 };
 
 const ITEMS_PER_PAGE = 3;
+/** How many of the hidden rows a single click brings in. */
+const STEP = 3;
 
 function BreakdownSection({
   title,
@@ -91,9 +93,61 @@ function BreakdownSection({
   const total = colored.reduce((s, t) => s + t.collected, 0);
   const pieData = colored.map((t) => ({ name: t.label, amount: t.collected }));
 
-  const [showAll, setShowAll] = useState(false);
-  const displayedItems = showAll ? colored : colored.slice(0, ITEMS_PER_PAGE);
+  const [revealed, setRevealed] = useState(0);
   const hasMore = colored.length > ITEMS_PER_PAGE;
+  const head = colored.slice(0, ITEMS_PER_PAGE);
+
+  // The remainder in groups of three. Each group animates on its own, so a
+  // click moves only the rows it brings in and the ones already open do not
+  // re-run their transition underneath.
+  const chunks: (typeof colored)[] = [];
+  for (let i = ITEMS_PER_PAGE; i < colored.length; i += STEP) {
+    chunks.push(colored.slice(i, i + STEP));
+  }
+  const allShown = revealed >= chunks.length;
+  const nextCount = allShown
+    ? 0
+    : Math.min(STEP, colored.length - ITEMS_PER_PAGE - revealed * STEP);
+
+  /** One line of the table. A component so the head and the groups match. */
+  const Row = ({ t }: { t: (typeof colored)[number] }) => {
+    const pct = total > 0 ? (t.collected / total) * 100 : 0;
+    return (
+      <div
+        className={`${COLUMNS} border-b py-2.5 border-[#e8eaed] dark:border-white/10`}
+      >
+        <div className="flex min-w-0 items-center gap-2">
+          <span
+            className="h-2.5 w-2.5 shrink-0 rounded-full"
+            style={{ backgroundColor: t.color }}
+          />
+          <span className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
+            {t.label}
+          </span>
+        </div>
+
+        <span className="text-right text-[13px] tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
+          {fmt(t.base)}
+        </span>
+
+        <span className="text-right text-[13px] font-medium tabular-nums text-[#1e8e3e] dark:text-[#10b981]">
+          {fmt(t.collected)}
+        </span>
+
+        <div className="flex items-center justify-end gap-2">
+          <div className="h-1.5 max-w-[80px] flex-1 overflow-hidden rounded-full bg-[#e8eaed] dark:bg-white/10">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${pct}%`, backgroundColor: t.color }}
+            />
+          </div>
+          <span className="w-10 shrink-0 text-right text-xs tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
+            {pct.toFixed(1)}%
+          </span>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -148,7 +202,7 @@ function BreakdownSection({
 
           {/* Table */}
           <div className="min-w-0 overflow-x-auto scrollbar-hide">
-            <div className="min-w-[420px]">
+            <div className="min-w-[500px]">
               <div
                 className={`${COLUMNS} border-b pb-2.5 text-[11px] border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]`}
               >
@@ -159,53 +213,32 @@ function BreakdownSection({
               </div>
 
               <div>
-                {displayedItems.map((t) => {
-                  const pct = total > 0 ? (t.collected / total) * 100 : 0;
-                  return (
-                    <div
-                      key={t.key}
-                      className={`${COLUMNS} border-b py-2.5 last:border-0 border-[#e8eaed] dark:border-white/10`}
-                    >
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span
-                          className="h-2.5 w-2.5 shrink-0 rounded-full"
-                          style={{ backgroundColor: t.color }}
-                        />
-                        <span className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
-                          {t.label}
-                        </span>
-                      </div>
-
-                      <span className="text-right text-[13px] tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
-                        {fmt(t.base)}
-                      </span>
-
-                      <span className="text-right text-[13px] font-medium tabular-nums text-[#1e8e3e] dark:text-[#10b981]">
-                        {fmt(t.collected)}
-                      </span>
-
-                      <div className="flex items-center justify-end gap-2">
-                        <div className="h-1.5 max-w-[80px] flex-1 overflow-hidden rounded-full bg-[#e8eaed] dark:bg-white/10">
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              width: `${pct}%`,
-                              backgroundColor: t.color,
-                            }}
-                          />
-                        </div>
-                        <span className="w-10 shrink-0 text-right text-xs tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
-                          {pct.toFixed(1)}%
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
+                {head.map((t) => (
+                  <Row key={t.key} t={t} />
+                ))}
               </div>
 
-              <div
-                className={`${COLUMNS} mt-1 border-t pt-2.5 border-[#e8eaed] dark:border-white/10`}
-              >
+              {/* A grid track per group rather than a height: a group's height
+                  is not known in advance, and `0fr` → `1fr` is the one way to
+                  transition to `auto`. The rows stay mounted so there is
+                  something to reveal; `inert` keeps the closed ones out of tab
+                  order and away from screen readers. */}
+              {chunks.map((chunk, index) => (
+                <div
+                  key={index}
+                  className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
+                    index < revealed ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                  }`}
+                >
+                  <div className="overflow-hidden" inert={index >= revealed}>
+                    {chunk.map((t) => (
+                      <Row key={t.key} t={t} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              <div className={`${COLUMNS} mt-1 pt-2.5`}>
                 <span className="text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
                   Total
                 </span>
@@ -221,16 +254,33 @@ function BreakdownSection({
           </div>
 
           {/* Load More / Hide */}
+          {/* Outside the table's horizontal scroller on purpose: the pills
+              stay reachable without scrolling sideways to find them. */}
           {hasMore && (
-            <div className="flex items-center justify-center gap-3 pt-1">
-              <button
-                onClick={() => setShowAll((prev) => !prev)}
-                className="cursor-pointer rounded-full border bg-white dark:bg-white/5 px-3 py-1 text-[11px] transition-colors hover:bg-[#f8f9fa] border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4] dark:hover:bg-white/10"
-              >
-                {showAll
-                  ? "Show less"
-                  : `Show ${colored.length - ITEMS_PER_PAGE} more`}
-              </button>
+            <div className="flex items-center justify-center gap-2">
+              {!allShown && (
+                <button
+                  type="button"
+                  onClick={() => setRevealed((prev) => prev + 1)}
+                  aria-expanded={revealed > 0}
+                  className="flex cursor-pointer items-center gap-1 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+                >
+                  Show {nextCount} more
+                  <ChevronDown size={12} className="shrink-0" />
+                </button>
+              )}
+
+              {revealed > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setRevealed(0)}
+                  aria-expanded={revealed > 0}
+                  className="flex cursor-pointer items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] text-rose-700 transition-colors hover:bg-rose-100 dark:border-rose-400/25 dark:bg-rose-400/10 dark:text-rose-300"
+                >
+                  Hide
+                  <ChevronDown size={12} className="rotate-180 shrink-0" />
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -295,7 +345,10 @@ export default function TaxRateBreakdown() {
             />
           </div>
           {/* Vertical divider between columns */}
-          <div className="absolute bottom-0 left-1/2 top-0 hidden w-px -translate-x-px bg-[#e8eaed] lg:block dark:bg-white/10" />
+          <div className="hidden md:block absolute bottom-0 left-1/2 top-0 hidden w-px -translate-x-px bg-[#e8eaed] lg:block dark:bg-white/10" />
+
+          <div className="block md:hidden absolute bottom-0 left-0 right-0 hidden h-px bg-gray-500 lg:block dark:bg-white/10" />
+
           <div className="lg:pl-6">
             <BreakdownSection
               title="Grouped taxes"

@@ -138,7 +138,7 @@ function TableCard({
           </span>
         </div>
 
-        <div className="flex shrink-0 items-center gap-0.5">
+        <div className="flex shrink-0 items-center gap-1.5">
           {/* View details — stops propagation so it doesn't also select the
               card underneath. */}
           <button
@@ -151,11 +151,11 @@ function TableCard({
             }}
             className="rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-blue-600 dark:text-[#7b869b] dark:hover:bg-white/10"
           >
-            <Eye size={16} />
+            <Eye size={18} />
           </button>
 
           {/* 3-dot menu */}
-          <div className="relative" ref={menuRef}>
+          <div className="relative  flex items-center" ref={menuRef}>
             <button
               type="button"
               onClick={(e) => {

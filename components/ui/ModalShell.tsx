@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -37,6 +37,10 @@ export const modalGhostButton =
   "shrink-0 rounded-xl px-5 py-3 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-white";
 export const modalPrimaryButton =
   "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white shadow-md transition-all disabled:cursor-not-allowed disabled:opacity-50";
+
+const subscribeToNothing = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 /**
  * Renders children into <body>, parked off-screen. Used for the invoice
@@ -93,8 +97,11 @@ export default function ModalShell({
   hideHeader = false,
   children,
 }: ModalShellProps) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useSyncExternalStore(
+    subscribeToNothing,
+    getClientSnapshot,
+    getServerSnapshot,
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -134,7 +141,7 @@ export default function ModalShell({
 
         {!hideHeader && (
           <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4 dark:border-white/10">
-            <div className="flex min-w-0 items-start gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               {Icon && (
                 <div
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${iconBgColor}`}

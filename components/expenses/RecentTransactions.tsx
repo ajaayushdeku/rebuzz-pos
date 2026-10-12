@@ -15,6 +15,7 @@ import {
   ChevronUp,
   ChevronDown,
   Receipt,
+  ArrowLeftRight,
 } from "lucide-react";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import {
@@ -137,10 +138,20 @@ export default function RecentTransactions() {
       });
   }, [searched, filter, sort, sortDir]);
 
-  const tabs: Array<{ key: TabKey; label: string; count: number }> = [
-    { key: "expense", label: "Expense", count: counts.expense },
-    { key: "income", label: "Income", count: counts.income },
-    { key: "all", label: "All", count: counts.all },
+  const tabs: Array<{
+    key: TabKey;
+    label: string;
+    count: number;
+    icon: typeof TrendingDown;
+  }> = [
+    {
+      key: "expense",
+      label: "Expense",
+      count: counts.expense,
+      icon: TrendingDown,
+    },
+    { key: "income", label: "Income", count: counts.income, icon: TrendingUp },
+    { key: "all", label: "All", count: counts.all, icon: ArrowLeftRight },
   ];
 
   // Left/Right/Home/End move between tabs, per the WAI-ARIA tabs pattern.
@@ -163,9 +174,9 @@ export default function RecentTransactions() {
     filter === "all" ? "No transaction found" : `No ${filter} found`;
 
   return (
-    <div className="bg-white dark:bg-transparent  p-5">
+    <div className="bg-white dark:bg-transparent  py-5">
       {/* ── Header: title ── */}
-      <div className="flex flex-col sm:flex-row items-center  mb-4">
+      <div className="flex flex-col sm:flex-row items-start  mb-4">
         <ComponentHeader
           title="Recent Transactions"
           subHeader="View your recent financial transactions"
@@ -187,6 +198,7 @@ export default function RecentTransactions() {
         >
           {tabs.map((tab, i) => {
             const selected = tab.key === filter;
+            const Icon = tab.icon;
 
             return (
               <button
@@ -207,7 +219,8 @@ export default function RecentTransactions() {
                     : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee]"
                 }`}
               >
-                {tab.label}
+                <Icon size={14} className="shrink-0" />
+                <span className="hidden sm:block"> {tab.label}</span>
                 <span className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 bg-[#e4f2fe] text-blue-950 ring-blue-900 dark:bg-white/10 dark:text-[#e8ecf4] dark:ring-white/20">
                   {tab.count}
                 </span>

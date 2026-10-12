@@ -164,7 +164,7 @@ export function VariantOptionsEditor({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-10">
       {/* ── How it works ── */}
       <div className="flex gap-2.5 rounded-xl bg-slate-50 px-3.5 py-3 dark:bg-white/5">
         <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-[#9aa6bd]" />
@@ -312,7 +312,7 @@ export function VariantRowsEditor({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4  pb-10">
       {/* ── What these came from ── */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-xl bg-slate-50 px-3.5 py-3 dark:bg-white/5">
         {usableOptions(options).map((option) => (

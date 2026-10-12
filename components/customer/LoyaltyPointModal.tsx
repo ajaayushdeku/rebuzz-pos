@@ -113,7 +113,7 @@ export default function LoyaltyPointModal({
       <div className="space-y-6">
         {/* Current balance */}
         {customer && (
-          <div className="flex items-center justify-between rounded-xl border border-cyan-100 bg-cyan-50/60 px-4 py-3 dark:border-cyan-400/20 dark:bg-cyan-400/10">
+          <div className="flex  flex-col sm:flex-row items-start gap-3 sm:items-center justify-between rounded-xl border border-cyan-100 bg-cyan-50/60 px-4 py-3 dark:border-cyan-400/20 dark:bg-cyan-400/10">
             <div className="flex items-center gap-2.5">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cyan-100 dark:bg-cyan-400/15">
                 <Star size={15} className="text-cyan-500 dark:text-cyan-300" />
@@ -127,7 +127,7 @@ export default function LoyaltyPointModal({
                 </p>
               </div>
             </div>
-            <p className="text-xl font-bold text-cyan-700/80 tabular-nums tracking-wide dark:text-cyan-200">
+            <p className="text-xl w-full sm:w-fit font-bold flex flex-wrap items-end gap-1 justify-end text-cyan-700/80 tabular-nums tracking-wide dark:text-cyan-200">
               {formatAmount(customer.loyaltyPoint ?? 0, currency.locale)}{" "}
               <span className=" text-[11px] text-cyan-600/80 dark:text-cyan-300/80">
                 pts

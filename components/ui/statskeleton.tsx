@@ -1,6 +1,14 @@
+import { cn } from "@/lib/utils";
+import { STAT_ROW_ITEM } from "../dashboardComponents/overviewDash/statRow";
+
 export default function StatSkeleton() {
   return (
-    <div className="border w-full mt-4 px-3 md:px-6 py-4 md:py-6 rounded-lg shadow-md animate-pulse dark:bg-[#161d2e]">
+    <div
+      className={cn(
+        "border w-full mt-4 px-3 md:px-6 py-4 md:py-6 rounded-lg shadow-md animate-pulse dark:bg-[#161d2e]",
+        STAT_ROW_ITEM,
+      )}
+    >
       {/* Label + icon row */}
       <div className="flex justify-between items-end">
         <div className="h-3 w-24 bg-gray-100 rounded dark:bg-white/10" />

@@ -4,12 +4,8 @@ import { Star, ShoppingBag, DollarSign, Pencil } from "lucide-react";
 import type { Customer } from "@/lib/types/customer";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
-import {
-  CardInfo,
-  CHART_PALETTE,
-} from "@/components/dashboardComponents/chartCard";
+import { ChartCard } from "@/components/dashboardComponents/chartCard";
 import DetailRow from "./DetailRow";
-import { DETAIL_CARD, CardHeader } from "./DetailCardShell";
 import { NO_TIER_STYLE } from "./customerDetailHelpers";
 import { useTierStyle } from "@/hooks/useLoyaltyTiers";
 
@@ -67,42 +63,34 @@ export default function LoyaltyCard({
   ].filter((row) => row.value !== null);
 
   return (
-    <div className={DETAIL_CARD}>
-      <CardHeader
-        icon={Star}
-        iconColor="text-amber-500"
-        iconBg="bg-amber-50 dark:bg-amber-400/10"
-        action={
-          <button
-            onClick={onEdit}
-            title="Edit loyalty points"
-            className="flex shrink-0 cursor-pointer dark:bg-white/5 items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
-          >
-            <Pencil size={11} />
-            Edit
-          </button>
-        }
-      >
-        <div className="min-w-0">
-          <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
-            Loyalty Program
-            <CardInfo
-              heading="Reading this card"
-              label="Loyalty Program"
-              // Points and the tier they buy, plus what the customer owes.
-              body="The tier this customer has reached and the points behind it — the tier ladder itself is set in loyalty settings. Purchases and spending are all-time. A due amount is money still owed on past orders."
-            />
-          </h3>
-          <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
-            Customer&lsquo;s loyalty points, due amount and total spending
-          </p>
-        </div>
-      </CardHeader>
-
+    <ChartCard
+      icon={Star}
+      iconColor="#f59e0b"
+      iconBorder="#fde68a"
+      iconBg="#fffbeb"
+      title="Loyalty Program"
+      info={{
+        heading: "Reading this card",
+        // Points and the tier they buy, plus what the customer owes.
+        body: "The tier this customer has reached and the points behind it — the tier ladder itself is set in loyalty settings. Purchases and spending are all-time. A due amount is money still owed on past orders.",
+      }}
+      subtitle="Customer's loyalty points, due amount and total spending"
+      buttons={
+        <button
+          type="button"
+          onClick={onEdit}
+          title="Edit loyalty points"
+          className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+        >
+          <Pencil size={11} />
+          Edit
+        </button>
+      }
+    >
       {/* Tier & points */}
       <div className="mb-4 rounded-xl  bg-gray-50 px-4 py-3 dark:bg-white/5">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
+        <div className="flex items-end sm:items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row min-w-0 items-start sm:items-center gap-3">
             <span
               className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold ${tierClass}`}
             >
@@ -141,6 +129,6 @@ export default function LoyaltyCard({
           />
         ))}
       </div>
-    </div>
+    </ChartCard>
   );
 }

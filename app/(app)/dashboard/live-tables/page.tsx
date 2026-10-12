@@ -116,7 +116,7 @@ export default function LiveTablesPage() {
                   }`}
                 >
                   <Icon size={14} />
-                  {label}
+                  <span className="text-[11px] sm:text-[13px]"> {label}</span>
                 </button>
               );
             })}

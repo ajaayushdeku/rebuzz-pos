@@ -1,6 +1,8 @@
 import type { LucideIcon } from "lucide-react";
 
 import RangeTag from "@/components/ui/RangeTag";
+import { STAT_ROW_ITEM } from "../overviewDash/statRow";
+import { cn } from "@/lib/utils";
 
 export interface StatBoxProps {
   label: string;
@@ -31,7 +33,7 @@ export default function CustomerStatBox({
   ranged = false,
 }: StatBoxProps) {
   return (
-    <div className="rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-5 py-4 dark:border-white/10">
+    <div className={cn("rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-5 py-4 dark:border-white/10",STAT_ROW_ITEM)}>
       <div className="flex items-center justify-between gap-2">
         <span className="truncate text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
           {label}

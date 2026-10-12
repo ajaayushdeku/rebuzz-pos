@@ -5,6 +5,11 @@ import { useEffect, useState } from "react";
 import { InvoiceStatsProps } from "@/lib/types/invoice";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import {
+  STAT_ROW,
+  STAT_ROW_ITEM,
+} from "../dashboardComponents/overviewDash/statRow";
+import { cn } from "@/lib/utils";
 
 function fmtLocalDate(date: Date): string {
   const y = date.getFullYear();
@@ -103,7 +108,7 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
 
   return (
     <div className="relative bg-white pb-2 mb-8 dark:bg-[#0F1420]">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className={STAT_ROW}>
         {statItems.map((item) => {
           const displayValue =
             item.format === "currency"
@@ -117,7 +122,10 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
           return (
             <div
               key={item.label}
-              className="bg-surface-card border-surface-border rounded-xl border border-[#e3e3e3] p-4 md:p-5 dark:border-white/10 dark:bg-[#161d2e]"
+              className={cn(
+                "bg-surface-card border-surface-border rounded-xl border border-[#e3e3e3] p-4 md:p-5 dark:border-white/10 dark:bg-[#161d2e]",
+                STAT_ROW_ITEM,
+              )}
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="truncate text-[13px] font-medium text-[#5f6368] dark:text-[#9aa6bd]">

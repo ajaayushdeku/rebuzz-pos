@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import TableSkeleton from "@/components/ui/tableskeleton";
-import StatSkeleton from "@/components/ui/statskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import CreateCustomerButton from "@/components/customer/CreateCustomerButton";
 import CustomerHeader from "@/components/dashboardComponents/customersDash/CustomerHeader";
@@ -18,8 +17,10 @@ import {
   CustomerSegmentationSkeleton,
   CustomerTrendChartSkeleton,
   CustomerTableSkeleton,
+  CustomerStatSkeleton,
 } from "@/components/dashboardComponents/customersDash/CustomerSkeletons";
 import PageHeader from "@/components/ui/PageHeader";
+import { STAT_ROW } from "@/components/dashboardComponents/overviewDash/statRow";
 
 function getPresetRange(range: string): { startDate: string; endDate: string } {
   const today = new Date();
@@ -90,7 +91,7 @@ export default async function Page({
   }
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
+    <div className="min-h-screen bg-surface-page px-6 py-5 sm:py-8 md:px-10 dark:bg-[#0f1420]">
       <PageHeader
         title="Customer Analytics"
         subtitle="Insights into customer behavior and retention."
@@ -107,9 +108,9 @@ export default async function Page({
       <div className="flex flex-col gap-6">
         <Suspense
           fallback={
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 ">
+            <div className={STAT_ROW}>
               {Array.from({ length: 4 }).map((_, i) => (
-                <StatSkeleton key={i} />
+                <CustomerStatSkeleton key={i} />
               ))}
             </div>
           }

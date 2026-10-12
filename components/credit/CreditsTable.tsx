@@ -360,30 +360,32 @@ export default function CreditsTable({
             className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15"
           />
         </div>
-        {/* Ongoing list only, alongside the column itself — on a settled or
+
+        <div className="flex flex-row w-full sm:w-fit items-center justify-between gap-3">
+          {/* Ongoing list only, alongside the column itself — on a settled or
             archived list every row is grey and filtering by deadline sorts
             nothing worth sorting. */}
-        {showDueDate && (
-          <FilterSelect
-            value={dueDateFilter}
-            options={DUE_DATE_FILTER_OPTIONS}
-            onChange={(v) => {
-              setDueDateFilter(v as DueDateFilter);
-              // Otherwise a narrower result set leaves you on a page that no
-              // longer exists, looking at an empty table.
-              setPage(0);
-            }}
-            className="w-full sm:w-[170px]"
+          {showDueDate && (
+            <FilterSelect
+              value={dueDateFilter}
+              options={DUE_DATE_FILTER_OPTIONS}
+              onChange={(v) => {
+                setDueDateFilter(v as DueDateFilter);
+                // Otherwise a narrower result set leaves you on a page that no
+                // longer exists, looking at an empty table.
+                setPage(0);
+              }}
+              className="w-full sm:w-[150px] md:w-[170px]"
+            />
+          )}{" "}
+          <ColumnPicker
+            columns={creditColumns}
+            visible={visibleColumns}
+            onChange={handleColumnsChange}
+            minVisible={MIN_COLUMNS}
+            className="w-full sm:w-[150px] md:w-[170px]"
           />
-        )}
-
-        <ColumnPicker
-          columns={creditColumns}
-          visible={visibleColumns}
-          onChange={handleColumnsChange}
-          minVisible={MIN_COLUMNS}
-          className="w-full sm:w-[150px]"
-        />
+        </div>
 
         {showStatusFilter && (
           <button
@@ -391,24 +393,27 @@ export default function CreditsTable({
             role="switch"
             aria-checked={allExpanded}
             onClick={toggleAllHistory}
-            className="inline-flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-white dark:bg-white/5 transition-colors hover:bg-gray-50 cursor-pointer dark:hover:bg-white/5 dark:border-white/15"
+            className="inline-flex  items-center justify-between gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-white dark:bg-white/5 transition-colors hover:bg-gray-50 cursor-pointer dark:hover:bg-white/5 dark:border-white/15"
           >
-            <History
-              size={14}
-              className={`transition-colors ${
-                allExpanded
-                  ? "text-blue-600 dark:text-blue-300"
-                  : "text-gray-400 dark:text-[#9aa6bd]"
-              }`}
-            />
             <span
-              className={`text-[13px] font-medium transition-colors ${
+              className={`text-[13px] flex flex-row  items-center gap-2.5 font-medium transition-colors ${
                 allExpanded
                   ? "text-blue-700 dark:text-blue-300"
                   : "text-gray-600 dark:text-[#a9b4c7]"
               }`}
             >
-              {allExpanded ? "Hide payment history" : "View payment history"}
+              <History
+                size={14}
+                className={`transition-colors ${
+                  allExpanded
+                    ? "text-blue-600 dark:text-blue-300"
+                    : "text-gray-400 dark:text-[#9aa6bd]"
+                }`}
+              />
+              <span>
+                {" "}
+                {allExpanded ? "Hide payment history" : "View payment history"}
+              </span>
             </span>
 
             {/* Toggle switch */}
@@ -891,7 +896,7 @@ export default function CreditsTable({
         <button
           onClick={() => setPage(Math.max(0, page - 1))}
           disabled={page === 0}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
             page === 0
               ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
               : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
@@ -901,14 +906,14 @@ export default function CreditsTable({
           Previous
         </button>
 
-        <span className="text-xs text-gray-400 font-medium dark:text-[#9aa6bd]">
+        <span className="text-[10px] sm:text-xs text-gray-400 font-medium dark:text-[#9aa6bd]">
           Page {page + 1} of {totalPages} · {sorted.length} credits
         </span>
 
         <button
           onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
           disabled={page >= totalPages - 1}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
             page >= totalPages - 1
               ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
               : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:text-[#a9b4c7]"

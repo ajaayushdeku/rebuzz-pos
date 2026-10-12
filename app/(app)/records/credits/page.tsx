@@ -2,7 +2,14 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Wallet, HandCoins, Users } from "lucide-react";
+import {
+  Wallet,
+  HandCoins,
+  Users,
+  CheckCircle,
+  Archive,
+  CreditCard,
+} from "lucide-react";
 
 // import { Spinner } from "@/components/ui/spinner";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -14,6 +21,11 @@ import {
   fetchCreditsByStatus,
 } from "@/services/apiCredit.client";
 import PageHeader from "@/components/ui/PageHeader";
+import {
+  STAT_ROW,
+  STAT_ROW_ITEM,
+} from "@/components/dashboardComponents/overviewDash/statRow";
+import { cn } from "@/lib/utils";
 
 type TabKey = "credited" | "completed" | "archived";
 
@@ -99,17 +111,29 @@ export default function Page() {
     },
   ];
 
-  const tabs: Array<{ key: TabKey; label: string; count: number | null }> = [
-    { key: "credited", label: "Credited", count: credits.length },
+  const tabs: Array<{
+    key: TabKey;
+    label: string;
+    count: number | null;
+    icon: React.ElementType;
+  }> = [
+    {
+      key: "credited",
+      label: "Credited",
+      count: credits.length,
+      icon: CreditCard,
+    },
     {
       key: "completed",
       label: "Completed",
       count: completedLoading ? null : completedCredits.length,
+      icon: CheckCircle,
     },
     {
       key: "archived",
       label: "Archived",
       count: archivedLoading ? null : archivedCredits.length,
+      icon: Archive,
     },
   ];
 
@@ -130,7 +154,7 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
+    <div className="min-h-screen bg-surface-page px-6 py-5 sm:py-8 md:px-10 dark:bg-[#0f1420]">
       {/* Header */}
       {header}
 
@@ -148,7 +172,7 @@ export default function Page() {
           <>
             {/* Stats — always reflect all credits, regardless of the selected tab */}
             <div className="bg-white pb-2 mb-4 dark:bg-transparent">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className={STAT_ROW}>
                 {statItems.map((item) => {
                   const displayValue =
                     item.format === "currency"
@@ -162,7 +186,10 @@ export default function Page() {
                   return (
                     <div
                       key={item.label}
-                      className="bg-white rounded-xl border border-[#e3e3e3] p-4 dark:border-white/10 dark:bg-[#161d2e]"
+                      className={cn(
+                        "bg-white rounded-xl border border-[#e3e3e3] p-4 dark:border-white/10 dark:bg-[#161d2e]",
+                        STAT_ROW_ITEM,
+                      )}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="truncate text-[13px] font-medium text-[#5f6368] dark:text-[#a9b4c7]">
@@ -204,7 +231,7 @@ export default function Page() {
               >
                 {tabs.map((tab, i) => {
                   const selected = tab.key === activeTab;
-
+                  const Icon = tab.icon;
                   return (
                     <button
                       key={tab.key}
@@ -224,7 +251,8 @@ export default function Page() {
                           : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white"
                       }`}
                     >
-                      {tab.label}
+                      <Icon size={16} className="shrink-0" />
+                      <span className="hidden sm:block"> {tab.label}</span>
                       <span
                         className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 
                          bg-[#e4f2fe] text-blue-950 ring-blue-900 dark:bg-white/10 dark:text-[#e8ecf4] dark:ring-white/20"

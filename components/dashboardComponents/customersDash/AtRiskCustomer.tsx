@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { TriangleAlert } from "lucide-react";
 import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
-import { CardInfo } from "../chartCard";
+import { ChartCard } from "../chartCard";
 
 type SpendingLevel = "High" | "Medium" | "Low";
 
@@ -104,42 +104,31 @@ export default function AtRiskCustomer({
     );
 
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="flex items-center gap-3">
-            <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
-              style={{ borderColor: "#fecdd3", backgroundColor: "#fff1f2" }}
-            >
-              <UserX size={16} style={{ color: "#e11d48" }} />
-            </div>
-            <div className="min-w-0">
-              <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
-                At-Risk Customers
-                <CardInfo
-                  heading="Reading this table"
-                  label="At-Risk Customers"
-                  body="Customers who have not bought in over two weeks, plus anyone enrolled who has never bought at all. The count in the corner is the whole list, not just this page. Use it to pick who to win back."
-                />
-              </h3>
-              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
-                Inactive customers for over two weeks or with no purchases yet,
-                requiring re-engagement
-              </p>
-            </div>
-          </div>
-        </div>
-        <span className="flex shrink-0 items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] text-amber-700 dark:bg-amber-400/10 dark:border-amber-400/25 dark:text-amber-300">
+    <ChartCard
+      icon={UserX}
+      iconColor="#e11d48"
+      iconBorder="#fecdd3"
+      iconBg="#fff1f2"
+      title="At-Risk Customers"
+      info={{
+        heading: "Reading this table",
+        body: "Customers who have not bought in over two weeks, plus anyone enrolled who has never bought at all. The count in the corner is the whole list, not just this page. Use it to pick who to win back.",
+      }}
+      subtitle="Inactive customers for over two weeks or with no purchases yet, requiring re-engagement"
+      // Kept from the old wrapper: the table's corners are rounded by the
+      // card, so its edges have to be clipped to them.
+      className="overflow-hidden"
+      buttons={
+        <span className="flex shrink-0 items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300">
           <TriangleAlert size={11} className="shrink-0" />
           <span className="whitespace-nowrap tabular-nums">
             {numCustomers} at risk
           </span>
         </span>
-      </div>
-
+      }
+    >
       {/* Search */}
-      <div className="relative mt-4 mb-2 w-full ">
+      <div className="relative mb-2 w-full">
         <Search
           size={14}
           className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
@@ -170,12 +159,12 @@ export default function AtRiskCustomer({
         className="bg-white dark:bg-transparent overflow-x-auto pb-2 scrollbar-hide"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        <table className="w-full table-fixed min-w-[500px] md:min-w-[910px] text-sm">
+        <table className="w-full table-fixed min-w-[600px] md:min-w-[910px] text-sm">
           <colgroup>
             <col className="w-16" />
             <col className="w-25 md:w-38" />
             <col className="w-32 md:w-55" />
-            <col className="w-25 md:w-32" />
+            <col className="w-30 md:w-32" />
             <col className="w-20 md:w-80" />
           </colgroup>
 
@@ -237,7 +226,7 @@ export default function AtRiskCustomer({
                   key={customer.rank}
                   className="border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa] dark:border-white/10 dark:hover:bg-white/10"
                 >
-                  <td className="py-3 px-4 text-gray-400 text-xs dark:text-[#7b869b]">
+                  <td className="py-3 pr-4 pl-6 text-gray-400 text-xs dark:text-[#7b869b]">
                     {page * pageSize + idx + 1}
                   </td>
                   <td className="py-3 px-4">
@@ -295,7 +284,7 @@ export default function AtRiskCustomer({
         <button
           onClick={() => setPage(Math.max(0, page - 1))}
           disabled={page === 0}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
             page === 0
               ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
               : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10"
@@ -305,14 +294,14 @@ export default function AtRiskCustomer({
           Previous
         </button>
 
-        <span className="text-xs text-gray-400 font-medium dark:text-[#7b869b]">
+        <span className="text-[10px] sm:text-xs text-gray-400 font-medium dark:text-[#7b869b]">
           Page {page + 1} of {totalPages} · {sorted.length} customers
         </span>
 
         <button
           onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
           disabled={page >= totalPages - 1}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
             page >= totalPages - 1
               ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
               : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10"
@@ -329,6 +318,6 @@ export default function AtRiskCustomer({
         customerId={historyFor?.id}
         customerName={historyFor?.name ?? ""}
       />
-    </div>
+    </ChartCard>
   );
 }

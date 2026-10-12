@@ -120,7 +120,7 @@ export default function CustomerSegmentationChart({
           </p>
         </div>
       ) : (
-        <div className="mt-4 flex flex-col">
+        <div className=" flex flex-col">
           {/* The donut hole was empty; the total belongs there, where the eye
               lands first. The overlay ignores pointer events so slice hover
               and the tooltip still work through it. */}
@@ -159,7 +159,7 @@ export default function CustomerSegmentationChart({
           {/* Legend — aligned rows rather than fixed-width centred blocks, so
               the counts line up in a column and long names can't push the
               value out of the card. */}
-          <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-2 border-t pt-3 sm:grid-cols-2 border-[#e8eaed] dark:border-white/10">
+          <div className=" grid grid-cols-1 gap-x-6 gap-y-2 border-t pt-3 sm:grid-cols-2 border-[#e8eaed] dark:border-white/10">
             {coloredData.map((entry) => (
               <div key={entry.name} className="flex items-center gap-2">
                 <span

@@ -4,6 +4,9 @@
  * data arrives.
  */
 
+import { cn } from "@/lib/utils";
+import { STAT_ROW_ITEM } from "../overviewDash/statRow";
+
 /** Title + subtitle stack, matching <ComponentHeader />. */
 function HeaderSkeleton({
   titleWidth = "w-44",
@@ -34,6 +37,28 @@ function BarsSkeleton() {
           style={{ height: `${h}%` }}
         />
       ))}
+    </div>
+  );
+}
+
+export function CustomerStatSkeleton() {
+  return (
+    <div
+      className={cn(
+        "border w-full  px-3 md:px-6 py-4 md:py-6 rounded-lg shadow-md animate-pulse dark:bg-[#161d2e]",
+        STAT_ROW_ITEM,
+      )}
+    >
+      {/* Label + icon row */}
+      <div className="flex justify-between items-end">
+        <div className="h-3 w-24 bg-gray-100 rounded dark:bg-white/10" />
+        <div className="w-4 h-4 bg-gray-100 rounded mb-1 dark:bg-white/10" />
+      </div>
+
+      {/* Value */}
+      <div className="pt-4">
+        <div className="h-7 w-32 bg-gray-100 rounded mb-3 dark:bg-white/10" />
+      </div>
     </div>
   );
 }

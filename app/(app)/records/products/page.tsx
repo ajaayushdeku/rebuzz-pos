@@ -27,7 +27,7 @@ export default function Page() {
   const nearLimit = isFree && !atLimit && remaining <= 5;
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
+    <div className="min-h-screen bg-surface-page px-6 py-5 sm:py-8 md:px-10 dark:bg-[#0f1420]">
       <div className="w-full mx-auto">
         <PageHeader
           title="Products"

@@ -80,13 +80,13 @@ export default function StaffDetailHeader({
   const RoleIcon = roleStyle.icon;
 
   return (
-    <div className="mb-6 flex flex-col gap-4 rounded-2xl bg-white dark:bg-[#0F1420]  sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex min-w-0 items-center gap-3">
+    <div className="mb-6 flex  gap-4 rounded-2xl bg-white dark:bg-[#0F1420]  flex-row items-center justify-between">
+      <div className="flex min-w-0 items-center gap-3 ">
         <button
           onClick={() => router.push("/dashboard/employee")}
           aria-label="Back to employees"
           title="Back to employees"
-          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#dadce0] bg-white dark:bg-white/5 text-[#5f6368] transition-colors hover:bg-[#f8f9fa] hover:text-[#3c4043] dark:border-white/15 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
+          className="hidden sm:flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#dadce0] bg-white dark:bg-white/5 text-[#5f6368] transition-colors hover:bg-[#f8f9fa] hover:text-[#3c4043] dark:border-white/15 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
         >
           <ArrowLeft size={16} />
         </button>
@@ -94,7 +94,7 @@ export default function StaffDetailHeader({
         {/* The initial circle: the role's flat colour, with the staff mark
             drawn over the initials. */}
         <div
-          className="relative flex h-11 w-11 shrink-0 select-none items-center justify-center rounded-full text-sm font-semibold tracking-wide text-white"
+          className="hidden sm:flex relative h-11 w-11 shrink-0 select-none items-center justify-center rounded-full text-sm font-semibold tracking-wide text-white"
           style={{
             backgroundColor: roleStyle.solid,
             boxShadow: `0 6px 14px -6px ${roleStyle.glow}`,
@@ -132,7 +132,7 @@ export default function StaffDetailHeader({
           </div>
 
           {/* Everything that identifies this person, on one muted line. */}
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
+          <div className="mt-1 flex flex-wrap w-[90%] sm:w-full items-center gap-x-3 gap-y-1 text-[11px]">
             <Meta
               icon={Hash}
               value={`${employeeId.slice(0, 8)}…`}

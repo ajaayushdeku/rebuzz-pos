@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import RangeTag from "@/components/ui/RangeTag";
+import { STAT_ROW_ITEM } from "../dashboardComponents/overviewDash/statRow";
+import { cn } from "@/lib/utils";
 
 /**
  * One figure tile. Shared so the employee-detail grid, the customer-detail
@@ -38,7 +40,7 @@ export default function StatCard({
   ranged = false,
 }: Omit<StatSpec, "key">) {
   return (
-    <div className={STAT_CARD}>
+    <div className={cn(STAT_CARD, STAT_ROW_ITEM)}>
       <div className="flex items-center justify-between gap-2">
         <span className="truncate text-[13px] text-[#5f6368] dark:text-[#9aa6bd]">
           {label}
@@ -66,7 +68,7 @@ export default function StatCard({
 /** Matching placeholder, so the grid does not shift when data lands. */
 export function StatCardSkeleton() {
   return (
-    <div className={`${STAT_CARD} animate-pulse`}>
+    <div className={cn(`${STAT_CARD} animate-pulse`, STAT_ROW_ITEM)}>
       <div className="flex items-center justify-between gap-2">
         <div className="h-3.5 w-20 rounded bg-gray-100 dark:bg-white/10" />
         <div className="h-8 w-8 shrink-0 rounded-lg bg-gray-100 dark:bg-white/10" />

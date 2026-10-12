@@ -1,21 +1,5 @@
 import type { ReactNode } from "react";
 
-/**
- * The page header every screen opens with: a title, the sentence under it,
- * room for controls on the right, and the rule that closes it off.
- *
- * The type and the rule are the ones the dashboard and records pages already
- * use, so a page that adopts this drops its own copy rather than changing
- * appearance. The colours are the `CHART_PALETTE` greys — `#3c4043` for the
- * title, `#5f6368` for the sentence, `#dadce0` fading through `#e8eaed` for
- * the rule — written as literals because Tailwind needs them at build time.
- * Dark mode takes the light end of the same scale, and fades the rule from
- * white rather than to it.
- *
- * The rule is drawn rather than bordered: it holds the hairline under the
- * title and fades out across the page, so it separates the header without
- * ruling a hard line across the whole screen.
- */
 export interface PageHeaderProps {
   /** The page's name. Truncates rather than wrapping. */
   title: ReactNode;
@@ -58,8 +42,6 @@ export default function PageHeader({
 }: PageHeaderProps) {
   return (
     <div className={className}>
-      {/* Actions sit on the title's baseline on desktop and drop below it on
-          mobile, which is why the row aligns to `end` rather than centring. */}
       <div
         className={`flex w-full  ${flexItems} justify-between gap-4 pb-5 sm:flex-row sm:items-end`}
       >
@@ -79,7 +61,7 @@ export default function PageHeader({
 
         {actions && (
           <div
-            className={`flex ${actionWidth}  flex-wrap items-center gap-2 sm:ml-auto sm:w-auto justify-end`}
+            className={`flex ${actionWidth}  flex-wrap items-center gap-2 sm:ml-auto  justify-end`}
           >
             {actions}
           </div>

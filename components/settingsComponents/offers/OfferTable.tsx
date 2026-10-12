@@ -282,7 +282,7 @@ const OfferTable = ({
           <button
             onClick={() => setPage(Math.max(0, effectivePage - 1))}
             disabled={effectivePage === 0}
-            className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-[10px] sm:text-xs font-medium transition-colors ${
               effectivePage === 0
                 ? "cursor-not-allowed text-gray-300 dark:text-[#4a5468]"
                 : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#9aa6bd] dark:hover:bg-white/10 dark:hover:text-white"
@@ -291,13 +291,13 @@ const OfferTable = ({
             <ChevronLeft size={14} />
             Previous
           </button>
-          <span className="text-xs font-medium text-gray-400 dark:text-[#7b869b]">
+          <span className="text-[10px] sm:text-xs font-medium text-gray-400 dark:text-[#7b869b]">
             Page {effectivePage + 1} of {totalPages} · {filtered.length} offers
           </span>
           <button
             onClick={() => setPage(Math.min(totalPages - 1, effectivePage + 1))}
             disabled={effectivePage >= totalPages - 1}
-            className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-[10px] sm:text-xs font-medium transition-colors ${
               effectivePage >= totalPages - 1
                 ? "cursor-not-allowed text-gray-300 dark:text-[#4a5468]"
                 : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#9aa6bd] dark:hover:bg-white/10 dark:hover:text-white"

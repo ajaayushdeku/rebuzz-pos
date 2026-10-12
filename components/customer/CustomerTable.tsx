@@ -282,7 +282,7 @@ export default function CustomerTable({
           visible={visibleColumns}
           onChange={handleColumnsChange}
           minVisible={MIN_COLUMNS}
-          className="w-full sm:w-[150px]"
+          className="w-full sm:w-[150px] md:w-[170px]"
         />
       </div>
 
@@ -576,7 +576,7 @@ export default function CustomerTable({
         <button
           onClick={() => setPage(Math.max(0, page - 1))}
           disabled={page === 0}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
             page === 0
               ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
               : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
@@ -586,14 +586,14 @@ export default function CustomerTable({
           Previous
         </button>
 
-        <span className="text-xs text-gray-400 font-medium dark:text-[#9aa6bd]">
+        <span className="text-[10px] sm:text-xs text-gray-400 font-medium dark:text-[#9aa6bd]">
           Page {page + 1} of {totalPages} · {sorted.length} customers
         </span>
 
         <button
           onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
           disabled={page >= totalPages - 1}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
             page >= totalPages - 1
               ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
               : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"

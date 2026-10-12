@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, TrendingUp, AlertTriangle } from "lucide-react";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
-import { CardInfo, ChartPager } from "../../chartCard";
+import { ChartCard, ChartPager } from "../../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -155,47 +155,48 @@ function getBarColor(quantity: number, max: number): string {
 const ROW_GRID =
   "grid grid-cols-[1.25rem_5.5rem_1fr_2.75rem] items-center gap-3 md:grid-cols-[1.25rem_7rem_1fr_4rem]";
 
-const CARD =
-  "w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10";
-
-/** Header is identical in all four states; it used to be pasted into each. */
-function Header({
+/**
+ * The card, in whichever of its four states.
+ *
+ * `ChartCard` draws the header, so the icon tile, the title, the ⓘ and the
+ * subtitle are no longer a block pasted into each state — and the range badge
+ * and pager go in its `controls` row rather than a hand-made right-hand group.
+ */
+function Card({
   subHeader,
   pager,
+  units,
+  children,
 }: {
   subHeader: string;
   /** The "‹ 1–8 of 24 ›" control, once there is more than one page. */
   pager?: React.ReactNode;
+  units?: React.ReactNode;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="flex w-full flex-row items-center justify-between gap-3">
-      <div className="flex min-w-0 flex-row items-center gap-3">
-        <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
-          style={{ borderColor: "#a7f3d0", backgroundColor: "#ecfdf5" }}
-        >
-          <TrendingUp size={16} style={{ color: "#059669" }} />
-        </div>
-        <div className="min-w-0">
-          <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
-            Top Items Sold
-            <CardInfo
-              heading="Reading this card"
-              label="Top Items Sold"
-              // Ranked over the page's range; the bar is against the top item.
-              body="Units this employee sold of each product over the date range at the top of the page, best seller first. Each bar is measured against the top item in the whole list, so bars stay comparable as you page through. Units in the corner counts every item in the list, not just this page."
-            />
-          </h3>
-          <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
-            {subHeader}
-          </p>
-        </div>
-      </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <RangeBadge variant="pill" />
-        {pager}
-      </div>
-    </div>
+    <ChartCard
+      icon={TrendingUp}
+      iconColor="#059669"
+      iconBorder="#a7f3d0"
+      iconBg="#ecfdf5"
+      title="Top Items Sold"
+      info={{
+        heading: "Reading this card",
+        // Ranked over the page's range; the bar is against the top item.
+        body: "Units this employee sold of each product over the date range at the top of the page, best seller first. Each bar is measured against the top item in the whole list, so bars stay comparable as you page through. Units in the corner counts every item in the list, not just this page.",
+      }}
+      subtitle={subHeader}
+      buttons={
+        <>
+          {pager}
+          <RangeBadge variant="pill" />
+        </>
+      }
+      controls={<>{units}</>}
+    >
+      {children}
+    </ChartCard>
   );
 }
 
@@ -316,23 +317,21 @@ export default function TopItemsSales({
   // ── Loading state ─────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className={CARD}>
-        <Header subHeader="Loading top selling items..." />
+      <Card subHeader="Loading top selling items...">
         <div className="flex items-center justify-center py-12">
           <Loader2
             size={20}
             className="animate-spin text-[#9aa0a6] dark:text-[#9aa6bd]"
           />
         </div>
-      </div>
+      </Card>
     );
   }
 
   // ── Error state ───────────────────────────────────────────────────────────
   if (error) {
     return (
-      <div className={CARD}>
-        <Header subHeader="Unable to load data" />
+      <Card subHeader="Unable to load data">
         <div className="py-8 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 dark:bg-red-400/10">
             <AlertTriangle size={22} className="text-red-400" />
@@ -345,15 +344,14 @@ export default function TopItemsSales({
             Retry
           </button>
         </div>
-      </div>
+      </Card>
     );
   }
 
   // ── Empty state ───────────────────────────────────────────────────────────
   if (rows.length === 0) {
     return (
-      <div className={CARD}>
-        <Header subHeader="Units sold per item – fast vs slow movers" />
+      <Card subHeader="Units sold per item – fast vs slow movers">
         <div className="py-8 text-center">
           <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
             <TrendingUp
@@ -368,7 +366,7 @@ export default function TopItemsSales({
             No top items sold data for this period
           </p>
         </div>
-      </div>
+      </Card>
     );
   }
 
@@ -392,36 +390,39 @@ export default function TopItemsSales({
   );
 
   return (
-    <div className={CARD}>
-      <div className="flex items-start justify-between gap-3">
-        <Header
-          subHeader="Units sold per item by the employee"
-          pager={
-            totalPages > 1 && (
-              <ChartPager
-                first={safePage * PAGE_SIZE + 1}
-                last={Math.min((safePage + 1) * PAGE_SIZE, rows.length)}
-                total={rows.length}
-                onPrev={() => setPage(Math.max(0, safePage - 1))}
-                onNext={() => setPage(Math.min(totalPages - 1, safePage + 1))}
-                itemLabel="items"
-              />
-            )
-          }
-        />
+    <Card
+      subHeader="Units sold per item by the employee"
+      pager={
+        <>
+          <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
 
-        {/* The list is paged, so the total says how much it covers. */}
-        <div className="flex shrink-0 flex-col items-end">
-          <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
-            Units
-          </span>
-          <p className="mt-0.5 text-base font-semibold leading-tight tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
-            {totalUnits.toLocaleString()}
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-6 space-y-2.5">
+          {totalPages > 1 && (
+            <ChartPager
+              first={safePage * PAGE_SIZE + 1}
+              last={Math.min((safePage + 1) * PAGE_SIZE, rows.length)}
+              total={rows.length}
+              onPrev={() => setPage(Math.max(0, safePage - 1))}
+              onNext={() => setPage(Math.min(totalPages - 1, safePage + 1))}
+              itemLabel="items"
+            />
+          )}
+        </>
+      }
+      units={
+        <>
+          {/* The list is paged, so the total says how much it covers. */}
+          <div className="flex shrink-0 flex-col items-end ">
+            <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
+              Units
+            </span>
+            <p className="mt-0.5 text-base font-semibold leading-tight tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
+              {totalUnits.toLocaleString()}
+            </p>
+          </div>
+        </>
+      }
+    >
+      <div className="space-y-2.5">
         {pagedRows.map((row, idx) => (
           // Keyed by position in the whole list, not by id: the rank is unique
           // by construction, so a row can never be reused across pages even if
@@ -484,6 +485,6 @@ export default function TopItemsSales({
         </div>
         <span />
       </div>
-    </div>
+    </Card>
   );
 }

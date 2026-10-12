@@ -771,7 +771,7 @@ export default function ProductFormModal({
               Back / Done pair instead, so there is no way to save from a page
               whose own validation has not been seen. */}
           {step === "details" ? (
-            <div className="flex items-center justify-end gap-2">
+            <div className="flex items-center justify-end  gap-2">
               <button
                 type="button"
                 onClick={handleClose}
@@ -797,8 +797,8 @@ export default function ProductFormModal({
               </button>
             </div>
           ) : (
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-[11px] text-slate-400 dark:text-[#9aa6bd]">
+            <div className="flex flex-wrap items-center justify-end sm:justify-between gap-3">
+              <p className="text-[11px]  w-full sm:w-fit  text-slate-400 dark:text-[#9aa6bd]">
                 {step === "options"
                   ? canPrice
                     ? `${variantRows.length} combination${

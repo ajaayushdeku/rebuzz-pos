@@ -14,7 +14,7 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { useRouter } from "next/navigation";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { nepalStamp, timeAgo } from "@/lib/nepalDate";
-import { CardInfo } from "../../chartCard";
+import { ChartCard } from "../../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 import StatusPill from "@/components/ui/StatusPill";
 import SegmentedControl, {
@@ -46,6 +46,40 @@ interface InvoiceListSectionProps {
 
 const STATUS_OPTIONS = toSegmentOptions(["all", "paid", "unpaid"] as const);
 type StatusFilter = (typeof STATUS_OPTIONS)[number]["value"];
+
+/**
+ * The card, in whichever of its three states.
+ *
+ * `ChartCard` draws the header, so the icon tile, the title, the ⓘ and the
+ * subtitle are no longer pasted into each of the three returns — and the
+ * range badge now shows while loading and on an error too, where it had been
+ * dropped even though those states describe the same ranged data.
+ */
+function Card({
+  subtitle,
+  children,
+}: {
+  subtitle: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <ChartCard
+      icon={FileText}
+      iconColor="#0c99ea"
+      iconBorder="#aadbfe"
+      iconBg="#edf6ff"
+      title="Order / Invoice List"
+      info={{
+        heading: "Reading this table",
+        body: "Every order this employee rang up in the date range at the top of the page. Use the status buttons to narrow it to paid, unpaid or refunded, and the search box to find one by invoice number, customer name or phone.",
+      }}
+      subtitle={subtitle}
+      buttons={<RangeBadge variant="pill" />}
+    >
+      {children}
+    </ChartCard>
+  );
+}
 
 export default function InvoiceListSection({
   employeeId,
@@ -146,66 +180,20 @@ export default function InvoiceListSection({
 
   if (loading) {
     return (
-      <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex min-w-0 items-center gap-3">
-            <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
-              style={{ borderColor: "#aadbfe", backgroundColor: "#edf6ff" }}
-            >
-              <FileText size={16} style={{ color: "#0c99ea" }} />
-            </div>
-            <div className="min-w-0">
-              <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
-                Order / Invoice List
-                <CardInfo
-                  heading="Reading this table"
-                  label="Order / Invoice List"
-                  body="Every order this employee rang up in the date range at the top of the page. Use the status buttons to narrow it to paid, unpaid or refunded, and the search box to find one by invoice number, customer name or phone."
-                />
-              </h3>
-              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
-                Loading orders/invoices…
-              </p>
-            </div>
-          </div>
-        </div>
+      <Card subtitle="Loading orders/invoices…">
         <div className="flex items-center justify-center py-12">
           <Loader2
             size={20}
             className="animate-spin text-[#9aa0a6] dark:text-[#9aa6bd]"
           />
         </div>
-      </div>
+      </Card>
     );
   }
 
   if (error) {
     return (
-      <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex min-w-0 items-center gap-3">
-            <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
-              style={{ borderColor: "#aadbfe", backgroundColor: "#edf6ff" }}
-            >
-              <FileText size={16} style={{ color: "#0c99ea" }} />
-            </div>
-            <div className="min-w-0">
-              <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
-                Order / Invoice List
-                <CardInfo
-                  heading="Reading this table"
-                  label="Order / Invoice List"
-                  body="Every order this employee rang up in the date range at the top of the page. Use the status buttons to narrow it to paid, unpaid or refunded, and the search box to find one by invoice number, customer name or phone."
-                />
-              </h3>
-              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
-                Unable to load data
-              </p>
-            </div>
-          </div>
-        </div>
+      <Card subtitle="Unable to load data">
         <div className="text-center py-8">
           <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">{error}</p>
           <button
@@ -218,41 +206,18 @@ export default function InvoiceListSection({
             Retry
           </button>
         </div>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
-              style={{ borderColor: "#aadbfe", backgroundColor: "#edf6ff" }}
-            >
-              <FileText size={16} style={{ color: "#0c99ea" }} />
-            </div>
-            <div className="min-w-0">
-              <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
-                Order / Invoice List
-                <CardInfo
-                  heading="Reading this table"
-                  label="Order / Invoice List"
-                  body="Every order this employee rang up in the date range at the top of the page. Use the status buttons to narrow it to paid, unpaid or refunded, and the search box to find one by invoice number, customer name or phone."
-                />
-              </h3>
-              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
-                {`${filteredTickets.length} ${filteredTickets.length === 1 ? "order" : "orders"}`}
-              </p>
-            </div>
-          </div>
-        </div>
-        <RangeBadge variant="pill" />
-      </div>
-
+    <Card
+      subtitle={`${filteredTickets.length} ${
+        filteredTickets.length === 1 ? "order" : "orders"
+      }`}
+    >
       {/* Search & Filter Bar */}
-      <div className="flex flex-col justify-between sm:flex-row items-start sm:items-center gap-3 mb-4">
+      <div className="flex flex-col justify-between sm:flex-row items-end sm:items-center gap-3 mb-4">
         {/* Search */}
         <div className="relative w-full sm:w-64">
           <Search
@@ -280,6 +245,7 @@ export default function InvoiceListSection({
         </div>
 
         {/* Status Filter */}
+
         <SegmentedControl
           label="Status:"
           accent="blue"
@@ -289,6 +255,7 @@ export default function InvoiceListSection({
             setStatusFilter(next);
             setPage(0);
           }}
+          showText={true}
         />
       </div>
 
@@ -458,7 +425,7 @@ export default function InvoiceListSection({
           <button
             onClick={() => setPage(Math.max(0, page - 1))}
             disabled={page === 0}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
               page === 0
                 ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
                 : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10"
@@ -468,14 +435,14 @@ export default function InvoiceListSection({
             Previous
           </button>
 
-          <span className="text-xs text-gray-400 font-medium dark:text-[#7b869b]">
+          <span className="text-[10px] sm:text-xs text-gray-400 font-medium dark:text-[#7b869b]">
             Page {page + 1} of {totalPages} · {filteredTickets.length} invoices
           </span>
 
           <button
             onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
             disabled={page >= totalPages - 1}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
               page >= totalPages - 1
                 ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
                 : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10"
@@ -486,6 +453,6 @@ export default function InvoiceListSection({
           </button>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

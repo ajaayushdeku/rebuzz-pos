@@ -64,7 +64,7 @@ export default function CustomerDetailPage() {
 
   if (!customer) {
     return (
-      <div className="min-h-screen bg-gray-50/50 px-6 py-8 md:px-10 dark:bg-[#0f1420]">
+      <div className="min-h-screen bg-gray-50/50 px-6 py-5 sm:py-8 md:px-10 dark:bg-[#0f1420]">
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-col items-center justify-center py-20">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-white/10">
@@ -104,7 +104,7 @@ export default function CustomerDetailPage() {
   const openPhoto = imageUrl ? () => setViewerOpen(true) : undefined;
 
   return (
-    <div className="bg-surface-page min-h-screen px-6 py-8 md:px-10 dark:bg-[#0f1420]">
+    <div className="bg-surface-page min-h-screen px-6 py-5 sm:py-8 md:px-10 dark:bg-[#0f1420]">
       <div>
         <CustomerDetailHeader
           customer={customer}

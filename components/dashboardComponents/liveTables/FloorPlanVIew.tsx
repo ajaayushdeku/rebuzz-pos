@@ -388,24 +388,24 @@ export default function FloorPlanView({
     <div className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] dark:border-white/10">
       {/* Header */}
       <div className="flex flex-col items-start justify-between gap-3 border-b border-[#e8eaed] px-4 py-4 sm:gap-4 sm:px-6 dark:border-white/10">
-        <div className="flex flex-col items-start gap-1">
+        <div className="ml-1 sm:ml-0 flex flex-col items-start gap-1">
           <div className="flex items-center gap-1.5">
-            <span className="text-[15px] text-[#3c4043] dark:text-[#e8ecf4]">
-              Live Floor Plan
-            </span>
+            <h3 className="flex items-center gap-1.5 text-sm font-normal text-[#3c4043] sm:text-[15px] dark:text-[#e8ecf4]">
+              <span className="truncate">Live Floor Plan</span>
+            </h3>
             <span className="flex flex-row items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-emerald-400/10 dark:border-emerald-400/25 dark:text-emerald-300">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />{" "}
               LIVE
             </span>
           </div>
-          <span className="text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
+          <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug truncate tracking-wide text-[#9aa0a6] sm:line-clamp-none sm:text-xs dark:text-[#9aa6bd]">
             Real-time seating · updated{" "}
             {new Date().toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
               second: "2-digit",
             })}
-          </span>
+          </p>
         </div>
         {/* Legend. It used to be `hidden sm:flex`, which took the key to the
             colours away from the screen that needs it most — on a phone the
@@ -430,7 +430,7 @@ export default function FloorPlanView({
       {/* Wraps: the two zone tabs come to about 200px and the layout
           controls another 165px once Reset appears, against the 255px a phone
           has here. The controls drop to their own line rather than overflow. */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#e8eaed] px-4 py-3 sm:px-6 dark:border-white/10">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e8eaed] px-4 py-3 sm:px-6 dark:border-white/10">
         <div
           role="radiogroup"
           aria-label="Zone"
@@ -452,8 +452,8 @@ export default function FloorPlanView({
                   : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white"
               }`}
             >
-              {label}
-              <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums tracking-wide text-blue-950 ring-1 ring-blue-900/40 dark:bg-white/10 dark:text-[#e8ecf4]">
+              <span className="text-[11px] sm:text-[13px]"> {label}</span>
+              <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums tracking-wide text-blue-950 ring-1 ring-blue-900/40 dark:ring-[#9AA6BD] dark:bg-[#2E3443] dark:text-[#e8ecf4]">
                 {count}
               </span>
             </button>
@@ -461,11 +461,11 @@ export default function FloorPlanView({
         </div>
 
         {/* Edit Layout controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 justify-end ml-1">
           {editing && (
             <button
               onClick={resetLayout}
-              className="flex cursor-pointer items-center gap-1.5 rounded-full dark:bg-white/5 border border-[#dadce0] bg-white px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+              className="flex cursor-pointer items-center gap-1.5 rounded-full  border border-rose-600 bg-rose-600 px-2.5 py-1 text-[11px] text-white transition-colors hover:bg-[#f8f9fa] "
             >
               <RotateCcw size={13} />
               Reset
@@ -495,8 +495,8 @@ export default function FloorPlanView({
       <div className="scrollbar-hide overflow-x-auto px-4 py-4 sm:px-5 sm:py-5">
         <div
           ref={canvasRef}
-          className="relative h-[420px] min-w-[560px] overflow-hidden rounded-2xl sm:h-[500px]"
-          style={{ background: "#0d1b2a" }}
+          className="relative h-[420px] min-w-[560px] overflow-hidden rounded-2xl sm:h-[500px] bg-[#0d1b2a] dark:bg-[#0F1420]"
+          // style={{ background: "#0d1b2a" }}
         >
           {/* Edit-mode hint */}
           {editing && (
@@ -580,7 +580,7 @@ export default function FloorPlanView({
           first pill reachable; `justify-center` on the scroller would have put
           it out of reach. */}
       <div className="scrollbar-hide overflow-x-auto px-4 pb-5">
-        <div className="mx-auto flex w-max items-center gap-1 rounded-full bg-gray-900 p-1">
+        <div className="mx-auto flex w-max items-center gap-1 rounded-full bg-[#E4F2FE]  dark:bg-[#0F1420] p-1">
           {VIEW_MODES.map(({ id, label, icon }) => (
             <button
               key={id}
@@ -588,11 +588,11 @@ export default function FloorPlanView({
               className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all sm:px-4 sm:py-2 ${
                 mode === id
                   ? "bg-white text-gray-900 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none dark:text-[#e8ecf4]"
-                  : "text-white/60 hover:text-white"
+                  : "dark:text-white/60 text-[#162556] hover:text-white"
               }`}
             >
               {icon}
-              {label}
+              <span className="hidden sm:block"> {label}</span>
             </button>
           ))}
         </div>

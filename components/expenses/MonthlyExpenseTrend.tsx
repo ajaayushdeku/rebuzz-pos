@@ -284,7 +284,7 @@ export default function MonthlyExpenseTrend() {
                 axisLine={false}
                 tickLine={false}
                 tick={AXIS_TICK}
-                width={isSmallScreen ? 55 : 80}
+                width={isSmallScreen ? 60 : 80}
                 label={!isSmallScreen ? yAxisTitle("Expenses") : undefined}
               />
               <Tooltip

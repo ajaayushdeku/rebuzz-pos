@@ -17,7 +17,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 import CustomerFormModal from "@/components/invoice/CustomerFormModal";
 import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
-import { CardInfo } from "../chartCard";
+import { ChartCard } from "../chartCard";
 import MonthToDateBadge from "./MonthToDateBadge";
 import { monthToDate } from "./monthToDate";
 import { useTierStyle } from "@/hooks/useLoyaltyTiers";
@@ -108,46 +108,50 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
     );
 
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
-            style={{ borderColor: "#fde68a", backgroundColor: "#fffbeb" }}
-          >
-            <Trophy size={16} style={{ color: "#d97706" }} />
-          </div>
-          <div className="min-w-0">
-            <h3 className="flex flex-wrap items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
-              Customer Leaderboard
-              <CardInfo
-                heading="Reading this table"
-                label="Customer Leaderboard"
-                body={`Your customers ranked by what they have spent between ${range.longLabel} — the calendar month so far, not the last 30 days. Click a column heading to sort by visits, spend or points instead. Loyalty tier is the rung they sit on in loyalty settings.`}
-              />
-            </h3>
-            {/* The dates, spelled out: "this month" on its own reads as either
-                the calendar month or the last 30 days, and the two give
-                different leaders. */}
-            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
-              Highest value contributors this current month · {range.label}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
+    <ChartCard
+      icon={Trophy}
+      iconColor="#d97706"
+      iconBorder="#fde68a"
+      iconBg="#fffbeb"
+      title="Customer Leaderboard"
+      info={{
+        heading: "Reading this table",
+        body: `Your customers ranked by what they have spent between ${range.longLabel} — the calendar month so far, not the last 30 days. Click a column heading to sort by visits, spend or points instead. Loyalty tier is the rung they sit on in loyalty settings.`,
+      }}
+      /* The dates, spelled out: "this month" on its own reads as either the
+         calendar month or the last 30 days, and the two give different
+         leaders. */
+      subtitle={`Highest value contributors this current month · ${range.label}`}
+      // Kept from the old wrapper: the table's corners are rounded by the
+      // card, so its edges have to be clipped to them.
+      className="overflow-hidden"
+      buttons={
+        <>
           {" "}
+          <button
+            type="button"
+            onClick={() => setCreateModalOpen(true)}
+            className="inline-flex md:hidden  shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-md sm:rounded-full border border-[#dadce0] bg-white px-2 sm:px-3 py-1.5 text-[11px] text-[#3c4043] outline-none transition-colors hover:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+          >
+            <UserPlus size={13} />
+            <span className="hidden sm:block">Add New Customer</span>
+          </button>
+        </>
+      }
+      controls={
+        <>
           <MonthToDateBadge />
           <button
+            type="button"
             onClick={() => setCreateModalOpen(true)}
-            className="inline-flex h-8 shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-full dark:bg-white/5 border border-[#dadce0] bg-white px-3 text-[11px] text-[#3c4043] transition-colors outline-none hover:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+            className="hidden md:inline-flex h-8 shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-[#dadce0] bg-white px-3 text-[11px] text-[#3c4043] outline-none transition-colors hover:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:hover:bg-white/10"
           >
-            <UserPlus className="h-3.5 w-3.5" />
-            Add New Customer
+            <UserPlus size={13} />
+            <span className="hidden sm:block">Add New Customer</span>
           </button>
-        </div>
-      </div>
-
+        </>
+      }
+    >
       {/* Search */}
       <div className="relative mt-4 mb-2 w-full ">
         <Search
@@ -266,7 +270,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                   key={customer.rank}
                   className="border-b border-[#e8eaed] last:border-0 hover:bg-gray-50 transition-colors dark:border-white/10 dark:hover:bg-white/10"
                 >
-                  <td className="py-3 px-4 text-gray-400 text-xs dark:text-[#7b869b]">
+                  <td className="py-3 pr-4 pl-6 text-gray-400 text-xs dark:text-[#7b869b]">
                     {page * pageSize + idx + 1}
                   </td>
                   <td className="py-3 px-4">
@@ -337,7 +341,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
         <button
           onClick={() => setPage(Math.max(0, page - 1))}
           disabled={page === 0}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
             page === 0
               ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
               : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10"
@@ -347,14 +351,14 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
           Previous
         </button>
 
-        <span className="text-xs text-gray-400 font-medium dark:text-[#7b869b]">
+        <span className="text-[10px] sm:text-xs text-gray-400 font-medium dark:text-[#7b869b]">
           Page {page + 1} of {totalPages} · {sorted.length} customers
         </span>
 
         <button
           onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
           disabled={page >= totalPages - 1}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
             page >= totalPages - 1
               ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
               : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10"
@@ -378,6 +382,6 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
         customerId={historyFor?.id}
         customerName={historyFor?.customer ?? ""}
       />
-    </div>
+    </ChartCard>
   );
 }

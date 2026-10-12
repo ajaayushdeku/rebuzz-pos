@@ -5,6 +5,11 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { TrendingUp, TrendingDown, Scale } from "lucide-react";
 import { useTracker } from "@/providers/ExpenseContext";
+import {
+  STAT_ROW,
+  STAT_ROW_ITEM,
+} from "../dashboardComponents/overviewDash/statRow";
+import { cn } from "@/lib/utils";
 
 export default function ExpenseTrackerStats() {
   const { transactions } = useTracker();
@@ -72,11 +77,14 @@ export default function ExpenseTrackerStats() {
 
   return (
     <div className="bg-white dark:bg-transparent pb-2 mb-2">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className={STAT_ROW}>
         {statItems.map((item) => (
           <div
             key={item.label}
-            className="bg-white dark:bg-[#161d2e] rounded-xl border border-[#e3e3e3] p-4 dark:border-white/10"
+            className={cn(
+              "bg-white dark:bg-[#161d2e] rounded-xl border border-[#e3e3e3] p-4 dark:border-white/10",
+              STAT_ROW_ITEM,
+            )}
           >
             <div className="flex items-center justify-between mb-2">
               <span className="truncate text-[13px] font-medium text-[#5f6368] dark:text-[#a9b4c7]">

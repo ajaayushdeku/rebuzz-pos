@@ -3,9 +3,8 @@
 import { User, Mail, Phone, Hash, FileText, Pencil } from "lucide-react";
 import type { Customer } from "@/lib/types/customer";
 import { CustomerAvatar } from "@/components/customer/CustomerAvatar";
-import { CardInfo } from "@/components/dashboardComponents/chartCard";
+import { ChartCard } from "@/components/dashboardComponents/chartCard";
 import DetailRow from "./DetailRow";
-import { DETAIL_CARD, CardHeader } from "./DetailCardShell";
 
 export default function CustomerInfoCard({
   customer,
@@ -31,38 +30,30 @@ export default function CustomerInfoCard({
   ];
 
   return (
-    <div className={DETAIL_CARD}>
-      <CardHeader
-        icon={User}
-        iconColor="text-blue-600 dark:text-[#7ba2e3]"
-        iconBg="bg-blue-50 dark:bg-blue-400/10"
-        action={
-          <button
-            onClick={onEdit}
-            title="Edit customer"
-            className="flex shrink-0 cursor-pointer dark:bg-white/5 items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
-          >
-            <Pencil size={11} />
-            Edit
-          </button>
-        }
-      >
-        <div className="min-w-0">
-          <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
-            Customer Information
-            <CardInfo
-              heading="Reading this card"
-              label="Customer Information"
-              // What the blanks mean, since most fields are optional.
-              body="What this customer gave you when they were added. A dash means the field was left blank — edit the customer to fill it in. The Tax ID / PAN is what appears on their invoices."
-            />
-          </h3>
-          <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
-            Contact details and identification
-          </p>
-        </div>
-      </CardHeader>
-
+    <ChartCard
+      icon={User}
+      iconColor="#2563eb"
+      iconBorder="#bfdbfe"
+      iconBg="#eff6ff"
+      title="Customer Information"
+      info={{
+        heading: "Reading this card",
+        // What the blanks mean, since most fields are optional.
+        body: "What this customer gave you when they were added. A dash means the field was left blank — edit the customer to fill it in. The Tax ID / PAN is what appears on their invoices.",
+      }}
+      subtitle="Contact details and identification"
+      buttons={
+        <button
+          type="button"
+          onClick={onEdit}
+          title="Edit customer"
+          className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+        >
+          <Pencil size={11} />
+          Edit
+        </button>
+      }
+    >
       {/* Photo */}
       <div className="mb-1 flex items-center gap-4 border-b border-[#e8eaed] pb-4 dark:border-white/10">
         <CustomerAvatar
@@ -100,6 +91,6 @@ export default function CustomerInfoCard({
           />
         ))}
       </div>
-    </div>
+    </ChartCard>
   );
 }

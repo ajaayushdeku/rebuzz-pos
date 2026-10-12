@@ -193,7 +193,7 @@ function ItemList({
 
           {/* The rate breakdown's control: a centred pill rather than a full
               bleed row. The chevron turns with the rows it opens. */}
-          <div className="flex items-center justify-center gap-2 border-t border-[#e8eaed] py-2 dark:border-white/10">
+          <div className="flex items-center justify-center gap-2 pt-4 pb-0 dark:border-white/10">
             {/* Show more */}
             {!allShown && (
               <button
@@ -588,6 +588,21 @@ const TaxableVsNonTaxableItems = ({
                 })}
               </div>
 
+              <span>
+                {tabs.map((tab, i) => {
+                  const selected = tab.key === activeTab;
+
+                  return (
+                    <span
+                      key={i}
+                      className="ml-2 text-[14px] text-[#3C4043] dark:text-[#E8ECF4] uppercase font-semibold sm:hidden block"
+                    >
+                      {selected && tab.label}
+                    </span>
+                  );
+                })}
+              </span>
+
               <span
                 className="text-sm font-semibold tracking-wide tabular-nums"
                 style={{ color: activeList.color }}
@@ -597,7 +612,7 @@ const TaxableVsNonTaxableItems = ({
             </div>
 
             {activeTab === "custom" && (
-              <p className="mb-2 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
+              <p className="mb-2 ml-3 sm:ml-0 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Added on an invoice rather than from the product catalogue —
                 classified by whether tax was charged.
               </p>

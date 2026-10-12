@@ -28,7 +28,7 @@ export default function TablePagination({
   const atEnd = page >= totalPages - 1;
 
   const buttonClass = (disabled: boolean) =>
-    `flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+    `flex items-center gap-1 rounded-lg px-3 py-1.5 text-[10px] sm:text-xs font-medium transition-colors ${
       disabled
         ? "cursor-not-allowed text-gray-300"
         : "text-gray-600 hover:bg-gray-100"
@@ -45,7 +45,7 @@ export default function TablePagination({
         Previous
       </button>
 
-      <span className="text-xs font-medium tabular-nums text-gray-400">
+      <span className="text-[10px] sm:text-xs font-medium tabular-nums text-gray-400">
         Page {page + 1} of {totalPages} · {total} {noun}
       </span>
 

@@ -18,14 +18,14 @@ export default function ProfileSettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 px-6 py-8 md:px-10 flex items-center justify-center dark:bg-white/5">
+      <div className="min-h-screen bg-gray-50 px-6 py-5 sm:py-8 md:px-10 flex items-center justify-center dark:bg-white/5">
         <Loader2 className="h-6 w-6 animate-spin text-blue-500 dark:text-[#7ba2e3]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-8 md:px-10 dark:bg-white/5">
+    <div className="min-h-screen bg-gray-50 px-6 py-5 sm:py-8 md:px-10 dark:bg-white/5">
       <div className="max-w-lg mx-auto">
         <PageHeader
           title="Profile Settings"

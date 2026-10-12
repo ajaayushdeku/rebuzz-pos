@@ -180,6 +180,21 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
 
   const AXIS_TICK = getAxisTick(isDark);
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
   return (
     <ChartCard
       icon={TrendingUp}
@@ -190,10 +205,37 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
         body: "Six months of your customer base, one bar per month. The bar is everyone on the books that month, split by how they behaved — so the bar's height is the base, not new sign-ups. The readout on the right is the latest month: how many bought, and how many joined.",
       }}
       subtitle="Monthly breakdown over the last 6 months"
+      buttons={
+        !isEmpty &&
+        latest && (
+          <div className="hidden sm:flex shrink-0 flex-col items-end">
+            <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
+              {latest.month} · total customers
+            </span>
+            <p className="mt-0.5 text-base font-semibold leading-tight tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
+              {stackTotal(latest).toLocaleString()}
+            </p>
+            <div className="mt-1 flex items-center gap-3 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
+              <span className="tabular-nums">
+                <span className="text-[#3c4043] dark:text-[#e8ecf4]">
+                  {boughtInMonth(latest).toLocaleString()}
+                </span>{" "}
+                bought
+              </span>
+              <span className="tabular-nums">
+                <span className="text-[#3c4043] dark:text-[#e8ecf4]">
+                  {joinedInMonth(latest).toLocaleString()}
+                </span>{" "}
+                joined
+              </span>
+            </div>
+          </div>
+        )
+      }
       controls={
         !isEmpty &&
         latest && (
-          <div className="flex shrink-0 flex-col items-end">
+          <div className="flex sm:hidden shrink-0 flex-col items-end">
             <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
               {latest.month} · total customers
             </span>
@@ -250,9 +292,9 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
               tick={AXIS_TICK}
               ticks={yTicks}
               domain={[0, yMax]}
-              width={80}
+              width={isSmallScreen ? 40 : 80}
               allowDecimals={false}
-              label={yAxisTitle("Customers")}
+              label={!isSmallScreen ? yAxisTitle("Customers") : undefined}
             />
 
             <Tooltip

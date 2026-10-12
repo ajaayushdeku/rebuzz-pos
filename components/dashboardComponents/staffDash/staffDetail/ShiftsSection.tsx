@@ -19,7 +19,7 @@ import {
 } from "./staffDetailHelpers";
 import type { ShiftSummary, ShiftDetail } from "./staffDetailHelpers";
 import ShiftDetailModal from "./ShiftDetailModal";
-import { CardInfo } from "../../chartCard";
+import { ChartCard } from "../../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 
 interface ShiftsSectionProps {
@@ -178,34 +178,22 @@ export default function ShiftsSection({
 
   return (
     <>
-      <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex min-w-0 flex-row items-center gap-3">
-            <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
-              style={{ borderColor: "#fed7aa", backgroundColor: "#fff7ed" }}
-            >
-              <Clock size={16} style={{ color: "#ea580c" }} />
-            </div>
-            <div className="min-w-0">
-              <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
-                Staff Shifts
-                <CardInfo
-                  heading="Reading this table"
-                  label="Staff Shifts"
-                  // Cash movement and the expected-vs-counted difference.
-                  body="Shifts this employee opened in the date range at the top of the page. Cash movement is pay-ins less pay-outs during the shift; closing cash is what was counted at the end. A shift with no closing time is still open, so its duration reads “—”. Click a row for the full breakdown."
-                />
-              </h3>
-              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
-                {shifts.length} {shifts.length === 1 ? "shift" : "shifts"}{" "}
-                recorded
-              </p>
-            </div>
-          </div>
-          <RangeBadge variant="pill" />
-        </div>
-
+      <ChartCard
+        icon={Clock}
+        iconColor="#ea580c"
+        iconBorder="#fed7aa"
+        iconBg="#fff7ed"
+        title="Staff Shifts"
+        info={{
+          heading: "Reading this table",
+          // Cash movement and the expected-vs-counted difference.
+          body: "Shifts this employee opened in the date range at the top of the page. Cash movement is pay-ins less pay-outs during the shift; closing cash is what was counted at the end. A shift with no closing time is still open, so its duration reads “—”. Click a row for the full breakdown.",
+        }}
+        subtitle={`${shifts.length} ${
+          shifts.length === 1 ? "shift" : "shifts"
+        } recorded`}
+        buttons={<RangeBadge variant="pill" />}
+      >
         {shiftLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 size={20} className="animate-spin text-amber-500" />
@@ -270,7 +258,7 @@ export default function ShiftsSection({
                 </colgroup>
                 <thead>
                   <tr className="border-b text-[11px] tracking-wider border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
-                    <th className="text-left pb-2.5 pt-1 pr-3 pl-0 font-normal w-8">
+                    <th className="text-left pb-2.5 pt-1 pr-3 pl-2 font-normal w-8">
                       S.No.
                     </th>
                     <th className="text-left pb-2.5 pt-1 px-3 font-normal">
@@ -314,7 +302,7 @@ export default function ShiftsSection({
                       title="View shift details"
                       className="cursor-pointer border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa] focus:bg-[#f8f9fa] dark:focus:bg-white/5 focus:outline-none dark:border-white/10 dark:hover:bg-white/10"
                     >
-                      <td className="py-3.5 pr-3 pl-0 font-mono text-[11px] text-gray-400 align-top dark:text-[#7b869b]">
+                      <td className="py-3.5 pr-3 pl-2 font-mono text-[11px] text-gray-400 align-top dark:text-[#7b869b]">
                         #{String(shiftPage * pageSize + idx + 1)}
                       </td>
                       <td className="py-3.5 px-3 align-top">
@@ -425,7 +413,7 @@ export default function ShiftsSection({
             )}
           </>
         )}
-      </div>
+      </ChartCard>
 
       <ShiftDetailModal
         open={modalOpen}
@@ -454,7 +442,7 @@ const Pagination = ({
       <button
         onClick={() => onPageChange(Math.max(0, page - 1))}
         disabled={page === 0}
-        className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+        className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
           page === 0
             ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
             : "text-gray-600 hover:bg-gray-100 dark:text-[#a9b4c7] dark:hover:bg-white/10"
@@ -463,13 +451,13 @@ const Pagination = ({
         <ChevronLeft size={14} />
         Previous
       </button>
-      <span className="text-xs text-gray-400 font-medium dark:text-[#7b869b]">
+      <span className="text-[10px] sm:text-xs text-gray-400 font-medium dark:text-[#7b869b]">
         Page {page + 1} of {totalPages} · {total} shifts
       </span>
       <button
         onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
         disabled={page >= totalPages - 1}
-        className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+        className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${
           page >= totalPages - 1
             ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
             : "text-gray-600 hover:bg-gray-100 dark:text-[#a9b4c7] dark:hover:bg-white/10"

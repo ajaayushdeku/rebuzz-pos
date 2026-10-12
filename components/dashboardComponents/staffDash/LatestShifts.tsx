@@ -249,8 +249,8 @@ export default function LatestShifts({
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[500px] text-sm">
+          <div className="overflow-x-auto scrollbar-hide">
+            <table className="w-full min-w-[600px] text-sm">
               <thead>
                 <tr className="border-b text-[11px] tracking-wider border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
                   <th className="pb-2.5 pl-0 pt-1 text-left font-normal">
@@ -283,7 +283,7 @@ export default function LatestShifts({
                     }
                   >
                     <td className="py-3 pl-0">
-                      <span className="text-[11px] tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
+                      <span className="text-[11px] ml-2 tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                         #{idx + 1}
                       </span>
                     </td>

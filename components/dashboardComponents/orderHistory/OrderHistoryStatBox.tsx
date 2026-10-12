@@ -3,6 +3,8 @@
 import { LucideIcon } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { cn } from "@/lib/utils";
+import { STAT_ROW_ITEM } from "../overviewDash/statRow";
 
 interface OrderHistoryStatBoxProps {
   label: string;
@@ -52,7 +54,12 @@ const OrderHistoryStatBox = ({
       : value.toLocaleString();
 
   return (
-    <div className="bg-white rounded-xl border border-[#e3e3e3] p-4 dark:bg-[#161d2e] dark:border-white/10">
+    <div
+      className={cn(
+        "bg-white rounded-xl border border-[#e3e3e3] p-4 dark:bg-[#161d2e] dark:border-white/10",
+        STAT_ROW_ITEM,
+      )}
+    >
       <div className="flex items-center justify-between mb-2">
         <span className="truncate text-[13px] font-medium text-[#5f6368] dark:text-[#a9b4c7]">
           {label}
