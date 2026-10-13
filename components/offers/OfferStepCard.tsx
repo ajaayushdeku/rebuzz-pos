@@ -5,7 +5,12 @@ import type { LucideIcon } from "lucide-react";
 import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
 
 export type StepAccent =
-  "emerald" | "blue" | "violet" | "amber" | "gray" | "rose";
+  | "emerald"
+  | "blue"
+  | "violet"
+  | "amber"
+  | "gray"
+  | "rose";
 
 /**
  * The step's colour. It frames the card, its number bubble and its icon tile,
@@ -125,20 +130,20 @@ export default function OfferStepCard({
             )}
 
             <div className="min-w-0">
-              <h2 className="flex items-center gap-1.5 text-[15px] font-medium text-[#3c4043] dark:text-white">
+              <h3 className="flex items-center gap-1.5 text-sm font-normal text-[#3c4043] sm:text-[15px] dark:text-[#e8ecf4]">
                 {/* The bubble beside the card is hidden below `sm`, so the
                     step number rides the title there instead. */}
-                <span
+                {/* <span
                   className="sm:hidden"
                   style={{ color: CHART_PALETTE.subtitle }}
                 >
                   {step}.
-                </span>
-                <span className="truncate">{title}</span>
-              </h2>
+                </span> */}
+                <span className="truncate ">{title}</span>
+              </h3>
               {subtitle && (
                 <p
-                  className="mt-0.5 text-xs tracking-wide"
+                  className="mt-0.5 line-clamp-2 text-[11px] leading-snug  tracking-wide text-[#9aa0a6] sm:line-clamp-none sm:text-xs dark:text-[#9aa6bd]"
                   style={{ color: CHART_PALETTE.subtitle }}
                 >
                   {subtitle}

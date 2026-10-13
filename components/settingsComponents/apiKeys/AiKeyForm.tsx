@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Trash2,
   TriangleAlert,
+  X,
 } from "lucide-react";
 
 import ProviderLogo from "./ProviderLogo";
@@ -141,8 +142,8 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[#dadce0] bg-white dark:bg-[#161d2e] dark:border-white/15">
-      <div className="p-6">
-        <div className="flex items-center gap-3">
+      <div className="relative px-5 py-4">
+        <div className=" flex items-center gap-3">
           <div
             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${MARK_TILE_CLASS}`}
             style={markTileVars(selected)}
@@ -152,18 +153,18 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
           </div>
 
           <div className="min-w-0 flex-1">
-            <div className="min-w-0">
-              <h2 className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
+            <div className="min-w-0 ">
+              <h2 className="flex items-center gap-1.5 text-sm font-normal text-[#3c4043] sm:text-[15px] dark:text-[#e8ecf4]">
                 {provider.label}
               </h2>
-              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
+              <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug  tracking-wide text-[#9aa0a6] sm:line-clamp-none sm:text-xs dark:text-[#9aa6bd]">
                 {meta.blurb}
               </p>
             </div>
           </div>
 
           {isActive && (
-            <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-green-700 dark:border-emerald-400/25 dark:text-emerald-300 dark:bg-emerald-400/10">
+            <span className="absolute top-3 right-3 shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-green-700 dark:border-emerald-400/25 dark:text-emerald-300 dark:bg-emerald-400/10">
               In use
             </span>
           )}
@@ -244,26 +245,28 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
                 until armed, so the destructive colour means "this will happen
                 next" rather than decorating a button that is always present. */}
             {confirmingRemove ? (
-              <div className="flex shrink-0 items-center gap-1.5">
+              <div className="flex flex-col sm:flex-row shrink-0 items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => remove.mutate()}
                   disabled={remove.isPending}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-red-600 px-2.5 py-1.5 text-[12px] font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex cursor-pointer items-center gap-1.5 rounded-md sm:rounded-lg border border-red-600 bg-red-600 px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-[12px] font-semibold text-white transition hover:border-rose-700 hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-500 dark:bg-rose-500 dark:hover:border-rose-600 dark:hover:bg-rose-600"
                 >
                   {remove.isPending ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   ) : (
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                   )}
                   Confirm
                 </button>
+
                 <button
                   type="button"
                   onClick={() => setConfirmingRemove(false)}
                   disabled={remove.isPending}
-                  className="cursor-pointer rounded-lg px-2 py-1.5 text-[12px] font-medium text-[#5f6368] transition hover:text-[#3c4043] dark:hover:text-[#e8ecf4] dark:text-[#a9b4c7]"
+                  className="flex items-center gap-1.5 cursor-pointer rounded-md sm:rounded-lg border border-[#dadce0]  px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-[12px] font-medium text-[#5f6368] transition  bg-white hover:border-gray-300 hover:bg-gray-50 hover:text-[#3c4043] disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:bg-white/5 dark:text-[#a9b4c7] dark:hover:border-white/25 dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
                 >
+                  <X className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                   Cancel
                 </button>
               </div>
@@ -271,9 +274,9 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
               <button
                 type="button"
                 onClick={() => setConfirmingRemove(true)}
-                className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 px-2.5 py-1.5 text-[12px] font-medium text-[#5f6368] transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:hover:border-red-400/40 dark:hover:text-[#f87171] dark:border-white/15 dark:hover:bg-red-400/15 dark:text-[#a9b4c7]"
+                className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md sm:rounded-lg border border-rose-200 bg-red-50 px-2.5 py-1 sm:py-1.5 text-[10px] font-medium text-rose-600 transition hover:border-rose-300 hover:bg-rose-100 hover:text-rose-700 dark:border-rose-400/30 dark:bg-rose-400/10 dark:text-rose-400 dark:hover:border-rose-400/50 dark:hover:bg-rose-400/20 dark:hover:text-rose-300 sm:text-[12px]"
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 Remove
               </button>
             )}
@@ -449,7 +452,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = meta.button.bg;
               }}
-              className="flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-xl px-5 text-[13px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-8 sm:h-9 shrink-0 cursor-pointer items-center gap-2 rounded-lg sm:rounded-xl px-5 text-[12px] sm:text-[13px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
             >
               {save.isPending ? (
                 <>
@@ -466,7 +469,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
               type="button"
               onClick={() => setApiKey("")}
               disabled={!apiKey || save.isPending}
-              className="h-9 shrink-0 cursor-pointer rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-4 text-[13px] font-medium text-[#5f6368] transition hover:bg-[#f8f9fa] disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
+              className="h-8 sm:h-9 shrink-0 cursor-pointer rounded-lg sm:rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-4 text-[12px] sm:text-[13px] font-medium text-[#5f6368] transition hover:bg-[#f8f9fa] disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
             >
               Clear
             </button>

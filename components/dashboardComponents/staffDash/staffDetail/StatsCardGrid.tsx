@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   ShoppingCart,
   DollarSign,
@@ -17,8 +16,6 @@ import {
   Scale,
   Zap,
   List,
-  ChevronDown,
-  ChevronUp,
   Timer,
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -27,6 +24,7 @@ import StatCard, {
   StatCardSkeleton,
   type StatSpec,
 } from "@/components/ui/StatCard";
+import { STAT_ROW } from "@/components/dashboardComponents/overviewDash/statRow";
 import type { StaffOverview } from "./staffDetailHelpers";
 
 interface StatsCardGridProps {
@@ -48,26 +46,12 @@ function formatMinutesToHours(minutes: number): string {
   return `${mins}m`;
 }
 
-/** Toggles how many tiles are shown. Rendered once, used in both states. */
-function LoadMoreButton({
-  remaining,
-  increment,
-  onClick,
-}: {
-  remaining: number;
-  increment: number;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white dark:bg-white/5 px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
-    >
-      <ChevronDown size={12} />
-      Show {Math.min(increment, remaining)} more
-    </button>
-  );
-}
+/** One labelled band of the grid. */
+type StatGroup = { title: string; cards: StatSpec[] };
+
+/** The eyebrow over a band. Blank on the single-card mode, which has none. */
+const GROUP_LABEL =
+  "mb-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]";
 
 export default function StatsCardGrid({
   overview,
@@ -79,9 +63,6 @@ export default function StatsCardGrid({
   onRetry,
 }: StatsCardGridProps) {
   const { currency } = useCurrency();
-  const [visibleCount, setVisibleCount] = useState(4);
-  const INCREMENT = 4;
-
   const money = (amount: number) =>
     formatCurrencySymbol(amount, currency.symbol, currency.locale);
 
@@ -89,7 +70,10 @@ export default function StatsCardGrid({
   if (loading) {
     return (
       <div className="mb-6">
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        {!showOnlyOrders && (
+          <div className="mb-2.5 h-2.5 w-16 animate-pulse rounded bg-gray-100 dark:bg-white/10" />
+        )}
+        <div className={STAT_ROW}>
           {Array.from({ length: showOnlyOrders ? 1 : 4 }).map((_, i) => (
             <StatCardSkeleton key={i} />
           ))}
@@ -169,189 +153,205 @@ export default function StatsCardGrid({
     ranged: false,
   };
 
-  const statCards: StatSpec[] = showOnlyOrders
-    ? [ordersCard]
-    : [
-        ordersCard,
-        {
-          key: "sales",
-          label: "Total Sales",
-          value: (overview.totalSales ?? 0).toLocaleString(),
-          icon: TrendingUp,
-          iconColor: "text-indigo-500",
-          bgColor: "bg-indigo-50 dark:bg-indigo-400/10",
-          ranged: true,
-        },
-        {
-          key: "revenue",
-          label: "Total Revenue",
-          value: money(overview.totalRevenue ?? 0),
-          icon: DollarSign,
-          iconColor: "text-green-500",
-          bgColor: "bg-green-50 dark:bg-emerald-400/10",
-          ranged: true,
-        },
-        ...kpi(overview.totalProfit, {
-          key: "totalProfit",
-          label: "Total Profit",
-          value: money(overview.totalProfit ?? 0),
-          icon: PiggyBank,
-          iconColor: "text-emerald-500",
-          bgColor: "bg-emerald-50 dark:bg-emerald-400/10",
-          ranged: true,
-        }),
-        ...kpi(overview.profitMargin, {
-          key: "profitMargin",
-          label: "Profit Margin",
-          value: `${(overview.profitMargin ?? 0).toFixed(2)}%`,
-          icon: Percent,
-          iconColor: "text-cyan-500",
-          bgColor: "bg-cyan-50 dark:bg-cyan-400/10",
-          ranged: true,
-        }),
-        ...kpi(overview.avgBillValue, {
-          key: "avgBillValue",
-          label: "Avg Bill Value",
-          value: money(overview.avgBillValue ?? 0),
-          icon: DollarSign,
-          iconColor: "text-amber-500",
-          bgColor: "bg-amber-50 dark:bg-amber-400/10",
-          ranged: true,
-        }),
-        {
-          key: "payIn",
-          label: "Total Pay In",
-          value: money(totalPayIn),
-          icon: ArrowDownLeft,
-          iconColor: "text-emerald-500",
-          bgColor: "bg-emerald-50 dark:bg-emerald-400/10",
-          ranged: true,
-        },
-        {
-          key: "payOut",
-          label: "Total Pay Out",
-          value: money(totalPayOut),
-          icon: ArrowUpRight,
-          iconColor: "text-red-500 dark:text-red-400",
-          bgColor: "bg-red-50 dark:bg-red-400/10",
-          ranged: true,
-        },
-        ...kpi(overview.totalShiftMinutes, {
-          key: "totalShiftTime",
-          label: "Total Shift Time",
-          value: formatMinutesToHours(overview.totalShiftMinutes ?? 0),
-          icon: Timer,
-          iconColor: "text-blue-500",
-          bgColor: "bg-blue-50 dark:bg-blue-400/10",
-          ranged: true,
-        }),
-        {
-          key: "avgTime",
-          label: "Avg Shift Time",
-          value: overview.avgTime ?? "—",
-          icon: Clock,
-          iconColor: "text-indigo-500",
-          bgColor: "bg-indigo-50 dark:bg-indigo-400/10",
-          ranged: true,
-        },
-        ...kpi(overview.salesPerHour, {
-          key: "salesPerHour",
-          label: "Revenue/Hour",
-          value: money(overview.salesPerHour ?? 0),
-          icon: Zap,
-          iconColor: "text-violet-500",
-          bgColor: "bg-violet-50 dark:bg-violet-400/10",
-          ranged: true,
-        }),
-        ...kpi(overview.billsPerHour, {
-          key: "billsPerHour",
-          label: "Bills/Hour",
-          value: (overview.billsPerHour ?? 0).toFixed(2),
-          icon: TrendingUp,
-          iconColor: "text-teal-500",
-          bgColor: "bg-teal-50 dark:bg-teal-400/10",
-          ranged: true,
-        }),
-        ...kpi(overview.avgItemsPerBill, {
-          key: "avgItemsPerBill",
-          label: "Avg Items/Bill",
-          value: (overview.avgItemsPerBill ?? 0).toFixed(2),
-          icon: List,
-          iconColor: "text-pink-500",
-          bgColor: "bg-pink-50 dark:bg-pink-400/10",
-          ranged: true,
-        }),
-        ...kpi(overview.itemsSold, {
-          key: "itemsSold",
-          label: "Items Sold",
-          value: (overview.itemsSold ?? 0).toLocaleString(),
-          icon: Package,
-          iconColor: "text-orange-500",
-          bgColor: "bg-orange-50 dark:bg-orange-400/10",
-          ranged: true,
-        }),
-        ...kpi(overview.totalRefunds, {
-          key: "totalRefunds",
-          label: "Total Refunds",
-          value: (overview.totalRefunds ?? 0).toLocaleString(),
-          icon: RefreshCcw,
-          iconColor: "text-red-500 dark:text-red-400",
-          bgColor: "bg-red-50 dark:bg-red-400/10",
-          ranged: true,
-        }),
-        ...kpi(overview.refundedAmount, {
-          key: "refundedAmount",
-          label: "Refunded Amount",
-          value: money(overview.refundedAmount ?? 0),
-          icon: Scale,
-          iconColor: "text-rose-500",
-          bgColor: "bg-rose-50 dark:bg-rose-400/10",
-          ranged: true,
-        }),
-      ];
-
-  const hasMoreCards = visibleCount < statCards.length;
-  const visibleCards = showOnlyOrders
-    ? statCards
-    : statCards.slice(0, visibleCount);
-  const remaining = statCards.length - visibleCount;
-
-  const showMore = () =>
-    setVisibleCount((prev) => Math.min(prev + INCREMENT, statCards.length));
+  /**
+   * Five labelled bands rather than one flat list of sixteen.
+   *
+   * Sixteen tiles is too many for a single row in either direction: stacked on
+   * a phone the grid ran to roughly 1,850px of scroll, and one STAT_ROW
+   * carousel of all sixteen is about thirteen screen-widths of swiping. Split
+   * up, no band is more than four cards — three flicks on a phone, one
+   * `lg:grid-cols-4` line on a desktop — and the headings say what the
+   * figures under them measure, which the flat grid never did.
+   *
+   * Because every band shares STAT_ROW's four tracks, cards still line up in
+   * the same columns down the whole page even where a band holds only two.
+   *
+   * Empty bands drop out, so a business whose analytics payload carries no
+   * KPIs sees Volume, Cash drawer and the two shift figures, and nothing else.
+   */
+  const groups: StatGroup[] = showOnlyOrders
+    ? [{ title: "", cards: [ordersCard] }]
+    : (
+        [
+          {
+            title: "Volume",
+            cards: [
+              ordersCard,
+              {
+                key: "sales",
+                label: "Total Sales",
+                value: (overview.totalSales ?? 0).toLocaleString(),
+                icon: TrendingUp,
+                iconColor: "text-indigo-500",
+                bgColor: "bg-indigo-50 dark:bg-indigo-400/10",
+                ranged: true,
+              },
+              ...kpi(overview.itemsSold, {
+                key: "itemsSold",
+                label: "Items Sold",
+                value: (overview.itemsSold ?? 0).toLocaleString(),
+                icon: Package,
+                iconColor: "text-orange-500",
+                bgColor: "bg-orange-50 dark:bg-orange-400/10",
+                ranged: true,
+              }),
+              ...kpi(overview.avgItemsPerBill, {
+                key: "avgItemsPerBill",
+                label: "Avg Items/Bill",
+                value: (overview.avgItemsPerBill ?? 0).toFixed(2),
+                icon: List,
+                iconColor: "text-pink-500",
+                bgColor: "bg-pink-50 dark:bg-pink-400/10",
+                ranged: true,
+              }),
+            ],
+          },
+          {
+            title: "Money",
+            cards: [
+              {
+                key: "revenue",
+                label: "Total Revenue",
+                value: money(overview.totalRevenue ?? 0),
+                icon: DollarSign,
+                iconColor: "text-green-500",
+                bgColor: "bg-green-50 dark:bg-emerald-400/10",
+                ranged: true,
+              },
+              ...kpi(overview.totalProfit, {
+                key: "totalProfit",
+                label: "Total Profit",
+                value: money(overview.totalProfit ?? 0),
+                icon: PiggyBank,
+                iconColor: "text-emerald-500",
+                bgColor: "bg-emerald-50 dark:bg-emerald-400/10",
+                ranged: true,
+              }),
+              ...kpi(overview.profitMargin, {
+                key: "profitMargin",
+                label: "Profit Margin",
+                value: `${(overview.profitMargin ?? 0).toFixed(2)}%`,
+                icon: Percent,
+                iconColor: "text-cyan-500",
+                bgColor: "bg-cyan-50 dark:bg-cyan-400/10",
+                ranged: true,
+              }),
+              ...kpi(overview.avgBillValue, {
+                key: "avgBillValue",
+                label: "Avg Bill Value",
+                value: money(overview.avgBillValue ?? 0),
+                icon: DollarSign,
+                iconColor: "text-amber-500",
+                bgColor: "bg-amber-50 dark:bg-amber-400/10",
+                ranged: true,
+              }),
+            ],
+          },
+          {
+            title: "Cash drawer",
+            cards: [
+              {
+                key: "payIn",
+                label: "Total Pay In",
+                value: money(totalPayIn),
+                icon: ArrowDownLeft,
+                iconColor: "text-emerald-500",
+                bgColor: "bg-emerald-50 dark:bg-emerald-400/10",
+                ranged: true,
+              },
+              {
+                key: "payOut",
+                label: "Total Pay Out",
+                value: money(totalPayOut),
+                icon: ArrowUpRight,
+                iconColor: "text-red-500 dark:text-red-400",
+                bgColor: "bg-red-50 dark:bg-red-400/10",
+                ranged: true,
+              },
+            ],
+          },
+          {
+            title: "Shifts & rate",
+            cards: [
+              ...kpi(overview.totalShiftMinutes, {
+                key: "totalShiftTime",
+                label: "Total Shift Time",
+                value: formatMinutesToHours(overview.totalShiftMinutes ?? 0),
+                icon: Timer,
+                iconColor: "text-blue-500",
+                bgColor: "bg-blue-50 dark:bg-blue-400/10",
+                ranged: true,
+              }),
+              {
+                key: "avgTime",
+                label: "Avg Shift Time",
+                value: overview.avgTime ?? "—",
+                icon: Clock,
+                iconColor: "text-indigo-500",
+                bgColor: "bg-indigo-50 dark:bg-indigo-400/10",
+                ranged: true,
+              },
+              ...kpi(overview.salesPerHour, {
+                key: "salesPerHour",
+                label: "Revenue/Hour",
+                value: money(overview.salesPerHour ?? 0),
+                icon: Zap,
+                iconColor: "text-violet-500",
+                bgColor: "bg-violet-50 dark:bg-violet-400/10",
+                ranged: true,
+              }),
+              ...kpi(overview.billsPerHour, {
+                key: "billsPerHour",
+                label: "Bills/Hour",
+                value: (overview.billsPerHour ?? 0).toFixed(2),
+                icon: TrendingUp,
+                iconColor: "text-teal-500",
+                bgColor: "bg-teal-50 dark:bg-teal-400/10",
+                ranged: true,
+              }),
+            ],
+          },
+          {
+            title: "Refunds",
+            cards: [
+              ...kpi(overview.totalRefunds, {
+                key: "totalRefunds",
+                label: "Total Refunds",
+                value: (overview.totalRefunds ?? 0).toLocaleString(),
+                icon: RefreshCcw,
+                iconColor: "text-red-500 dark:text-red-400",
+                bgColor: "bg-red-50 dark:bg-red-400/10",
+                ranged: true,
+              }),
+              ...kpi(overview.refundedAmount, {
+                key: "refundedAmount",
+                label: "Refunded Amount",
+                value: money(overview.refundedAmount ?? 0),
+                icon: Scale,
+                iconColor: "text-rose-500",
+                bgColor: "bg-rose-50 dark:bg-rose-400/10",
+                ranged: true,
+              }),
+            ],
+          },
+        ] as StatGroup[]
+      ).filter((group) => group.cards.length > 0);
 
   return (
-    <div className="mb-6">
-      <div className="grid gird-cols-1 sm:grid-cols-2 gap-4 md:grid-cols-4">
-        {visibleCards.map(({ key, ...spec }) => (
-          <StatCard key={key} {...spec} />
-        ))}
-      </div>
-
-      {/* Load More / Hide */}
-      {statCards.length > 4 && !showOnlyOrders && (
-        <div className="mt-4 flex items-center justify-center gap-2">
-          {hasMoreCards && (
-            <LoadMoreButton
-              remaining={remaining}
-              increment={INCREMENT}
-              onClick={showMore}
-            />
-          )}
-          {visibleCount > 4 && (
-            <button
-              onClick={() =>
-                setVisibleCount((prev) => Math.max(prev - INCREMENT, 4))
-              }
-              // The undo of "Show more", so it carries the negative colour
-              // rather than looking like a second way forward.
-              className="flex cursor-pointer flex-row items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] text-rose-700 transition-colors hover:bg-rose-100 dark:bg-rose-400/10 dark:border-rose-400/25 dark:text-rose-300"
-            >
-              <ChevronUp size={12} />
-              Hide
-            </button>
-          )}
-        </div>
-      )}
+    <div className="mb-6 space-y-5">
+      {groups.map((group) => (
+        <section key={group.title || "stats"}>
+          {group.title && <h3 className={GROUP_LABEL}>{group.title}</h3>}
+          {/* STAT_ROW: a swipeable line below `sm`, a 4-up grid from `lg`. The
+              card brings its own STAT_ROW_ITEM sizing, so the row needs no
+              per-item classes of its own. */}
+          <div className={STAT_ROW}>
+            {group.cards.map(({ key, ...spec }) => (
+              <StatCard key={key} {...spec} />
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }

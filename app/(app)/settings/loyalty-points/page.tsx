@@ -37,43 +37,81 @@ import {
   useLoyaltyTierMutations,
 } from "@/hooks/useLoyaltyTiers";
 import PageHeader from "@/components/ui/PageHeader";
+import { formatNumber } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 
 const inputClass =
   "w-full rounded-lg border border-[#dadce0] px-3 py-2.5 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
 
+/**
+ * One setting: what it is on the left, the control for it on the right, and a
+ * worked example along the foot.
+ *
+ * Stacked on a phone and side by side from `sm`. The card used to put the icon,
+ * the copy and the input in one `flex-col sm:flex-row items-center`, which gave
+ * a phone a centred icon over left-aligned text with the input centred under
+ * it, and gave a desktop an input wedged into the same row as the description.
+ * The outer div also carried `flex-col` and an unconditional `flex-row` in the
+ * same class string, so one of the two was dead whatever the width.
+ *
+ * `items-start`, not `items-center`: the icon belongs on the title's line, and
+ * a two-line description would otherwise push it half a line down.
+ *
+ * The example sits below both columns rather than under the input, so it has
+ * the card's full width to be a sentence in — inside the control column it
+ * would be a 224px ribbon four lines tall.
+ */
 function FieldCard({
   icon: Icon,
   title,
   description,
+  example,
   children,
 }: {
   icon: React.ElementType;
   title: string;
   description: string;
+  /** The "Example: …" line. Optional, though every field has earned one. */
+  example?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-[#e3e3e3] bg-white p-5 sm:flex-row sm:items-start dark:border-white/10 dark:bg-[#161d2e]">
-      {/* `border-current/20` frames the tile in the icon's own hue. */}
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-current/20 bg-blue-50 text-blue-600 dark:bg-blue-400/15 dark:text-[#7ba2e3]">
-        <Icon className="h-4 w-4" />
-      </div>
-      <div className="flex-1 space-y-3">
-        <div>
-          <p className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
-            {title}
-          </p>
-          <p className="mt-0.5 text-xs text-[#9aa0a6] dark:text-[#7b869b]">
-            {description}
-          </p>
+    <div className="rounded-2xl border border-[#e3e3e3] bg-white p-4 sm:p-5 dark:border-white/10 dark:bg-[#161d2e]">
+      <div className=" w-full flex flex-col gap-4  sm:items-start sm:justify-between ">
+        <div className="flex min-w-0 items-start sm:items-center gap-3">
+          <div className="flex h-8.5 sm:h-9 w-8.5 sm:w-9 shrink-0 items-center justify-center rounded-lg sm:rounded-xl border border-current/20 bg-blue-50 text-blue-600 dark:bg-blue-400/15 dark:text-[#7ba2e3]">
+            <Icon className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-sm font-normal text-[#3c4043] sm:text-[15px] dark:text-[#e8ecf4]">
+              {title}
+            </h3>
+            {/* Unclamped. It was `line-clamp-2` for a phone, from when the copy
+                shared its row with the input; with the row to itself a single
+                sentence fits, and clamping the only explanation of a setting
+                to save two lines is a poor trade. */}
+            <p className="mt-0.5 text-[11px] leading-snug tracking-wide text-[#9aa0a6] sm:text-xs dark:text-[#9aa6bd]">
+              {description}
+            </p>
+          </div>
         </div>
-        {children}
+
+        {/* Full width on a phone; a fixed column from `sm` so the three cards'
+            inputs line up down the page instead of each finding its own edge. */}
+        <div className="w-full ml-0 sm:ml-12 sm:shrink-0 ">{children}</div>
       </div>
+
+      {example && (
+        <p className="mt-3 ml-0 sm:ml-12 border-t border-[#f1f3f4] pt-3 text-[11px] leading-relaxed tracking-wide text-[#9aa0a6] sm:text-xs dark:border-white/10 dark:text-[#7b869b]">
+          {example}
+        </p>
+      )}
     </div>
   );
 }
 
 export default function LoyaltyPointPage() {
+  const { currency } = useCurrency();
   const [settings, setSettings] = useState<LoyaltyPointSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -287,23 +325,39 @@ export default function LoyaltyPointPage() {
             <Button
               onClick={handleSave}
               disabled={saving || isLoading || !hasChanges}
-              className="inline-flex h-9 shrink-0 cursor-pointer select-none items-center justify-center gap-2 tracking-wide whitespace-nowrap rounded-lg border border-blue-300 bg-white text-blue-600  px-3.5 text-sm font-semibold transition-colors outline-none over:border-blue-400 hover:bg-blue-50 active:bg-blue-100 focus-visible:border-blue-500 focus-visible:ring-[3px] focus-visible:ring-blue-500/30 active:bg-blue-800 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 dark:border-[#7ba2e3]/40 dark:bg-white/5 dark:text-[#7ba2e3] dark:hover:border-[#7ba2e3]/60 dark:hover:bg-white/10 dark:active:bg-white/15"
+              className="inline-flex h-8.5 md:h-9 shrink-0 cursor-pointer select-none items-center justify-center gap-2 tracking-wide whitespace-nowrap rounded-lg border border-blue-300 bg-white text-blue-600  px-2.5 sm:px-3.5 text-[13px] font-semibold transition-colors outline-none over:border-blue-400 hover:bg-blue-50 active:bg-blue-100 focus-visible:border-blue-500 focus-visible:ring-[3px] focus-visible:ring-blue-500/30 active:bg-blue-800 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 dark:border-[#7ba2e3]/40 dark:bg-white/5 dark:text-[#7ba2e3] dark:hover:border-[#7ba2e3]/60 dark:hover:bg-white/10 dark:active:bg-white/15"
             >
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving...
+                  <span className="hidden sm:block"> Saving...</span>
                 </>
               ) : (
                 <>
-                  {" "}
                   <Save size={16} />
-                  Save changes
+                  <span className="hidden sm:block">Save Changes</span>
                 </>
               )}
             </Button>
           }
         />
+
+        <div className="w-full  flex flex-row items-center justify-center">
+          {saving ? (
+            <div
+              className={`flex flex-row items-center gap-2 text-[13px] mb-5`}
+            >
+              <Loader2 className="h-4.5 w-4.5 animate-spin" />
+              <span className="flex flex-row items-end gap-0">
+                {" "}
+                Saving Changes
+                <span className="animate-saving-dots">...</span>
+              </span>
+            </div>
+          ) : (
+            <div className="hidden" />
+          )}
+        </div>
 
         {isLoading ? (
           <div className="flex items-center justify-center py-24">
@@ -339,7 +393,7 @@ export default function LoyaltyPointPage() {
 
                   <div>
                     <p className="text-lg font-semibold tabular-nums text-blue-800 dark:text-[#c3d6f4]">
-                      {settings.basePoint}
+                      {formatNumber(settings.basePoint, currency.locale)}
                     </p>
                     <p className="text-xs text-blue-600 dark:text-[#a8c4ee]">
                       Base point
@@ -353,101 +407,87 @@ export default function LoyaltyPointPage() {
               icon={Gift}
               title="Loyalty Point Percentage"
               description="Percentage of the invoice total awarded as loyalty points to the customer."
+              example="Example: 30% on a Rs 100 invoice → customer earns 30 points."
             >
-              <div>
-                <Label className="mb-1.5 block text-xs text-[#5f6368] dark:text-[#a9b4c7]">
-                  Percentage (%)
-                </Label>
-                <div className="relative max-w-xs">
-                  <Input
-                    type="number"
-                    min={1}
-                    max={100}
-                    value={form.loyaltyPoint}
-                    onChange={(e) =>
-                      set("loyaltyPoint", Number(e.target.value))
-                    }
-                    className={`${inputClass} pr-8 ${errors.loyaltyPoint ? "border-red-300 focus:ring-red-400 dark:border-red-400/50" : ""}`}
-                    placeholder="e.g. 30"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#9aa0a6] dark:text-[#7b869b]">
-                    %
-                  </span>
-                </div>
-                {errors.loyaltyPoint && (
-                  <p className="text-xs text-red-500 mt-1 dark:text-[#f87171]">
-                    Enter a value between 1 and 100.
-                  </p>
-                )}
-                <p className="mt-1.5 text-xs text-[#9aa0a6] dark:text-[#7b869b]">
-                  Example: 30% on a Rs 100 invoice → customer earns 30 points.
-                </p>
+              <Label className="mb-1.5 block text-xs text-[#5f6368] dark:text-[#a9b4c7]">
+                Percentage (%)
+              </Label>
+              <div className="relative w-full sm:w-[50%] md:w-[25%]">
+                <Input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={form.loyaltyPoint}
+                  onChange={(e) => set("loyaltyPoint", Number(e.target.value))}
+                  className={`${inputClass} pr-8 ${errors.redeemLimit ? "border-red-300 focus:ring-red-400 dark:border-red-400/50" : ""}`}
+                  placeholder="e.g. 30"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#9aa0a6] dark:text-[#7b869b]">
+                  %
+                </span>
               </div>
+
+              {errors.loyaltyPoint && (
+                <p className="mt-1 text-xs text-red-500 dark:text-[#f87171]">
+                  Enter a value between 1 and 100.
+                </p>
+              )}
             </FieldCard>
 
             <FieldCard
               icon={ArrowDownUp}
               title="Redeem Limit"
               description="Maximum number of loyalty points a customer can redeem on a single invoice."
+              example="Example: 50% means a customer can redeem up to 50% points of the total price before tax (if applied) per invoice."
             >
-              <div>
-                <Label className="mb-1.5 block text-xs text-[#5f6368] dark:text-[#a9b4c7]">
-                  Max points per invoice in percentage (%)
-                </Label>
-                <div className="relative max-w-xs">
-                  <Input
-                    type="number"
-                    min={1}
-                    max={100}
-                    value={form.redeemLimit}
-                    onChange={(e) => set("redeemLimit", Number(e.target.value))}
-                    className={`${inputClass} ${errors.redeemLimit ? "border-red-300 focus:ring-red-400 dark:border-red-400/50" : ""}`}
-                    placeholder="e.g. 50"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#9aa0a6] dark:text-[#7b869b]">
-                    %
-                  </span>
-                </div>
-                {errors.redeemLimit && (
-                  <p className="text-xs text-red-500 mt-1 dark:text-[#f87171]">
-                    Redeem limit must be greater than 0.
-                  </p>
-                )}
-                <p className="mt-1.5 text-xs text-[#9aa0a6] dark:text-[#7b869b]">
-                  Example: 50% means a customer can redeem up to 50% points of
-                  the total price before tax (if applied) per invoice.
-                </p>
+              <Label className="mb-1.5 block text-xs text-[#5f6368] dark:text-[#a9b4c7]">
+                Max points per invoice in percentage (%)
+              </Label>
+              <div className="relative w-full sm:w-[50%] md:w-[25%]">
+                {/* `pr-8` like the field above it: without it the typed number
+                    runs under the % sign pinned to the right edge. */}
+                <Input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={form.redeemLimit}
+                  onChange={(e) => set("redeemLimit", Number(e.target.value))}
+                  className={`${inputClass} pr-8 ${errors.redeemLimit ? "border-red-300 focus:ring-red-400 dark:border-red-400/50" : ""}`}
+                  placeholder="e.g. 50"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#9aa0a6] dark:text-[#7b869b]">
+                  %
+                </span>
               </div>
+              {errors.redeemLimit && (
+                <p className="mt-1 text-xs text-red-500 dark:text-[#f87171]">
+                  Redeem limit must be greater than 0.
+                </p>
+              )}
             </FieldCard>
 
             <FieldCard
               icon={Coins}
               title="Base Point"
               description="Number of points awarded per base unit of spend (e.g. per Rs 10 spent)."
+              example="Example: 10 base points means 1 point per Rs 10 spent."
             >
-              <div>
-                <Label className="mb-1.5 block text-xs text-[#5f6368] dark:text-[#a9b4c7]">
-                  Points per unit
-                </Label>
-                <div className="max-w-xs">
-                  <Input
-                    type="number"
-                    min={1}
-                    value={form.basePoint}
-                    onChange={(e) => set("basePoint", Number(e.target.value))}
-                    className={`${inputClass} ${errors.basePoint ? "border-red-300 focus:ring-red-400 dark:border-red-400/50" : ""}`}
-                    placeholder="e.g. 10"
-                  />
-                </div>
-                {errors.basePoint && (
-                  <p className="text-xs text-red-500 mt-1 dark:text-[#f87171]">
-                    Base point must be greater than 0.
-                  </p>
-                )}
-                <p className="mt-1.5 text-xs text-[#9aa0a6] dark:text-[#7b869b]">
-                  Example: 10 base points means 1 point per Rs 10 spent.
+              <Label className="mb-1.5 block text-xs text-[#5f6368] dark:text-[#a9b4c7]">
+                Points per unit
+              </Label>
+              <Input
+                type="number"
+                min={1}
+                value={form.basePoint}
+                onChange={(e) => set("basePoint", Number(e.target.value))}
+                className={`${inputClass} w-full sm:w-[50%] md:w-[25%] ${errors.basePoint ? "border-red-300 focus:ring-red-400 dark:border-red-400/50" : ""}`}
+                placeholder="e.g. 10"
+              />
+              {errors.basePoint && (
+                <p className="mt-1 text-xs text-red-500 dark:text-[#f87171]">
+                  Base point must be greater than 0.
                 </p>
-              </div>
+              )}
             </FieldCard>
           </div>
         )}
@@ -456,30 +496,33 @@ export default function LoyaltyPointPage() {
         {/* ── CUSTOMER LOYALTY STATUS SECTION ── */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="border-t border-[#e8eaed] pt-8 dark:border-white/10 mt-10">
-          <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-current/20 bg-blue-50 text-blue-600 dark:bg-blue-400/15 dark:text-[#7ba2e3]">
+          <div className="mb-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className=" w-full  flex min-w-0 flex-1 items-start  sm:items-center gap-3 sm:justify-between ">
+              <div className="hidden sm:flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-current/20 bg-blue-50 text-blue-600 dark:bg-blue-400/15 dark:text-[#7ba2e3]">
                 <Trophy className="h-4 w-4" />
               </div>
               <div className="min-w-0">
                 <h2 className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
                   Customer Loyalty Status
                 </h2>
-                <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#7b869b]">
+                <p className="mt-0.5 truncate text-xs tracking-wide text-[#9aa0a6] dark:text-[#7b869b]">
                   Define loyalty tiers and the point thresholds a customer
                   crosses to reach them.
                 </p>
               </div>
-            </div>
 
-            <Button
-              onClick={openAddStatus}
-              disabled={tiersLoading || !!tiersError}
-              className="inline-flex h-8 shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-full dark:bg-white/5 border border-[#dadce0] bg-white px-3 text-[11px] text-[#3c4043] transition-colors outline-none hover:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
-            >
-              <Plus className="mr-1.5 h-4 w-4" />
-              Add Tier
-            </Button>
+              <div className="ml-auto flex shrink-0 items-center gap-2">
+                {" "}
+                <Button
+                  onClick={openAddStatus}
+                  disabled={tiersLoading || !!tiersError}
+                  className="inline-flex h-7 shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap  rounded-full dark:bg-white/5 border border-[#dadce0] bg-white px-1.5 sm:px-3 text-[11px] text-[#3c4043] transition-colors outline-none hover:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+                >
+                  <Plus className=" h-3 w-3" />
+                  <span className="hidden sm:block">Add Tier</span>
+                </Button>
+              </div>
+            </div>
           </div>
 
           {missingZeroFloor !== null && (
@@ -501,12 +544,12 @@ export default function LoyaltyPointPage() {
               list needs — and an empty one says what to do rather than
               rendering a table with no rows. */}
           {tiersLoading ? (
-            <div className="flex items-center justify-center gap-2 rounded-xl border border-[#e3e3e3] py-12 text-sm text-[#9aa0a6] dark:border-white/10 dark:text-[#7b869b]">
+            <div className=" mt-4 flex items-center justify-center gap-2 rounded-xl border border-[#e3e3e3] py-12 text-sm text-[#9aa0a6] dark:border-white/10 dark:text-[#7b869b]">
               <Loader2 className="h-4 w-4 animate-spin" />
               Loading loyalty tiers
             </div>
           ) : tiersError ? (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-6 text-center dark:border-red-400/25 dark:bg-red-400/10">
+            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-6 text-center dark:border-red-400/25 dark:bg-red-400/10">
               <p className="text-sm text-red-600 dark:text-[#f87171]">
                 {tiersError instanceof Error
                   ? tiersError.message
@@ -514,7 +557,7 @@ export default function LoyaltyPointPage() {
               </p>
             </div>
           ) : sortedStatuses.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[#dadce0] px-4 py-12 text-center dark:border-white/15">
+            <div className="mt-4 rounded-xl border border-dashed border-[#dadce0] px-4 py-12 text-center dark:border-white/15">
               <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
                 No loyalty tiers yet
               </p>

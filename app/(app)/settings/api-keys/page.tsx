@@ -21,6 +21,8 @@ export default function Page() {
         title="API Keys"
         subtitle="Connect your own AI provider to power insights and suggestions."
         spaceBelow={false}
+        flexItems="items-start flex-col"
+        actionWidth="w-full"
         actions={<AiTroubleJumpLink />}
       />
 

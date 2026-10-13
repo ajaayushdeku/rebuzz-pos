@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, User, UserCog, Users } from "lucide-react";
+import { Search, UserRound, UserRoundCog, UsersRound } from "lucide-react";
 import StaffStatBox, {
   StaffBoxProps,
 } from "@/components/dashboardComponents/staffDash/StaffStatBox";
@@ -9,9 +9,9 @@ import StaffStatBox, {
 import SegmentedControl from "@/components/ui/SegmentedControl";
 
 const ROLE_OPTIONS = [
-  { value: "all", label: "All", icon: Users },
-  { value: "staff", label: "Staff", icon: User },
-  { value: "basic", label: "Basic", icon: UserCog },
+  { value: "all", label: "All", icon: UsersRound },
+  { value: "staff", label: "Staff", icon: UserRound },
+  { value: "basic", label: "Basic", icon: UserRoundCog },
 ] as const;
 
 type RoleFilter = (typeof ROLE_OPTIONS)[number]["value"];

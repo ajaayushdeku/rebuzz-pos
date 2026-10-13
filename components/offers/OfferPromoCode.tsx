@@ -136,7 +136,7 @@ export default function OfferPromoCode() {
         {/* The field takes the row on a phone and the buttons share the one
             below. Side by side, "Generate" and "Copy" came to about 210px of a
             287px step body and left the code box a stub. */}
-        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-2.5 sm:flex-row items-center">
           <input
             type="text"
             value={form.code}
@@ -145,7 +145,7 @@ export default function OfferPromoCode() {
             // worth letting a customer make.
             onChange={(e) => updateField("code", e.target.value.toUpperCase())}
             placeholder="NEWYEARS23"
-            className="h-12 min-w-0 flex-1 rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-3.5 font-mono text-sm tracking-wider text-[#3c4043] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:max-w-sm dark:border-white/15 dark:text-[#e8ecf4]"
+            className="h-10 sm:h-11 w-full min-w-0 rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-3.5 font-mono text-sm tracking-wider text-[#3c4043] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20  dark:border-white/15 dark:text-[#e8ecf4]"
           />
 
           {/* Their own row, splitting it evenly — a 44px-tall target that
@@ -155,9 +155,9 @@ export default function OfferPromoCode() {
             <button
               type="button"
               onClick={generate}
-              className="inline-flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-[13px] font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 sm:flex-none dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-300 dark:hover:bg-emerald-400/20"
+              className="inline-flex flex h-9 sm:h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg sm:rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-[12px] sm:text-[13px] font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 sm:flex-none dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-300 dark:hover:bg-emerald-400/20"
             >
-              <Wand2 size={15} />
+              <Wand2 size={14} />
               Generate
             </button>
 
@@ -165,9 +165,9 @@ export default function OfferPromoCode() {
               type="button"
               onClick={copy}
               disabled={!form.code}
-              className="inline-flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#dadce0] bg-white px-4 text-[13px] font-semibold text-[#5f6368] transition-colors hover:bg-[#f8f9fa] disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none dark:border-white/15 dark:bg-white/5 dark:text-[#a9b4c7] dark:hover:bg-white/5"
+              className="inline-flex flex h-9 sm:h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg sm:rounded-xl border border-[#dadce0] bg-white px-4 text-[12px] sm:text-[13px] font-semibold text-[#5f6368] transition-colors hover:bg-[#f8f9fa] disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none dark:border-white/15 dark:bg-white/5 dark:text-[#a9b4c7] dark:hover:bg-white/5"
             >
-              <Copy size={15} />
+              <Copy size={14} />
               {copied ? "Copied" : "Copy"}
             </button>
           </div>
@@ -192,19 +192,19 @@ export default function OfferPromoCode() {
           ) : (
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                   <input
                     readOnly
                     value={offerUrl}
                     onFocus={(e) => e.currentTarget.select()}
-                    className="h-11 min-w-0 flex-1 rounded-xl border border-[#dadce0] bg-[#f8f9fa] px-3.5 text-[13px] text-[#5f6368] outline-none dark:border-white/15 dark:text-[#a9b4c7] dark:bg-white/5"
+                    className="h-10 sm:h-11 w-full min-w-0 rounded-xl border border-[#dadce0] bg-[#f8f9fa] px-3.5 text-[13px] text-[#5f6368] outline-none dark:border-white/15 dark:text-[#a9b4c7] dark:bg-white/5"
                   />
                   <button
                     type="button"
                     onClick={copyLink}
-                    className="inline-flex h-11 shrink-0 cursor-pointer items-center gap-2 rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-3.5 text-[13px] font-semibold text-[#5f6368] transition-colors hover:bg-[#f8f9fa] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
+                    className="inline-flex h-9 sm:h-10 shrink-0 cursor-pointer items-center gap-2 rounded-lg sm:rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-3.5 text-[12px] sm:text-[13px] font-semibold text-[#5f6368] transition-colors hover:bg-[#f8f9fa] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
                   >
-                    <Copy size={15} />
+                    <Copy size={14} />
                     {linkCopied ? "Copied" : "Copy"}
                   </button>
                 </div>

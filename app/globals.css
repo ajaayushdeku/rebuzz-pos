@@ -248,3 +248,22 @@
 .no-spinner[type="number"] {
   -moz-appearance: textfield;
 }
+
+@keyframes saving-dots {
+  0%,
+  20% {
+    content: ".";
+  }
+  40% {
+    content: "..";
+  }
+  60%,
+  80% {
+    content: "...";
+  }
+}
+
+.animate-saving-dots::after {
+  content: "...";
+  animation: saving-dots 1.5s steps(1, end) infinite;
+}

@@ -242,7 +242,7 @@ export default function ShiftsSection({
         ) : (
           <>
             <div className="overflow-x-auto scrollbar-hide">
-              <table className="w-full table-fixed min-w-[1020px] text-sm">
+              <table className="w-full table-fixed min-w-[1050px] text-sm">
                 {/* `table-fixed` with declared widths: auto layout sized the columns
                     from whatever rows were on screen, so filtering, paging or a longer
                     name moved them. Shift takes the slack. */}
@@ -336,7 +336,7 @@ export default function ShiftsSection({
                           </div>
                         </div>
                       </td>
-                      <td className="py-3.5 px-3 align-top">
+                      <td className="py-3.5 px-3 align-top ">
                         <span className="inline-flex items-center gap-1.5 text-[13px]  tabular-nums font-medium text-[#3c4043] dark:text-[#e8ecf4]">
                           <Timer
                             size={12}

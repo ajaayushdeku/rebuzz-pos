@@ -57,8 +57,26 @@ export function usePeriodSection<T>(options: {
   } = options;
 
   const generate = useGenerateSection(kind, periodId);
-  const pendingMode = generate.variables?.mode;
-  const isThisSection = generate.variables?.section === section;
+
+  /**
+   * Which request is in flight, if any.
+   *
+   * Gated on `isPending`, and that gate is the whole point. A mutation's
+   * `variables` are set when it starts and then *kept* — React Query holds the
+   * last call's arguments until the next `mutate` or a `reset`. Reading the mode
+   * straight off `generate.variables` therefore answered "what was the last
+   * thing asked for?" and not "what is happening now?", so once a
+   * generate-more had finished, `isGeneratingMore` stayed true for good and the
+   * button sat on "Generating…" until the page was reloaded. `isRefreshing` had
+   * it too.
+   *
+   * It also explains the flicker in the console: the flag went false only when
+   * something dropped this hook's mutation — a remount — and true again on the
+   * next click, never in between.
+   */
+  const pending = generate.isPending ? generate.variables : undefined;
+  const pendingMode = pending?.mode;
+  const isThisSection = pending?.section === section;
 
   /**
    * Memoised because `reload` closes over it: rebuilt every render, it would make
@@ -136,7 +154,7 @@ export function usePeriodSection<T>(options: {
     isError: Boolean(generate.error) && !stored,
     retry: () => void reload(),
     reload,
-    isFetching: isPeriodLoading || (isThisSection && generate.isPending),
+    isFetching: isPeriodLoading || isThisSection,
     refresh,
     isRefreshing: isThisSection && pendingMode === "regenerate",
   };

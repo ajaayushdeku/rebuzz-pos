@@ -110,7 +110,7 @@ export default function ProviderPicker({
                   In use
                 </span>
               ) : hasKey ? (
-                <span className="shrink-0 rounded-full border border-[#dadce0] bg-white dark:bg-white/5 px-2 py-0.5 text-[10px] font-semibold text-[#5f6368] dark:border-white/15 dark:text-[#a9b4c7]">
+                <span className="shrink-0 rounded-full border border-[#dadce0] bg-gray-100/25 dark:bg-white/5 px-2 py-0.5 text-[10px] font-semibold text-[#5f6368] dark:border-white/15 dark:text-[#a9b4c7]">
                   Key saved
                 </span>
               ) : (

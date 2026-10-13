@@ -5,6 +5,8 @@ import { Trophy, Edit3, Trash2 } from "lucide-react";
 import { type LoyaltyStatus, pointRange } from "./loyaltyStatusConfig";
 import TierBadge from "./TierBadge";
 import TablePagination from "@/components/ui/TablePagination";
+import { formatNumber } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 
 const PAGE_SIZE = 10;
 
@@ -27,6 +29,8 @@ export default function LoyaltyStatusTable({
 }) {
   const [page, setPage] = useState(0);
 
+  const { currency } = useCurrency();
+
   const totalPages = Math.max(1, Math.ceil(statuses.length / PAGE_SIZE));
   // Clamped, so deleting the last tier on the last page cannot strand the
   // view on an empty one.
@@ -39,8 +43,8 @@ export default function LoyaltyStatusTable({
     <div className="overflow-hidden  bg-white px-2 py-2 dark:bg-[#0F1420]">
       {/* Count header — the table gave no sense of how many tiers exist
           without counting the rows. */}
-      <div className="flex items-center justify-between gap-2 border-b border-[#e8eaed] px-4 py-3 dark:border-white/10">
-        <p className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
+      <div className="flex items-center justify-between gap-2 border-b border-[#e8eaed] pl-0 sm:pl-3 py-3 dark:border-white/10">
+        <p className="text-[13px] sm:text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
           Loyalty Tiers
         </p>
         <span className="rounded-full border border-[#dadce0] bg-white px-2 py-0.5 text-[11px] tabular-nums text-[#3c4043] dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]">
@@ -49,110 +53,153 @@ export default function LoyaltyStatusTable({
       </div>
 
       <div className="overflow-x-auto">
-        {/* `table-fixed` with declared widths: auto layout sized the columns
+        <div className="min-w-[680px]">
+          {" "}
+          {/* `table-fixed` with declared widths: auto layout sized the columns
             from the tiers on screen, so adding or editing one moved them.
             Status takes the slack. */}
-        <table className="w-full min-w-[600px] table-fixed text-sm">
-          <colgroup>
-            <col className="w-16" />
-            <col />
-            <col className="w-60" />
-            <col className="w-28" />
-          </colgroup>
-          <thead>
-            <tr className="border-b border-[#e8eaed] text-[11px] tracking-wider text-[#5f6368] dark:border-white/10 dark:text-[#9aa6bd]">
-              <th className="px-4 py-3 text-left font-normal">Lvl</th>
-              <th className="px-4 py-3 text-left font-normal">Loyalty Tier</th>
-              <th className="px-4 py-3 text-center font-normal">Point Range</th>
-              <th className="px-4 py-3 text-right font-normal">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#e8eaed] dark:divide-white/10">
-            {statuses.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="px-4 py-10">
-                  <div className="flex flex-col items-center text-center">
-                    <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
-                      <Trophy
-                        size={22}
-                        className="text-gray-500 dark:text-[#9aa6bd]"
-                      />
-                    </div>
-                    <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
-                      No loyalty tiers yet
-                    </p>
-                    <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#7b869b]">
-                      Add one to start ranking customers.
-                    </p>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              visible.map((status, i) => {
-                // Position in the whole ladder, not on the page: the level
-                // number and the range's upper bound both come from where the
-                // tier sits overall, so page two must keep counting from 11
-                // and read its first range against page one's last tier.
-                const idx = start + i;
-                const isEditing = editingId === status.id;
+          <table className="w-full min-w[980px] table-fixed text-sm">
+            <colgroup>
+              <col className="w-16" />
+              <col className="w-50" />
+              <col className="w-60" />
+              <col className="w-35" />
+              <col className="w-35" />
+              <col className="w-28" />
+            </colgroup>
+            <thead>
+              <tr className="border-b border-[#e8eaed] text-[11px] tracking-wider text-[#5f6368] dark:border-white/10 dark:text-[#9aa6bd]">
+                <th className="px-4 py-3 text-left font-normal">Lvl</th>
+                <th className="px-4 py-3 text-left font-normal">
+                  Loyalty Tier
+                </th>
 
-                return (
-                  <tr
-                    key={status.id}
-                    className={`transition-colors ${
-                      isEditing
-                        ? "bg-blue-50/60 dark:bg-blue-400/10"
-                        : "hover:bg-[#f8f9fa] dark:hover:bg-white/5"
-                    }`}
-                  >
-                    <td className="px-4 py-3 text-xs font-semibold tabular-nums text-[#9aa0a6] dark:text-[#7b869b]">
-                      #{idx + 1}
-                    </td>
-                    <td className="px-4 py-3">
-                      <TierBadge
-                        name={status.name}
-                        color={status.color}
-                        bgColor={status.bgColor}
-                      />
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="text-[13px] font-medium tracking-wide  tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
-                        {pointRange(status, statuses[idx + 1])}
-                      </span>
-                      <span className="ml-1 text-xs text-[#9aa0a6] dark:text-[#7b869b]">
-                        pts
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => onEdit(status)}
-                          className={`rounded-md p-1.5 transition-colors ${
-                            isEditing
-                              ? "bg-blue-100 text-blue-600 dark:bg-blue-400/20 dark:text-[#a8c4ee]"
-                              : "text-[#9aa0a6] hover:bg-blue-50 hover:text-blue-600 dark:text-[#7b869b] dark:hover:bg-blue-400/15 dark:hover:text-[#7ba2e3]"
-                          }`}
-                          title="Edit"
-                        >
-                          <Edit3 className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => onDelete(status)}
-                          className="rounded-md p-1.5 text-[#9aa0a6] transition-colors hover:bg-red-50 hover:text-red-600 dark:text-[#7b869b] dark:hover:bg-red-400/15 dark:hover:text-[#f87171]"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                <th className="px-4 py-3 text-center font-normal">
+                  Point Range
+                </th>
+                <th className="px-4 py-3 text-center font-normal">
+                  Minimum Points
+                </th>
+                <th className="px-4 py-3 text-center font-normal">
+                  Maximum Points
+                </th>
+                <th className="px-4 py-3 text-right font-normal">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#e8eaed] dark:divide-white/10">
+              {statuses.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-10">
+                    <div className="flex flex-col items-center text-center">
+                      <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+                        <Trophy
+                          size={22}
+                          className="text-gray-500 dark:text-[#9aa6bd]"
+                        />
                       </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                      <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
+                        No loyalty tiers yet
+                      </p>
+                      <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#7b869b]">
+                        Add one to start ranking customers.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                visible.map((status, i) => {
+                  // Position in the whole ladder, not on the page: the level
+                  // number and the range's upper bound both come from where the
+                  // tier sits overall, so page two must keep counting from 11
+                  // and read its first range against page one's last tier.
+                  const idx = start + i;
+                  const isEditing = editingId === status.id;
+
+                  return (
+                    <tr
+                      key={status.id}
+                      className={`transition-colors ${
+                        isEditing
+                          ? "bg-blue-50/60 dark:bg-blue-400/10"
+                          : "hover:bg-[#f8f9fa] dark:hover:bg-white/5"
+                      }`}
+                    >
+                      <td className="px-4 py-3 text-xs font-semibold tabular-nums text-[#9aa0a6] dark:text-[#7b869b]">
+                        #{idx + 1}
+                      </td>
+                      <td className="px-4 py-3">
+                        <TierBadge
+                          name={status.name}
+                          color={status.color}
+                          bgColor={status.bgColor}
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="text-[13px] font-medium tracking-wide  tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
+                          {pointRange(status, statuses[idx + 1])}
+                        </span>
+                        <span className="ml-1 text-xs text-[#9aa0a6] dark:text-[#7b869b]">
+                          pts
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="text-[13px] font-medium tracking-wide  tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
+                          {formatNumber(status.minPoints, currency.locale)}
+                        </span>
+                        <span className="ml-1 text-xs text-[#9aa0a6] dark:text-[#7b869b]">
+                          pts
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {statuses[idx + 1] ? (
+                          <>
+                            <span className="text-[13px] font-medium tracking-wide tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
+                              {formatNumber(
+                                statuses[idx + 1].minPoints - 1,
+                                currency.locale,
+                              )}
+                            </span>
+                            <span className="ml-1 text-xs text-[#9aa0a6] dark:text-[#7b869b]">
+                              pts
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-[13px] text-[#9aa0a6] dark:text-[#7b869b]">
+                            Unlimited
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => onEdit(status)}
+                            className={`rounded-md p-1.5 transition-colors ${
+                              isEditing
+                                ? "bg-blue-100 text-blue-600 dark:bg-blue-400/20 dark:text-[#a8c4ee]"
+                                : "text-[#9aa0a6] hover:bg-blue-50 hover:text-blue-600 dark:text-[#7b869b] dark:hover:bg-blue-400/15 dark:hover:text-[#7ba2e3]"
+                            }`}
+                            title="Edit"
+                          >
+                            <Edit3 className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onDelete(status)}
+                            className="rounded-md p-1.5 text-[#9aa0a6] transition-colors hover:bg-red-50 hover:text-red-600 dark:text-[#7b869b] dark:hover:bg-red-400/15 dark:hover:text-[#f87171]"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {totalPages > 1 && (

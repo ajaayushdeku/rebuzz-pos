@@ -443,6 +443,11 @@ export default function StaffDetailPage() {
           dateRange={dateRange}
           onDateRangeChange={handleDateRangeChange}
           storageKey="rebuzz-employee-detail-date-filter"
+          // `!headerUser` and not `loading` on its own: `loading` goes true
+          // again on every date-range change, and the name is already known by
+          // then. Still gated on `loading` so a staff record that never
+          // arrives falls back to the plain header instead of pulsing forever.
+          loading={loading && !headerUser}
         />
 
         {loading ? (

@@ -36,20 +36,20 @@ function busynessTone(percent: number): {
   if (percent < 34) {
     return {
       accent: "red",
-      pill: "bg-red-50 text-red-600 dark:text-red-300 dark:bg-red-400/10",
+      pill: "bg-red-100 text-red-600 dark:text-red-300 dark:bg-red-400/10",
       text: "text-red-600 dark:text-red-300",
     };
   }
   if (percent < 75) {
     return {
       accent: "amber",
-      pill: "bg-amber-50 text-amber-600 dark:text-amber-300 dark:bg-amber-400/10",
+      pill: "bg-amber-100 text-amber-600 dark:text-amber-300 dark:bg-amber-400/10",
       text: "text-amber-600 dark:text-amber-300",
     };
   }
   return {
     accent: "emerald",
-    pill: "bg-emerald-50 text-emerald-600 dark:text-emerald-300 dark:bg-emerald-400/10",
+    pill: "bg-emerald-100 text-emerald-600 dark:text-emerald-300 dark:bg-emerald-400/10",
     text: "text-emerald-600 dark:text-emerald-300",
   };
 }
@@ -139,7 +139,7 @@ export default function HourPlaybookSection({
                 accent={tone.accent}
                 lead={
                   <span
-                    className={`flex h-10 shrink-0 items-center gap-1 rounded-lg pr-2.5 text-[14px] font-bold ${tone.pill}`}
+                    className={`flex h-10 shrink-0 items-center gap-1 rounded-lg px-2.5 text-[14px] font-bold ${tone.pill}`}
                   >
                     <Icon
                       size={15}

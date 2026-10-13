@@ -394,8 +394,6 @@ export default function TopItemsSales({
       subHeader="Units sold per item by the employee"
       pager={
         <>
-          <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
-
           {totalPages > 1 && (
             <ChartPager
               first={safePage * PAGE_SIZE + 1}
@@ -410,7 +408,8 @@ export default function TopItemsSales({
       }
       units={
         <>
-          {/* The list is paged, so the total says how much it covers. */}
+          <div className="mx-2 h-7 w-px bg-[#dadce0] dark:bg-white/40" />
+
           <div className="flex shrink-0 flex-col items-end ">
             <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
               Units
@@ -440,9 +439,9 @@ export default function TopItemsSales({
               {row.name}
             </span>
 
-            <div className="relative h-4 overflow-hidden rounded-full bg-[#e8eaed] dark:bg-white/10">
+            <div className="relative h-2 sm:h-4 overflow-hidden rounded-full bg-[#e8eaed] dark:bg-white/10">
               <div
-                className="h-4 rounded-full transition-all duration-700"
+                className="h-2 sm:h-4 rounded-full transition-all duration-700"
                 style={{
                   width: `${(row.quantity / max) * 100}%`,
                   backgroundColor: getBarColor(row.quantity, max),

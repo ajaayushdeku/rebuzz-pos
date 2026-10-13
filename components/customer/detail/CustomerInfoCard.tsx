@@ -1,6 +1,6 @@
 "use client";
 
-import { User, Mail, Phone, Hash, FileText, Pencil } from "lucide-react";
+import { User, Mail, Phone, Hash, FileText, Edit3 } from "lucide-react";
 import type { Customer } from "@/lib/types/customer";
 import { CustomerAvatar } from "@/components/customer/CustomerAvatar";
 import { ChartCard } from "@/components/dashboardComponents/chartCard";
@@ -49,7 +49,7 @@ export default function CustomerInfoCard({
           title="Edit customer"
           className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:hover:bg-white/10"
         >
-          <Pencil size={11} />
+          <Edit3 size={11} />
           Edit
         </button>
       }

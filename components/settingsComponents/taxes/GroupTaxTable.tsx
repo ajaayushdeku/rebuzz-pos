@@ -56,8 +56,8 @@ const GroupTaxTable = ({
           <table className="w-full table-fixed text-sm min-w-[990px]">
             <colgroup>
               <col className="w-14" />
-              <col className="w-64" />
-              <col className="w-40" />
+              <col className="w-50 md:w-64" />
+              <col className="w-50 md:w-64" />
               <col />
               <col className="w-28" />
               <col className="w-28" />
@@ -67,7 +67,9 @@ const GroupTaxTable = ({
               <tr className="border-b border-[#e8eaed] text-[11px] tracking-wider text-[#5f6368] dark:border-white/10 dark:text-[#9aa6bd]">
                 <th className="text-left pb-2.5 pr-1 font-normal">S.No.</th>
                 <th className="text-left pb-2.5 font-normal">Name</th>
-                <th className="text-left pb-2.5 font-normal">Combined Rate</th>
+                <th className="text-center pb-2.5 font-normal">
+                  Combined Rate
+                </th>
                 <th className="text-left pb-2.5 font-normal">Includes</th>
                 <th className="text-center pb-2.5 font-normal">Status</th>
                 <th className="text-center pb-2.5 font-normal">Applied</th>
@@ -118,7 +120,7 @@ const GroupTaxTable = ({
                       key={group._id}
                       className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors dark:border-white/10 dark:hover:bg-white/5"
                     >
-                      <td className="py-3 pr-1 font-medium text-[11px] text-gray-400 dark:text-[#7b869b]">
+                      <td className="py-3 pl-1 font-medium text-[11px] text-gray-400 dark:text-[#7b869b]">
                         #{idx + 1}
                       </td>
                       <td
@@ -127,7 +129,7 @@ const GroupTaxTable = ({
                       >
                         {group.name}
                       </td>
-                      <td className="whitespace-nowrap py-3 text-xs font-semibold tabular-nums text-blue-600 dark:text-[#7ba2e3]">
+                      <td className="whitespace-nowrap text-center py-3 text-xs font-semibold tabular-nums text-blue-600 dark:text-[#7ba2e3]">
                         {rate}%
                       </td>
                       <td

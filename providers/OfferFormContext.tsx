@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 
 import { useCreateOffer } from "@/hooks/useOffers";
 import { hasAmount } from "@/services/apiOffers.client";
+import { offerItemId } from "@/lib/productVariants";
 import type { DiscountType, OfferFormData } from "@/services/apiOffers.client";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -106,10 +107,11 @@ export interface OfferFormState {
   /**
    * The menu items the offer involves, which become `products`.
    *
-   * A list of pairs rather than the API's flat product ids, so the picker can
-   * tick the exact row that was chosen; `productsFor` flattens it and drops the
-   * variants, which the POS has no field for. Only the BOGO deal collects these
-   * — a percentage or rupee discount comes off the bill, not off a named item.
+   * A list of pairs rather than flat ids so the picker can tick the exact row
+   * that was chosen; `productsFor` turns each pair into the one id the POS
+   * stores, which is the variant's wherever a variant was named. Only the BOGO
+   * deal collects these — a percentage or rupee discount comes off the bill,
+   * not off a named item.
    */
   items: OfferItem[];
 
@@ -117,7 +119,11 @@ export interface OfferFormState {
 
   /** The deal card that is selected — `DealKind.id`, not the API's `type`. */
   discountKind: string;
-  /** Which variant of `freeProduct` is given away. The POS stores the product only. */
+  /**
+   * Which variant of `freeProduct` is given away. Held apart from
+   * `freeProduct` so the picker can show which product the variant belongs to;
+   * the two are combined into the single id the POS stores at save time.
+   */
   freeProductVariantId?: string;
   audience: CustomerAudience;
   /** The tier id an audience of "loyalty-tier" targets. */
@@ -222,13 +228,20 @@ function offerName(form: OfferFormState): string {
 /**
  * The products the offer involves, as the API wants them.
  *
- * Deduplicated, because the picker lists each variant as its own row: ticking
- * "Momo · Large" and "Momo · Small" is two rows but one product, and `products`
- * holds product ids. The variant each row named is lost here — the POS has no
- * field for it.
+ * Each row sends the variant it named, and only falls back to its product where
+ * the item has no variants. "Momo · Large" and "Momo · Small" are therefore two
+ * ids and two offers-worth of stock, where before they collapsed into the one
+ * Momo id and a BOGO meant for the large size ran on every size.
+ *
+ * Still deduplicated: the picker cannot tick a row twice, but nothing stops two
+ * rows resolving to the same id once a product without variants is involved.
  */
 function productsFor(form: OfferFormState): string[] {
-  return [...new Set(form.items.map((item) => item.productId))];
+  return [
+    ...new Set(
+      form.items.map((item) => offerItemId(item.productId, item.variantId)),
+    ),
+  ];
 }
 
 /**
@@ -249,7 +262,10 @@ function toPayload(form: OfferFormState): OfferFormData {
     type: form.type,
     value: hasAmount(form.type) ? form.value : undefined,
     products: products.length > 0 ? products : undefined,
-    freeProduct: form.freeProduct || undefined,
+    // The variant's id where one was picked, for the same reason: giving away
+    // "any Coke" when the merchant chose the small one is a different offer.
+    freeProduct:
+      offerItemId(form.freeProduct, form.freeProductVariantId) || undefined,
     minSpend: form.minSpend > 0 ? form.minSpend : undefined,
     perCustomerLimit:
       form.perCustomerLimit > 0 ? form.perCustomerLimit : undefined,

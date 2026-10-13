@@ -11,12 +11,12 @@ import {
   Lock,
   MapPin,
   Navigation,
-  Pencil,
   Phone,
   Receipt,
   User,
   X,
   Info,
+  Edit3,
 } from "lucide-react";
 
 import { useQuery } from "@tanstack/react-query";
@@ -365,14 +365,14 @@ export default function BusinessSettingsPage() {
                 onClick={startEdit}
                 disabled={isDemo}
                 title={isDemo ? DEMO_EDIT_LOCKED_REASON : undefined}
-                className="inline-flex h-9 shrink-0 cursor-pointer select-none items-center justify-center gap-2 tracking-wide whitespace-nowrap rounded-lg border border-blue-300 bg-white text-blue-600  px-3.5 text-sm font-semibold transition-colors outline-none over:border-blue-400 hover:bg-blue-50 active:bg-blue-100 focus-visible:border-blue-500 focus-visible:ring-[3px] focus-visible:ring-blue-500/30 active:bg-blue-800 active:translate-y-px disabled:cursor-not-allowed disabled:border-[#dadce0] disabled:bg-[#f8f9fa] disabled:text-[#9aa0a6] disabled:opacity-100 disabled:hover:bg-[#f8f9fa] dark:border-[#7ba2e3]/40 dark:bg-white/5 dark:text-[#7ba2e3] dark:hover:border-[#7ba2e3]/60 dark:hover:bg-white/10 dark:active:bg-white/15 dark:disabled:border-white/10 dark:disabled:bg-white/5 dark:disabled:text-[#7b869b] dark:disabled:hover:bg-white/5"
+                className="inline-flex h-8.5 md:h-9 shrink-0 cursor-pointer select-none items-center justify-center gap-2 tracking-wide whitespace-nowrap rounded-lg border border-blue-300 bg-white text-blue-600  px-3.5 text-[13px] font-semibold transition-colors outline-none over:border-blue-400 hover:bg-blue-50 active:bg-blue-100 focus-visible:border-blue-500 focus-visible:ring-[3px] focus-visible:ring-blue-500/30 active:bg-blue-800 active:translate-y-px disabled:cursor-not-allowed disabled:border-[#dadce0] disabled:bg-[#f8f9fa] disabled:text-[#9aa0a6] disabled:opacity-100 disabled:hover:bg-[#f8f9fa] dark:border-[#7ba2e3]/40 dark:bg-white/5 dark:text-[#7ba2e3] dark:hover:border-[#7ba2e3]/60 dark:hover:bg-white/10 dark:active:bg-white/15 dark:disabled:border-white/10 dark:disabled:bg-white/5 dark:disabled:text-[#7b869b] dark:disabled:hover:bg-white/5"
               >
                 {isDemo ? (
                   <Lock className="h-4 w-4" />
                 ) : (
-                  <Pencil className="h-4 w-4" />
+                  <Edit3 className="h-3 w-4" />
                 )}
-                Edit business
+                <span className="hidden md:block"> Edit business</span>
               </Button>
             ) : undefined
           }

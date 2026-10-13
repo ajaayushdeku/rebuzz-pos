@@ -274,8 +274,8 @@ export default function ChangePasswordPage() {
             <div className="flex items-center gap-3  px-6 pt-6 pb-3">
               {/* `border-current/20` frames the tile in the icon's own hue,
                   as the cards elsewhere do. */}
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-current/20 bg-blue-50 text-blue-600 dark:bg-blue-400/15 dark:text-[#7ba2e3]">
-                <Lock className="h-5 w-5" />
+              <div className="flex h-8 sm:h-11 w-8 sm:w-11 shrink-0 items-center justify-center rounded-lg sm:rounded-xl border border-current/20 bg-blue-50 text-blue-600 dark:bg-blue-400/15 dark:text-[#7ba2e3]">
+                <Lock className="h-3.5 sm:h-5 w-3.5 sm:w-5" />
               </div>
               <div className="min-w-0">
                 <h2 className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">

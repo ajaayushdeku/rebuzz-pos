@@ -168,7 +168,7 @@ export function ConfirmDialog({
 
         {warning && (
           <p
-            className={`mt-3 rounded-lg border px-15 py-3 text-xs ${toneStyle.warning}`}
+            className={`mt-3 rounded-lg border px-4 sm:px-15 py-3 text-xs ${toneStyle.warning}`}
           >
             {warning}
           </p>

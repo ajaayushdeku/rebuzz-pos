@@ -200,7 +200,7 @@ export default function DiscountSettingsPage() {
                   }`}
                 >
                   <Icon size={14} className="shrink-0" />
-                  {tab.label}
+                  <span className="hidden sm:block">{tab.label}</span>
                   <span
                     className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 
                      bg-[#e4f2fe] text-blue-950 ring-blue-900 dark:bg-white/10 dark:text-[#e8ecf4] dark:ring-white/20"

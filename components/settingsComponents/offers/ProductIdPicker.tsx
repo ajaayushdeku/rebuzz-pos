@@ -4,48 +4,71 @@ import { useMemo, useState } from "react";
 import { Check, ChevronsUpDown, Search, X } from "lucide-react";
 
 import { useProductsList } from "@/hooks/useProductsList";
-import { getVariants, variantLabel } from "@/lib/productVariants";
+import {
+  getVariants,
+  offerItemLabel,
+  variantLabel,
+} from "@/lib/productVariants";
 
 /**
  * Product pickers for editing a stored offer.
  *
- * One row per product, not per variant — unlike the builder's pickers. An offer
- * comes back from the POS as a list of product ids with no variant beside them,
- * so a variant-level list could not show what was chosen: it would leave every
- * row of a selected product unticked and the field looking empty while the offer
- * still held it.
+ * One row per *variant*, matching the builder's pickers. This used to list one
+ * row per product, because an offer came back as product ids with no variant
+ * beside them and a variant-level list could not have shown what was chosen.
+ * Offers now store the variant's own id, so the row that was picked is exactly
+ * the row that can be ticked, and editing an offer no longer silently widens a
+ * deal on one size to every size of the item.
+ *
+ * Legacy ids are still handled: an offer saved before this shows its product
+ * name in the closed field (via `offerItemLabel`, which resolves either kind)
+ * even though no variant row carries that id. Re-picking upgrades it.
  */
 
 const FIELD =
   "h-11 w-full rounded-xl border border-gray-200 bg-white text-sm outline-none transition focus:ring-2 focus:ring-blue-500/20 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]";
 
+/** `id` is what gets stored: a variant's where the product has any. */
 type Row = { id: string; label: string; variants: string; search: string };
 
 /**
- * The catalogue as rows, one per product, its variants named underneath.
+ * The catalogue as selectable rows — one per variant, or one per product for
+ * an item that has none.
  *
- * The variants are shown but not individually selectable, because the offer can
- * only be stored against the product. Listing them anyway answers the question
- * the row raises — "which momo?" — and the search covers them, so typing
- * "large" still finds the product that has one.
+ * A product with variants contributes no row of its own. That is deliberate and
+ * matches the builder: "Coke" as an offer target is ambiguous once Coke is sold
+ * in three sizes at three prices, and leaving the choice open was how a deal
+ * meant for the small one came to apply to the large.
  */
 function useRows(): { rows: Row[]; isLoading: boolean } {
   const { data: products = [], isLoading } = useProductsList();
 
   const rows = useMemo(
     () =>
-      products.map((product) => {
-        const variants = getVariants(product)
-          .map((variant) => variantLabel(variant))
-          .filter(Boolean)
-          .join(" , ");
+      products.flatMap((product) => {
+        const variants = getVariants(product);
 
-        return {
-          id: product.id,
-          label: product.name,
-          variants,
-          search: `${product.name} ${variants}`.toLowerCase(),
-        };
+        if (variants.length === 0) {
+          return [
+            {
+              id: product.id,
+              label: product.name,
+              variants: "",
+              search: product.name.toLowerCase(),
+            },
+          ];
+        }
+
+        return variants.map((variant) => {
+          const label = variantLabel(variant);
+          return {
+            id: variant.id,
+            label: product.name,
+            variants: label,
+            // Both halves, so "large" finds the row and not just the product.
+            search: `${product.name} ${label}`.toLowerCase(),
+          };
+        });
       }),
     [products],
   );
@@ -53,7 +76,16 @@ function useRows(): { rows: Row[]; isLoading: boolean } {
   return { rows, isLoading };
 }
 
-/** The product name, with its variants under it where it has any. */
+/** How a stored id reads once it is chosen, either kind. */
+function useLabelFor() {
+  const { data: products = [] } = useProductsList();
+  return useMemo(
+    () => (id: string) => offerItemLabel(products, id),
+    [products],
+  );
+}
+
+/** The product name, with the variant it names under it. */
 function RowLabel({ row }: { row: Row }) {
   return (
     <span className="min-w-0 flex-1">
@@ -134,10 +166,14 @@ export function ProductIdPicker({
   placeholder: string;
 }) {
   const { rows, isLoading } = useRows();
+  const labelFor = useLabelFor();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
-  const selected = rows.find((row) => row.id === value);
+  // Resolved rather than looked up among the rows: an offer stored against a
+  // whole product before variants were saved has no row of its own, and it
+  // should read as its product name, not as a deleted item.
+  const selectedLabel = labelFor(value);
   const needle = query.trim().toLowerCase();
   const filtered = needle
     ? rows.filter((row) => row.search.includes(needle))
@@ -152,16 +188,13 @@ export function ProductIdPicker({
       >
         <span
           className={
-            selected ? "truncate" : "text-gray-400 dark:text-[#7b869b]"
+            selectedLabel ? "truncate" : "text-gray-400 dark:text-[#7b869b]"
           }
         >
-          {/* An id with no product behind it — deleted from the menu since the
+          {/* An id with nothing behind it — deleted from the menu since the
               offer was made — says so rather than showing a blank field. */}
-          {selected
-            ? selected.label
-            : value
-              ? "Item no longer on the menu"
-              : placeholder}
+          {selectedLabel ??
+            (value ? "Item no longer on the menu" : placeholder)}
         </span>
         <ChevronsUpDown
           size={15}
@@ -214,6 +247,7 @@ export function ProductIdMultiPicker({
   placeholder: string;
 }) {
   const { rows, isLoading } = useRows();
+  const labelFor = useLabelFor();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
@@ -297,7 +331,7 @@ export function ProductIdMultiPicker({
               key={id}
               className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[12px] text-[#3c4043] dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]"
             >
-              {rows.find((row) => row.id === id)?.label ?? "Removed item"}
+              {labelFor(id) ?? "Removed item"}
               <button
                 type="button"
                 aria-label="Remove item"

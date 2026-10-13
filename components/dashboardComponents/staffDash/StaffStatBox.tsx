@@ -4,13 +4,14 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import Link from "next/link";
 import {
-  User,
   ShoppingCart,
   TrendingUp,
   Clock,
   ArrowRight,
   ShieldCheck,
   CalendarRange,
+  UserRound,
+  UserRoundCog,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -55,26 +56,29 @@ function resolveRole(
 
 const roleConfig = {
   Admin: {
-    avatar: "bg-green-600",
+    avatar:
+      "bg-green-600 text-white dark:bg-green-300/10 dark:text-green-300 dark:border dark:border-green-400/30",
     badge:
-      "border border-green-200 bg-green-100 text-[#328817] dark:bg-green-400/10 dark:border-green-400/25 dark:text-green-300",
+      "border border-green-200 bg-green-100 text-[#328817] dark:bg-green-300/10 dark:text-green-300 dark:border dark:border-green-400/30",
 
     label: "Admin",
     icon: ShieldCheck,
   },
   Staff: {
-    avatar: "bg-blue-500",
+    avatar:
+      "bg-rose-600 text-white dark:bg-rose-400/15 dark:text-rose-300 dark:border dark:border-rose-400/30",
     badge:
-      "border border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-400/10 dark:border-blue-400/25 dark:text-[#a8c4ee]",
+      "border border-rose-200 bg-rose-50 text-rose-700 dark:bg-rose-300/10 dark:text-rose-300 dark:border dark:border-rose-400/30",
     label: "Staff",
-    icon: User,
+    icon: UserRound,
   },
   Basic: {
-    avatar: "bg-indigo-500",
+    avatar:
+      "bg-cyan-600 text-white dark:bg-cyan-400/15 dark:text-cyan-300 dark:border dark:border-cyan-400/30",
     badge:
-      "border border-indigo-200 bg-indigo-50 text-indigo-700 dark:text-indigo-300 dark:bg-indigo-400/10 dark:border-indigo-400/25",
+      "border border-cyan-200 bg-cyan-50 text-cyan-700 dark:bg-cyan-300/10 dark:text-cyan-300 dark:border dark:border-cyan-400/30",
     label: "Basic",
-    icon: User,
+    icon: UserRoundCog,
   },
 };
 
@@ -153,8 +157,8 @@ export default function StaffStatBox({
               {staffInitials}
             </div>
             {roleKey === "Admin" && (
-              <div className="absolute -right-1 -top-1 rounded-full bg-[#00A63E] p-0.5 shadow">
-                <ShieldCheck size={12} className="text-white" />
+              <div className="absolute -right-1 -top-1 rounded-full bg-green-600 text-white dark:bg-[#20323A] dark:text-green-300 dark:border dark:border-green-400/30 p-0.5 shadow">
+                <ShieldCheck size={12} />
               </div>
             )}
           </div>

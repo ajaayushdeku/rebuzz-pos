@@ -17,7 +17,6 @@ import {
   DismissButton,
   SectionHeader,
   SectionMoreButton,
-  SectionRefreshButton,
 } from "../parts";
 
 const KIND = {

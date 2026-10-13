@@ -30,12 +30,12 @@ export default function TablePagination({
   const buttonClass = (disabled: boolean) =>
     `flex items-center gap-1 rounded-lg px-3 py-1.5 text-[10px] sm:text-xs font-medium transition-colors ${
       disabled
-        ? "cursor-not-allowed text-gray-300"
-        : "text-gray-600 hover:bg-gray-100"
+        ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
     }`;
 
   return (
-    <div className="mt-4 flex items-center justify-between border-t border-gray-100 dark:border-white/10 pt-3">
+    <div className="mt-4 flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10 pt-3">
       <button
         onClick={() => onPageChange(Math.max(0, page - 1))}
         disabled={atStart}

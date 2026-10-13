@@ -532,7 +532,7 @@ export default function StaffManagementPage() {
 
         {/* ── Search + Filter ── */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6 mt-6">
-          <div className="relative flex-1">
+          <div className="relative  w-full sm:w-fit">
             <Search
               size={14}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
@@ -547,64 +547,70 @@ export default function StaffManagementPage() {
               className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]"
             />
           </div>
-          <div ref={roleRef} className="relative w-full sm:w-[150px]">
-            <button
-              type="button"
-              onClick={() => setRoleOpen((o) => !o)}
-              className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition capitalize dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc]"
-            >
-              <span>
-                {roleFilter === "all"
-                  ? "All Roles"
-                  : roleFilter.charAt(0).toUpperCase() + roleFilter.slice(1)}
-              </span>
-              <ChevronDown
-                size={14}
-                className={`text-gray-400 transition-transform duration-200 dark:text-[#7b869b] ${
-                  roleOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
 
+          <div className="flex flex-row w-full sm:w-fit items-center justify-between gap-3">
             <div
-              className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 dark:border-white/10 dark:bg-[#1b2436] dark:shadow-none ${
-                roleOpen
-                  ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-                  : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
-              }`}
+              ref={roleRef}
+              className="relative w-full sm:w-[150px] md:w-[170px]"
             >
-              {[
-                { value: "all", label: "All Roles" },
-                { value: "basic", label: "Basic" },
-                { value: "staff", label: "Staff" },
-              ].map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => {
-                    setRoleFilter(opt.value);
-                    setPage(0);
-                    setRoleOpen(false);
-                  }}
-                  className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors cursor-pointer capitalize ${
-                    roleFilter === opt.value
-                      ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-400/15 dark:text-[#a8c4ee]"
-                      : "text-gray-600 hover:bg-gray-100 dark:text-[#c3ccdc] dark:hover:bg-white/10"
+              <button
+                type="button"
+                onClick={() => setRoleOpen((o) => !o)}
+                className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition capitalize dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc]"
+              >
+                <span>
+                  {roleFilter === "all"
+                    ? "All Roles"
+                    : roleFilter.charAt(0).toUpperCase() + roleFilter.slice(1)}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`text-gray-400 transition-transform duration-200 dark:text-[#7b869b] ${
+                    roleOpen ? "rotate-180" : ""
                   }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
+                />
+              </button>
 
-          <ColumnPicker
-            columns={STAFF_COLUMNS}
-            visible={visibleColumns}
-            onChange={handleColumnsChange}
-            minVisible={MIN_COLUMNS}
-            className="w-full sm:w-[150px]"
-          />
+              <div
+                className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 dark:border-white/10 dark:bg-[#1b2436] dark:shadow-none ${
+                  roleOpen
+                    ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+                    : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
+                }`}
+              >
+                {[
+                  { value: "all", label: "All Roles" },
+                  { value: "basic", label: "Basic" },
+                  { value: "staff", label: "Staff" },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      setRoleFilter(opt.value);
+                      setPage(0);
+                      setRoleOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors cursor-pointer capitalize ${
+                      roleFilter === opt.value
+                        ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-400/15 dark:text-[#a8c4ee]"
+                        : "text-gray-600 hover:bg-gray-100 dark:text-[#c3ccdc] dark:hover:bg-white/10"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <ColumnPicker
+              columns={STAFF_COLUMNS}
+              visible={visibleColumns}
+              onChange={handleColumnsChange}
+              minVisible={MIN_COLUMNS}
+              className="w-full sm:w-[150px] md:w-[170px]"
+            />
+          </div>
         </div>
 
         {/* ── Staff Table ── */}

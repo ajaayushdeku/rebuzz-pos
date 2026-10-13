@@ -176,7 +176,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
      * are derived rather than invented: a pale lime wash behind the mark, and
      * a darker lime for links, which near-black would not read as.
      */
-    accent: "#03080A",
+    accent: "#4A7700",
     darkAccent: "#8ca728",
     link: "#4D6B00",
     tint: "#F2FFCC",
@@ -184,10 +184,11 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
     stepInk: "#03080A",
     // A faded lime square, with the mark swept from the near-black into the
     // lime — both brand colours in one small shape.
-    mark: { bg: "#effdc4", ink: "#03080A" },
-    gradient: ["#C8FF00", "#88bb08"],
+    mark: { bg: "#effdc4", ink: "#4A7700" },
+    gradient: ["#C8FF00", "#88bb08", "#4A7700"],
     darkGradient: ["#D9FF4D", "#A8DC2E"],
     button: { bg: "#C8FF00", ink: "#03080A", hover: "#B4E600" },
+
     blurb: "One key, many free models",
     tagline: "Free models · no card",
     placeholder: "Paste your OpenRouter key…",
@@ -370,7 +371,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
     gradient: ["#A6E000", "#76B900", "#4A7700"],
     darkGradient: ["#C6F24A", "#A6E000", "#76B900"],
     mark: { bg: "#EAF7CF", ink: "#4A7700" },
-    card: { border: "#76B900", bg: "#F0FADC" },
+    card: { border: "#76B900", bg: "#dffaab" },
     button: { bg: "#4A7700", ink: "#FFFFFF", hover: "#3A5D00" },
     blurb: "Free credits across a large catalogue",
     tagline: "Free credits · no card",

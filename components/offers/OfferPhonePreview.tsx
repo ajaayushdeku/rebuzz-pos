@@ -256,7 +256,7 @@ export default function OfferPhonePreview() {
               type="button"
               onClick={() => setChannel(id)}
               aria-pressed={active}
-              className={`flex items-center gap-1 rounded-lg px-5 py-1.5 text-[9px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#242a38] ${
+              className={`flex   items-center gap-1 rounded-lg px-5 py-1.5 text-[9px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#242a38] ${
                 active
                   ? "bg-white text-[#3c4043] shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none"
                   : "text-[#5f6368] hover:text-gray-700 dark:text-[#a8c4ee] dark:hover:text-white"

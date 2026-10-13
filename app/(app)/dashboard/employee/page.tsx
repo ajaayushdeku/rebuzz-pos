@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 
-import { UserPlus } from "lucide-react";
+import { UserRoundPlus } from "lucide-react";
 
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import {
@@ -63,7 +63,7 @@ const Page = async ({
                 href="/settings/employees"
                 className="flex flex-row items-center gap-2"
               >
-                <UserPlus className="h-4 w-4" />
+                <UserRoundPlus className="h-4 w-4" />
                 <span className="hidden lg:block">Manage Employees</span>
               </Link>
             </button>

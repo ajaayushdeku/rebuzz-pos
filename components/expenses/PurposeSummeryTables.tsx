@@ -5,12 +5,12 @@ import { useState, useMemo, createElement, useRef } from "react";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import {
-  Pencil,
   Trash2,
   Search,
   Receipt,
   TrendingDown,
   TrendingUp,
+  Edit3,
 } from "lucide-react";
 import ModalShell from "@/components/ui/ModalShell";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
@@ -202,7 +202,7 @@ function TransactionModal({
                         onClick={() => startEdit(t)}
                         className="text-gray-400 hover:text-blue-500 dark:text-[#7b869b]"
                       >
-                        <Pencil size={13} />
+                        <Edit3 size={13} />
                       </button>
                       <button
                         onClick={() => setDeleteTarget(t)}

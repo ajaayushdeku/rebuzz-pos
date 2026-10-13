@@ -104,6 +104,66 @@ export function productLabel(
   return label ? `${product.name} · ${label}` : product.name;
 }
 
+/**
+ * The id an offer stores for a chosen row: the variant's where one was chosen,
+ * the product's otherwise.
+ *
+ * A variant is something you sell in its own right — its own price, its own
+ * stock — so an offer on "Coke · small · cherry" has to name that variant and
+ * not the Coke it hangs off. The variant ids are ObjectIds of their own
+ * (`variants.variantItems[].\u005fid`), so one stands on its own in a `products`
+ * list without the parent beside it.
+ */
+export function offerItemId(
+  productId: string,
+  variantId?: string | null,
+): string {
+  return variantId || productId;
+}
+
+/**
+ * A stored offer id back to the row that produced it.
+ *
+ * The id may be either kind: a product's, for an item with no variants — or
+ * for an offer saved before variants were stored — and a variant's otherwise.
+ * Products are checked first, so a legacy product id still resolves to the
+ * product rather than falling through to the "removed" case.
+ *
+ * Returns undefined for an id with nothing behind it, which is what an item
+ * deleted from the menu since the offer was made looks like.
+ */
+export function resolveOfferItem(
+  products: Product[],
+  id: string | undefined | null,
+): { product: Product; variant?: NormalizedVariant } | undefined {
+  if (!id) return undefined;
+
+  const whole = products.find((product) => product.id === id);
+  if (whole) return { product: whole };
+
+  for (const product of products) {
+    const variant = findVariant(product, id);
+    if (variant) return { product, variant };
+  }
+
+  return undefined;
+}
+
+/**
+ * How a stored offer id reads to a merchant — "Coke · small · cherry", or just
+ * "Coke" where the id names a whole product.
+ */
+export function offerItemLabel(
+  products: Product[],
+  id: string | undefined | null,
+): string | undefined {
+  const hit = resolveOfferItem(products, id);
+  if (!hit) return undefined;
+
+  const label = variantLabel(hit.variant);
+  return label ? `${hit.product.name} · ${label}` : hit.product.name;
+}
+
 /** Cheapest variant price, for "From X" in the product list. */
 export function lowestVariantPrice(
   product: Product | undefined | null,

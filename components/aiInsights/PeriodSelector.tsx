@@ -87,7 +87,7 @@ export default function PeriodSelector({
           </div>
         </div>
 
-        <div className="flex min-w-0 flex-col items-stretch gap-1.5 sm:w-[260px]">
+        <div className="flex min-w-0 w-full flex-col items-stretch gap-1.5 sm:w-[260px]">
           <FilterSelect
             value={current?.id ?? ""}
             options={options}
@@ -101,7 +101,7 @@ export default function PeriodSelector({
 
           {/* The exact dates, because "September 2026" is not the same thing as
               1–30 September to someone checking a figure against a report. */}
-          <p className="flex items-center gap-1.5 text-right text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
+          <p className="flex items-center justify-end pr-1   gap-1.5 text-right text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
             {isLoading && (
               <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
             )}

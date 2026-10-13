@@ -50,7 +50,7 @@ const StandardTaxTable = ({
               columns from its own content, so switching tabs moved them. The
               empty fourth track matches the group table's "Includes" column,
               which is what keeps the two grids aligned. */}
-          <table className="w-full table-fixed text-sm min-w-[990px]">
+          <table className="w-full table-fixed text-sm min-w-[500px] md:min-w-[990px]">
             {/* Same widths as the group table, "Combined Rate" included, so
                 the shared columns do not move when the tab is switched. */}
             <colgroup>
@@ -111,7 +111,7 @@ const StandardTaxTable = ({
                     key={tax._id}
                     className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors dark:border-white/10 dark:hover:bg-white/5"
                   >
-                    <td className="py-3 font-medium text-[11px] text-gray-400 dark:text-[#7b869b]">
+                    <td className="py-3 pl-1.5 font-medium text-[11px] text-gray-400 dark:text-[#7b869b]">
                       #{idx + 1}
                     </td>
                     <td

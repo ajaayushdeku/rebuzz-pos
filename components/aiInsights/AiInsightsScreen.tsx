@@ -291,7 +291,7 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
         </div>
       )}
 
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-2">
         {/* Everything inside names the period in its own copy — "September 2026"
             rather than "the last 30 days". The festival section below is outside
             on purpose: it is about what is coming, so the rolling wording it
@@ -304,7 +304,7 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
           }
         >
           {/* One boundary per section, so a failure in one cannot blank the rest. */}
-          <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-2">
             <ChartErrorBoundary>
               <CustomerRetentionSection
                 items={retention}
@@ -312,6 +312,9 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
                 onDismiss={dismiss}
               />
             </ChartErrorBoundary>
+
+            <div className="border-t border-gray-200 my-6 dark:border-white/10" />
+
             <ChartErrorBoundary>
               <MenuSuggestionsSection
                 items={menu}
@@ -321,6 +324,9 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
                 onDismiss={dismiss}
               />
             </ChartErrorBoundary>
+
+            <div className="border-t border-gray-200 my-6 dark:border-white/10" />
+
             <ChartErrorBoundary>
               <SlowItemsSection
                 items={slow}
@@ -328,6 +334,9 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
                 onDismiss={dismiss}
               />
             </ChartErrorBoundary>
+
+            <div className="border-t border-gray-200 my-6 dark:border-white/10" />
+
             <ChartErrorBoundary>
               <PricingSection
                 items={pricing}
@@ -335,6 +344,9 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
                 onDismiss={dismiss}
               />
             </ChartErrorBoundary>
+
+            <div className="border-t border-gray-200 my-6 dark:border-white/10" />
+
             <ChartErrorBoundary>
               <HourPlaybookSection
                 items={hours}
@@ -342,6 +354,9 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
                 onDismiss={dismiss}
               />
             </ChartErrorBoundary>
+
+            <div className="border-t border-gray-200 my-6 dark:border-white/10" />
+
             <ChartErrorBoundary>
               <SalesRecommendationsSection
                 items={sales}
@@ -350,6 +365,8 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
               />
             </ChartErrorBoundary>
 
+            <div className="border-t border-gray-200 my-6 dark:border-white/10" />
+
             <ChartErrorBoundary>
               <StaffingSection
                 items={staffing}
@@ -357,6 +374,8 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
                 onDismiss={dismiss}
               />
             </ChartErrorBoundary>
+
+            <div className="border-t border-gray-200 my-6 dark:border-white/10" />
           </div>
         </PeriodLabelProvider>
 

@@ -22,7 +22,6 @@ import {
   LeadTile,
   SectionHeader,
   SectionMoreButton,
-  SectionRefreshButton,
   TagList,
   useMoney,
   type AccentName,
@@ -134,9 +133,11 @@ export default function MenuSuggestionsSection({
           heading: "Where these come from",
           body: `The AI is given your best-selling items from ${windowText} and asked what else would sell beside them. Nothing here is on your menu yet — each card is a proposal, with the items it was built from listed on it.`,
         }}
+        align="flex-wrap"
+        actionWidth="w-full"
         actions={
-          <div className="flex flex-row w-full md:w-fit gap-2 justify-between">
-            <div className="relative">
+          <div className="flex flex-row mb-2 w-full items-center gap-2 justify-between">
+            <div className="relative w-full">
               <Search
                 size={14}
                 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9aa0a6] dark:text-[#9aa6bd]"
@@ -146,21 +147,27 @@ export default function MenuSuggestionsSection({
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search menu ideas..."
                 aria-label="Search menu ideas"
-                className="h-9 w-full rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 pl-9 pr-3 text-[13px] outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100 sm:w-52 dark:focus:border-violet-400/60 dark:focus:ring-violet-400/25 dark:border-white/15"
+                className="h-9 w-full  rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 pl-9 pr-3 text-[13px] outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100  dark:focus:border-violet-400/60 dark:focus:ring-violet-400/25 dark:border-white/15"
               />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="mx-2 h-6.5 w-px bg-[#dadce0] dark:bg-white/40" />
+
+            <div className="flex items-center justify-end gap-2">
               {" "}
               <SegmentedControl
                 options={DIFFICULTY_OPTIONS}
                 value={difficulty}
                 onChange={setDifficulty}
                 accent="blue"
+                showText={true}
               />
-              <SectionMoreButton
-                state={state}
-                textClassName="text-violet-600 hover:bg-violet-100 border-violet-300 hover:border-violet-400 dark:hover:border-violet-400/60 dark:hover:bg-violet-400/20 dark:border-violet-400/40 dark:text-violet-300"
-              />
+              <div>
+                {" "}
+                <SectionMoreButton
+                  state={state}
+                  textClassName="w-full text-violet-600 hover:bg-violet-100 border-violet-300 hover:border-violet-400 dark:hover:border-violet-400/60 dark:hover:bg-violet-400/20 dark:border-violet-400/40 dark:text-violet-300"
+                />
+              </div>
               {/* <SectionRefreshButton
                 state={state}
                 textClassName="text-violet-600 hover:bg-violet-100 border-violet-300 hover:border-violet-400 dark:hover:border-violet-400/60 dark:hover:bg-violet-400/20 dark:border-violet-400/40 dark:text-violet-300"

@@ -539,8 +539,8 @@ export default function OfferDeal() {
 
       {/* A BOGO has no amount, so what it needs instead is the items it runs
           on: "buy one get one" on everything on the menu is not an offer, it is
-          half price. Variants are listed as their own rows, but the POS stores
-          products, so two sizes of one momo reach it as one id. */}
+          half price. Variants are their own rows and their own ids, so a deal
+          on the large momo does not quietly include the small one. */}
       {form.discountKind === "bogo" && (
         <div className="mt-6 max-w-sm">
           <label className={LABEL}>

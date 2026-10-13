@@ -6,6 +6,12 @@
  * These mirror the real layout so the page doesn't jump when data arrives.
  */
 
+import { cn } from "@/lib/utils";
+import {
+  STAT_ROW,
+  STAT_ROW_ITEM,
+} from "../dashboardComponents/overviewDash/statRow";
+
 /** Title + subtitle stack, matching <ComponentHeader />. */
 function HeaderSkeleton({
   titleWidth = "w-40",
@@ -63,11 +69,14 @@ function InfoRowSkeleton({ valueWidth = "w-40" }: { valueWidth?: string }) {
 /** Matches the 4-up stats row. */
 export function CustomerStatsRowSkeleton() {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 animate-pulse">
+    <div className={`${STAT_ROW} mb-6 animate-pulse`}>
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
-          className="bg-white dark:bg-[#161d2e] rounded-xl border border-gray-100 shadow-sm p-4 dark:border-white/10"
+          className={cn(
+            "bg-white dark:bg-[#161d2e] rounded-xl border border-gray-100 shadow-sm p-4 dark:border-white/10",
+            STAT_ROW_ITEM,
+          )}
         >
           <div className="flex items-center gap-2 mb-2">
             <div className="w-7 h-7 rounded-lg bg-gray-100 shrink-0 dark:bg-white/10" />
@@ -157,9 +166,9 @@ export function CustomerDetailSkeleton() {
     <div className="min-h-screen bg-surface-page px-6 py-5 sm:py-8 md:px-10 dark:bg-[#0f1420]">
       <div className="animate-pulse">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gray-100 shadow-sm shrink-0 dark:bg-white/10" />
+            <div className="hidden sm:block w-9 h-9 rounded-lg bg-gray-100 shadow-sm shrink-0 dark:bg-white/10" />
             <div className="w-12 h-12 rounded-full bg-gray-200 shrink-0 dark:bg-white/15" />
             <div className="space-y-2">
               <div className="h-6 w-44 bg-gray-200 rounded dark:bg-white/15" />

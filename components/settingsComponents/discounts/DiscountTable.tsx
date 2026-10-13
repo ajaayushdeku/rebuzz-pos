@@ -46,105 +46,108 @@ const DiscountTable = ({
 
   return (
     <>
-      {/* `table-fixed` with declared widths: each tab renders its own table,
+      <div className="scrollbar-hide overflow-x-auto -mx-5 px-5 md:mx-0 md:px-0">
+        <div className="min-w-[350px] sm:min-w-[680px]">
+          {/* `table-fixed` with declared widths: each tab renders its own table,
           and auto layout sized the columns from whatever that tab held — so
           switching between "10%" and "Rs 1,000.00" shifted every column. */}
-      <table className="w-full table-fixed text-sm">
-        <colgroup>
-          <col className="w-14" />
-          <col />
-          <col className="w-32" />
-          <col className="w-24" />
-        </colgroup>
-        <thead>
-          <tr className="border-b border-[#e8eaed] text-[11px] tracking-wider text-[#5f6368] dark:border-white/10 dark:text-[#9aa6bd]">
-            <th className="text-left pb-2.5 font-normal">S.No.</th>
-            <th className="text-left pb-2.5 font-normal">Name</th>
-            <th className="text-left pb-2.5 font-normal">Value</th>
-            <th className="text-right pb-2.5 font-normal">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? (
-            <tr>
-              <td colSpan={4} className="py-10 text-center">
-                <div className="flex items-center justify-center gap-2 text-gray-400 dark:text-[#7b869b]">
-                  <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
-                  <span className="text-sm">Loading discounts...</span>
-                </div>
-              </td>
-            </tr>
-          ) : filtered.length === 0 ? (
-            <tr>
-              <td
-                colSpan={4}
-                className="text-center py-2 text-sm text-gray-400 dark:text-[#7b869b]"
-              >
-                <div className="flex flex-col items-center justify-center py-12">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 dark:bg-white/10">
-                    {discountType == "fixed" ? (
-                      <DollarSign
-                        size={24}
-                        className="text-gray-500 dark:text-[#9aa6bd]"
-                      />
-                    ) : (
-                      <Percent
-                        size={24}
-                        className="text-gray-500 dark:text-[#9aa6bd]"
-                      />
-                    )}
-                  </div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-[#c3ccdc]">
-                    No discounts found
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1 dark:text-[#7b869b]">
-                    Create a discount to get started.
-                  </p>
-                </div>
-              </td>
-            </tr>
-          ) : (
-            paged.map((d, idx) => (
-              <tr
-                key={d._id}
-                className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors dark:border-white/10 dark:hover:bg-white/5"
-              >
-                <td className="py-3 font-medium text-[11px] text-gray-400 dark:text-[#7b869b]">
-                  #{idx + 1}
-                </td>
-                <td
-                  className="truncate py-3 pr-3 text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]"
-                  title={d.name}
-                >
-                  {d.name}
-                </td>
-                <td className="whitespace-nowrap py-3 text-xs font-semibold tabular-nums text-emerald-600 dark:text-[#10b981]">
-                  {d.type === "percentage"
-                    ? `${d.rate}%`
-                    : ` ${formatCurrencySymbol(d.rate, currency.symbol, currency.locale)}`}
-                </td>
-                <td className="py-3">
-                  <div className="flex items-center justify-end gap-1.5">
-                    <button
-                      onClick={() => onEdit(d)}
-                      className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors dark:text-[#7b869b] dark:hover:bg-blue-400/15 dark:hover:text-[#7ba2e3]"
-                    >
-                      <Edit3 size={13} />
-                    </button>
-                    <button
-                      onClick={() => onDelete(d._id)}
-                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors dark:text-[#7b869b] dark:hover:bg-red-400/15 dark:hover:text-[#f87171]"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                </td>
+          <table className="w-full table-fixed text-sm min-w-[500px] md:min-w-[990px]">
+            <colgroup>
+              <col className="w-14" />
+              <col />
+              <col className="w-32" />
+              <col className="w-24" />
+            </colgroup>
+            <thead>
+              <tr className="border-b border-[#e8eaed] text-[11px] tracking-wider text-[#5f6368] dark:border-white/10 dark:text-[#9aa6bd]">
+                <th className="text-left pb-2.5 font-normal">S.No.</th>
+                <th className="text-left pb-2.5 font-normal">Name</th>
+                <th className="text-left pb-2.5 font-normal">Value</th>
+                <th className="text-right pb-2.5 font-normal">Actions</th>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="py-10 text-center">
+                    <div className="flex items-center justify-center gap-2 text-gray-400 dark:text-[#7b869b]">
+                      <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                      <span className="text-sm">Loading discounts...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="text-center py-2 text-sm text-gray-400 dark:text-[#7b869b]"
+                  >
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 dark:bg-white/10">
+                        {discountType == "fixed" ? (
+                          <DollarSign
+                            size={24}
+                            className="text-gray-500 dark:text-[#9aa6bd]"
+                          />
+                        ) : (
+                          <Percent
+                            size={24}
+                            className="text-gray-500 dark:text-[#9aa6bd]"
+                          />
+                        )}
+                      </div>
+                      <p className="text-sm font-medium text-gray-500 dark:text-[#c3ccdc]">
+                        No discounts found
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1 dark:text-[#7b869b]">
+                        Create a discount to get started.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                paged.map((d, idx) => (
+                  <tr
+                    key={d._id}
+                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors dark:border-white/10 dark:hover:bg-white/5"
+                  >
+                    <td className="py-3 pl-1 font-medium text-[11px] text-gray-400 dark:text-[#7b869b]">
+                      #{idx + 1}
+                    </td>
+                    <td
+                      className="truncate py-3 pr-3 text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]"
+                      title={d.name}
+                    >
+                      {d.name}
+                    </td>
+                    <td className="whitespace-nowrap py-3 text-xs font-semibold tabular-nums text-emerald-600 dark:text-[#10b981]">
+                      {d.type === "percentage"
+                        ? `${d.rate}%`
+                        : ` ${formatCurrencySymbol(d.rate, currency.symbol, currency.locale)}`}
+                    </td>
+                    <td className="py-3">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => onEdit(d)}
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors dark:text-[#7b869b] dark:hover:bg-blue-400/15 dark:hover:text-[#7ba2e3]"
+                        >
+                          <Edit3 size={13} />
+                        </button>
+                        <button
+                          onClick={() => onDelete(d._id)}
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors dark:text-[#7b869b] dark:hover:bg-red-400/15 dark:hover:text-[#f87171]"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
       {/* Pagination */}
       {filtered.length > PAGE_SIZE && (
         <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">

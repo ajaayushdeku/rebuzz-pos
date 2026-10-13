@@ -20,6 +20,9 @@ import EditNormalTaxModal from "@/components/settingsComponents/taxes/EditNormal
 import EditGroupTaxModal from "@/components/settingsComponents/taxes/EditGroupTaxModal";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import PageHeader from "@/components/ui/PageHeader";
+import { EXCLUSIVE_TAX_CONCEPT } from "@/lib/help/content";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 type TabKey = "standard" | "group";
 
@@ -50,6 +53,7 @@ const Toggle = ({
 };
 
 export default function TaxSettingsPage() {
+  const { currency } = useCurrency();
   const { data, isLoading } = useTaxes();
   const { mutate: toggleTax, isPending: togglingTax } = useToggleTax();
   const { mutate: updateSettings, isPending: updatingSettings } =
@@ -89,6 +93,29 @@ export default function TaxSettingsPage() {
   const groupedTaxes = data?.groupedTaxes ?? [];
   const taxSettings = data?.taxSettings;
   const isExclusive = taxSettings?.mode === "exclusive";
+
+  /**
+   * The one rate the switch would act on, so the panel below can show the sum
+   * on this business's own numbers rather than the help text's 13%.
+   *
+   * Only ever one: `handleToggle` turns the previous rate off as it turns a new
+   * one on. A group's rate is the total of its parts, the same sum
+   * GroupTaxTable prints in its Rate column.
+   */
+  const activeNormal = taxes.find((t) => t.isEnabled);
+  const activeGroup = groupedTaxes.find((g) => g.isEnabled);
+  const activeRate = activeNormal
+    ? activeNormal.rate
+    : activeGroup
+      ? activeGroup.taxIds.reduce(
+          (sum, id) => sum + (taxes.find((t) => t._id === id)?.rate ?? 0),
+          0,
+        )
+      : null;
+  const activeName = activeNormal?.name ?? activeGroup?.name ?? null;
+
+  const money = (amount: number) =>
+    formatCurrencySymbol(amount, currency.symbol, currency.locale);
 
   const handleToggle = (taxId: string, currentlyEnabled: boolean) => {
     setTogglingId(taxId);
@@ -315,22 +342,81 @@ export default function TaxSettingsPage() {
           title="Tax Settings"
           subtitle="Manage tax rates and modes"
           spaceBelow={false}
-          actions={
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600 font-medium dark:text-[#9aa6bd]">
-                  Exclusive Tax
-                </span>
-                <Toggle
-                  checked={isExclusive}
-                  loading={updatingSettings}
-                  onClick={handleModeToggle}
-                />
-              </div>
-              <CreateTaxDialog />
-            </div>
-          }
+          flexItems="items-start flex-col"
+          actionWidth="w-full"
+          actions={<CreateTaxDialog />}
         />
+
+        {/* ── Exclusive Tax ──
+            Out of the header's action strip and into the page. A switch that
+            changes what every invoice charges has to be able to say what it
+            does, and a row of header buttons has no room for a sentence — it
+            read as one more control beside "Create Tax", with the difference
+            between taxing and not taxing left to the words "Exclusive Tax".
+
+            Above the tabs rather than inside a panel because it governs both:
+            the mode is one setting for the business, not a property of
+            standard rates or of group rates. */}
+        <section className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 dark:border-white/10 dark:bg-[#0F1420]">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="flex h-8 sm:h-9 w-8 sm:w-9 shrink-0 items-center justify-center rounded-lg  border border-blue-100 bg-blue-50 text-blue-600 dark:border-white/10 dark:bg-blue-400/10 dark:text-[#7ba2e3]">
+                <Receipt className="w-4 sm:h-4.5 w-4 sm:w-4.5 " />
+              </span>
+              <div className="min-w-0">
+                <h2 className="text-[15px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
+                  Exclusive Tax
+                </h2>
+                {/* The switch's own position in words. A 36px track reads as
+                    on or off only once you know which side is which. */}
+                <p className="mt-0.5 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
+                  {isExclusive
+                    ? "On — invoices are charging tax"
+                    : "Off — invoices carry no tax"}
+                </p>
+              </div>
+            </div>
+
+            <Toggle
+              checked={isExclusive}
+              loading={updatingSettings}
+              onClick={handleModeToggle}
+            />
+          </div>
+
+          <p className="mt-4 text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
+            {EXCLUSIVE_TAX_CONCEPT.body}
+          </p>
+
+          {/* The same sum again on the rate that is actually enabled, since
+              13% is the help text's example and not necessarily theirs. */}
+          {activeRate === null ? (
+            <p className="mt-3 text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
+              No rate is enabled yet, so this switch has nothing to apply.
+              Enable one in the table below first — only one rate is in force at
+              a time, and turning a second on replaces it.
+            </p>
+          ) : (
+            <p className="mt-3 text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
+              {isExclusive ? "Applying" : "With this on"},{" "}
+              <span className="font-medium text-[#3c4043] dark:text-[#e8ecf4]">
+                {activeName}
+              </span>{" "}
+              at {activeRate}%{isExclusive ? " bills" : " would bill"} an item
+              priced at {money(100)} as{" "}
+              <span className="font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
+                {money(100 + activeRate)}
+              </span>
+              .
+            </p>
+          )}
+
+          {/* Amber, and only here: the sentence that prevents a mistake. The
+              same treatment the help screen gives a concept's watch-out. */}
+          <p className="mt-3 border-l-2 border-amber-300 pl-3 text-[12px] leading-relaxed text-amber-800 dark:border-amber-400/40 dark:text-amber-200">
+            {EXCLUSIVE_TAX_CONCEPT.watchOut}
+          </p>
+        </section>
 
         {/* ── Tabs — the rule runs edge to edge and the pill sits on top ── */}
         <div className="relative flex justify-center mt-6">
@@ -368,7 +454,7 @@ export default function TaxSettingsPage() {
                   }`}
                 >
                   <Icon size={14} className="shrink-0" />
-                  {tab.label}
+                  <span className="hidden sm:block"> {tab.label}</span>
                   <span
                     className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 
                      bg-[#e4f2fe] text-blue-950 ring-blue-900 dark:bg-white/10 dark:text-[#e8ecf4] dark:ring-white/20"

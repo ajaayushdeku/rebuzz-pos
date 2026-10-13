@@ -311,7 +311,7 @@ export default function BillsSection({
       {/* Search & Filter Bar */}
       <div className="flex flex-col justify-between sm:flex-row items-end sm:items-center gap-3 mb-4">
         {/* Search */}
-        <div className="relative w-full sm:w-64">
+        <div className="relative w-full">
           <Search
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
@@ -335,6 +335,8 @@ export default function BillsSection({
             </button>
           )}
         </div>
+
+        <div className="hidden sm:block mx-1 h-7 w-px bg-[#dadce0] dark:bg-white/40" />
 
         {/* Status Filter */}
         <SegmentedControl

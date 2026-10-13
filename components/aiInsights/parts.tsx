@@ -27,6 +27,11 @@ import { useAiProviderLabel } from "@/hooks/useAiKey";
 import type { AiSectionState } from "@/hooks/useAiSection";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatNumber } from "@/utils/helper";
+import {
+  STAT_ROW_AI_INSIGHTS,
+  STAT_ROW_ITEM_AI_INSIGHTS,
+} from "../dashboardComponents/overviewDash/statRow";
+import { cn } from "@/lib/utils";
 
 /**
  * Pieces shared by every AI Insights section.
@@ -108,6 +113,8 @@ export function SectionHeader({
   info,
   actions,
   sample = false,
+  align = "flex-row",
+  actionWidth = "",
 }: {
   icon: LucideIcon;
   /** Tile background and icon colour, e.g. "bg-red-50 text-red-600 dark:text-red-300 dark:bg-red-400/10". */
@@ -119,11 +126,15 @@ export function SectionHeader({
   actions?: ReactNode;
   /** The section still shows sample content; see SampleDataBadge. */
   sample?: boolean;
+  align?: string;
+  actionWidth?: string;
 }) {
   return (
     // `relative`: a few sections pin their controls to the top-right on
     // mobile, and those measure from here.
-    <div className="relative mb-5 flex flex-wrap  items-center justify-between gap-3">
+    <div
+      className={`relative mb-4 flex ${align}  items-center justify-between gap-3`}
+    >
       <div className="flex min-w-0 items-center gap-3">
         {/* A pale frame on a paler fill, as on every dashboard card, so the
             icon's own colour carries the tile. */}
@@ -133,20 +144,24 @@ export function SectionHeader({
           <Icon size={16} />
         </div>
         <div className="min-w-0">
-          <h2 className="flex flex-wrap items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
+          <h3 className="flex items-center gap-1.5 text-sm font-normal text-[#3c4043] sm:text-[15px] dark:text-[#e8ecf4]">
             <span className="truncate">{title}</span>
             {info && (
               <CardInfo heading={info.heading} body={info.body} label={title} />
             )}
             {sample && <SampleDataBadge />}
-          </h2>
-          <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
+          </h3>
+          <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug  tracking-wide text-[#9aa0a6] sm:line-clamp-none sm:text-xs dark:text-[#9aa6bd]">
             {subtitle}
           </p>
         </div>
       </div>
 
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      {actions && (
+        <div className={`flex ${actionWidth}   items-center gap-2`}>
+          {actions}
+        </div>
+      )}
     </div>
   );
 }
@@ -205,9 +220,8 @@ export function DismissButton({
 /** Three across on wide screens, the grid every card section uses. */
 export function CardGrid({ children }: { children: ReactNode }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {children}
-    </div>
+    // <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div className={STAT_ROW_AI_INSIGHTS}>{children}</div>
   );
 }
 
@@ -235,6 +249,7 @@ export function SectionMoreButton<T>({
   textClassName: string;
 }) {
   if (!state.canGenerateMore) return null;
+
   return (
     <span title="Adds new cards to the ones shown. Uses one request on your AI key.">
       <GenerateMoreButton
@@ -791,7 +806,12 @@ export function InsightCard({
 }) {
   const a = ACCENTS[accent];
   return (
-    <article className="relative flex h-full flex-col overflow-hidden rounded-xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] transition-colors hover:border-[#dadce0] dark:hover:border-white/25 dark:border-white/10">
+    <article
+      className={cn(
+        "relative flex h-full flex-col overflow-hidden rounded-xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] transition-colors hover:border-[#dadce0] dark:hover:border-white/25 dark:border-white/10",
+        STAT_ROW_ITEM_AI_INSIGHTS,
+      )}
+    >
       {/* The kind of card, as a colour, before anything is read. */}
       {/* <div className={`h-0.75 ${a.bar}`} aria-hidden /> */}
 

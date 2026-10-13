@@ -37,6 +37,14 @@ export const STAT_ROW = [
   "md:gap-3 lg:grid-cols-4",
 ].join(" ");
 
+export const STAT_ROW_AI_INSIGHTS = [
+  "flex items-start gap-3 -mx-6 snap-x snap-mandatory overflow-x-auto scroll-pl-6 px-6  scrollbar-hide",
+  "sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-2 sm:snap-none sm:overflow-visible sm:px-0 sm:pb-0",
+  "md:gap-3 lg:grid-cols-3",
+].join(" ");
+
+/**
+
 /**
  * One card in it.
  *
@@ -47,3 +55,6 @@ export const STAT_ROW = [
  */
 export const STAT_ROW_ITEM =
   "w-[80%] max-w-[400px] shrink-0 snap-start sm:w-auto sm:max-w-none";
+
+export const STAT_ROW_ITEM_AI_INSIGHTS =
+  "w-[95%] max-w-[500px] shrink-0 snap-start sm:w-auto sm:max-w-[700px]";

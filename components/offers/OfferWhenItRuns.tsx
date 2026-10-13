@@ -396,7 +396,7 @@ export default function OfferWhenItRuns() {
         {/* One scrolling row rather than a wrapping block: the list only grows
             as festivals are added, and a wrap would push the dates further
             down the step every time one was. */}
-        <div className="mt-1.5 rounded-xl border border-[#dadce0] bg-[#ffffff] p-3 dark:border-white/15 dark:bg-white/5">
+        <div className="mt-1.5 rounded-xl border border-[#dadce0] bg-[#ffffff]  p-2 sm:p-3  dark:border-white/15 dark:bg-white/5">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {FESTIVALS.map((f) => {
               const active = form.festival === f.id;
@@ -427,7 +427,7 @@ export default function OfferWhenItRuns() {
           ends — the fields, the calendars to pick them from, and the note
           when they are the merchant's to set. */}
       <div className="mt-6 overflow-hidden rounded-xl border border-[#dadce0] dark:border-white/15">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e8eaed] bg-[#f8f9fa] px-4 py-2.5 dark:border-white/10 dark:bg-white/5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#e8eaed] bg-[#f8f9fa] px-4 py-2.5 dark:border-white/10 dark:bg-white/5">
           <div className="flex items-center gap-2">
             <CalendarDays
               size={15}
@@ -444,34 +444,40 @@ export default function OfferWhenItRuns() {
           </div>
 
           {/* The calendars in their own colours, matching the popups. */}
-          <div className="flex items-center gap-0.5 rounded-lg bg-white dark:bg-white/5 p-0.5 ring-1 ring-[#dadce0] dark:ring-white/15">
-            <span className="px-2 text-[11px] text-[#9aa0a6] max-sm:hidden dark:text-[#9aa6bd]">
-              Browse holidays
+          <div className="w-full flex flex-row items-center justify-end gap-1">
+            {" "}
+            <span className="px-2 text-[11px] text-right w-full text-[#9aa0a6] max-sm:hidden dark:text-[#9aa6bd]">
+              Browse Holidays:
             </span>
-            <button
-              type="button"
-              onClick={() => setCalendar("bs")}
-              aria-haspopup="dialog"
-              className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-400/15 dark:text-[#e8ecf4]"
-            >
-              <CalendarDays
-                size={14}
-                className="text-rose-500 dark:text-rose-300"
-              />
-              Nepali calendar
-            </button>
-            <button
-              type="button"
-              onClick={() => setCalendar("ad")}
-              aria-haspopup="dialog"
-              className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-400/15 dark:text-[#e8ecf4]"
-            >
-              <CalendarDays
-                size={14}
-                className="text-teal-500 dark:text-teal-300"
-              />
-              English calendar
-            </button>
+            <div className="w-full  flex items-center gap-0.5 rounded-lg bg-white dark:bg-white/5 p-0.5 ring-1 ring-[#dadce0] dark:ring-white/15">
+              <button
+                type="button"
+                onClick={() => setCalendar("bs")}
+                aria-haspopup="dialog"
+                className="inline-flex h-7 w-full cursor-pointer items-center justify-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-400/15 dark:text-[#e8ecf4]"
+              >
+                <CalendarDays
+                  size={13}
+                  className="text-rose-500 dark:text-rose-300"
+                />
+                Nepali calendar
+              </button>
+
+              <div className="mx-0.5 h-5 w-px bg-[#dadce0] dark:bg-white/20" />
+
+              <button
+                type="button"
+                onClick={() => setCalendar("ad")}
+                aria-haspopup="dialog"
+                className="inline-flex h-7 w-full cursor-pointer items-center justify-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-400/15 dark:text-[#e8ecf4]"
+              >
+                <CalendarDays
+                  size={13}
+                  className="text-teal-500 dark:text-teal-300"
+                />
+                English calendar
+              </button>
+            </div>
           </div>
         </div>
 

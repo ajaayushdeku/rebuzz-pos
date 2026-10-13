@@ -219,7 +219,7 @@ export default function InvoiceListSection({
       {/* Search & Filter Bar */}
       <div className="flex flex-col justify-between sm:flex-row items-end sm:items-center gap-3 mb-4">
         {/* Search */}
-        <div className="relative w-full sm:w-64">
+        <div className="relative w-full">
           <Search
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
@@ -244,8 +244,9 @@ export default function InvoiceListSection({
           )}
         </div>
 
-        {/* Status Filter */}
+        <div className="hidden sm:block mx-1 h-7 w-px bg-[#dadce0] dark:bg-white/40" />
 
+        {/* Status Filter */}
         <SegmentedControl
           label="Status:"
           accent="blue"
@@ -285,7 +286,7 @@ export default function InvoiceListSection({
               <col className="w-28" />
               <col className="w-38" />
               <col className="w-28" />
-              <col className="w-28" />
+              <col className="w-30" />
             </colgroup>
             <thead>
               <tr className="border-b text-[11px] tracking-wider border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
@@ -405,7 +406,8 @@ export default function InvoiceListSection({
                     <td className="py-3 px-4 text-center">
                       <StatusPill label={ticket.paidStatus} />
                     </td>
-                    <td className="py-3 px-4 text-center">
+
+                    <td className="py-3 px-4 text-center ">
                       <StatusPill
                         label={ticket.archivedAt ? "Archived" : "Unarchived"}
                         tone={ticket.archivedAt ? "warning" : "neutral"}

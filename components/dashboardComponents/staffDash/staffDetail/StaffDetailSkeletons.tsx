@@ -6,6 +6,9 @@
  * screen with a spinner.
  */
 
+import { StatCardSkeleton } from "@/components/ui/StatCard";
+import { STAT_ROW } from "@/components/dashboardComponents/overviewDash/statRow";
+
 /** Title + subtitle stack, matching <ComponentHeader />. */
 function HeaderSkeleton({
   titleWidth = "w-44",
@@ -40,23 +43,24 @@ function BarsSkeleton() {
   );
 }
 
-/** Matches <StatsCardGrid /> — a 6-up grid of small metric tiles. */
+/**
+ * Matches <StatsCardGrid /> — a labelled band of metric tiles, swipeable on a
+ * phone and a 4-up grid from `lg`.
+ *
+ * It renders StatCardSkeleton rather than its own tiles: this stood in for the
+ * grid with hand-copied classes that had drifted from it (a `rounded-xl` to the
+ * card's `rounded-2xl`, a sub-line the card does not have), so the page moved
+ * when the data landed — which is the one thing a skeleton exists to prevent.
+ */
 export function StatsCardGridSkeleton({ count = 4 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 animate-pulse">
-      {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          className="bg-white dark:bg-[#161d2e] rounded-xl border border-gray-100 shadow-sm p-4 dark:border-white/10"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <div className="h-3 w-16 bg-gray-100 rounded dark:bg-white/10" />
-            <div className="w-6 h-6 rounded-lg bg-gray-200 shrink-0 dark:bg-white/15" />
-          </div>
-          <div className="h-5 w-20 bg-gray-200 rounded dark:bg-white/15" />
-          <div className="h-3 w-14 bg-gray-100 rounded mt-1.5 dark:bg-white/10" />
-        </div>
-      ))}
+    <div className="mb-6">
+      <div className="mb-2.5 h-2.5 w-16 animate-pulse rounded bg-gray-100 dark:bg-white/10" />
+      <div className={STAT_ROW}>
+        {Array.from({ length: count }).map((_, i) => (
+          <StatCardSkeleton key={i} />
+        ))}
+      </div>
     </div>
   );
 }

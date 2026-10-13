@@ -432,15 +432,22 @@ export const HELP_GUIDES: HelpGuide[] = [
 
 // ── Concepts: the things that cause real mistakes ─────────────────────────
 
+/**
+ * Exported on its own as well as listed below, because Tax Settings explains
+ * its own switch with it. One home for the sentences rather than a second copy
+ * on the page that drifts from this one.
+ */
+export const EXCLUSIVE_TAX_CONCEPT: HelpConcept = {
+  id: "exclusive-tax",
+  term: "Exclusive tax",
+  body: "Exclusive means tax is added on top of the price you entered: a product priced at 100 with 13% tax is billed at 113. The switch in Tax Settings turns this on; with it off, invoices carry no tax at all.",
+  watchOut:
+    "If your shelf prices already include tax, switching Exclusive on charges it a second time. Enter prices before tax, and let the setting add it.",
+  keywords: ["inclusive", "vat", "on top", "included", "13%"],
+};
+
 export const HELP_CONCEPTS: HelpConcept[] = [
-  {
-    id: "exclusive-tax",
-    term: "Exclusive tax",
-    body: "Exclusive means tax is added on top of the price you entered: a product priced at 100 with 13% tax is billed at 113. The switch in Tax Settings turns this on; with it off, invoices carry no tax at all.",
-    watchOut:
-      "If your shelf prices already include tax, switching Exclusive on charges it a second time. Enter prices before tax, and let the setting add it.",
-    keywords: ["inclusive", "vat", "on top", "included", "13%"],
-  },
+  EXCLUSIVE_TAX_CONCEPT,
   {
     id: "credit-vs-unpaid",
     term: "Credit vs unpaid invoice",
