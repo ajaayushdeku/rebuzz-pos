@@ -181,26 +181,28 @@ export default function StaffDetailHeader({
               <ArrowLeft size={16} />
             </button>
 
-            <div
-              className={`hidden sm:flex relative h-11 w-11 shrink-0 select-none items-center justify-center rounded-full text-sm font-semibold tracking-wide text-white  ${
-                ROLE_BADGE_CLASS[role.toLowerCase()] ?? ROLE_BADGE_CLASS.basic
-              }`}
-              // style={{
-              //   backgroundColor: roleStyle.solid,
-              //   boxShadow: `0 6px 14px -6px ${roleStyle.glow}`,
-              // }}
-              title={name}
-            >
-              <RoleIcon
-                aria-hidden
-                size={25}
-                strokeWidth={2}
-                className="pointer-events-none absolute "
-              />
-              {/* <span className="text-gray-900 z-100">
+            {role && (
+              <div
+                className={`hidden sm:flex relative h-11 w-11 shrink-0 select-none items-center justify-center rounded-full text-sm font-semibold tracking-wide text-white  ${
+                  ROLE_BADGE_CLASS[role.toLowerCase()] ?? ROLE_BADGE_CLASS.basic
+                }`}
+                // style={{
+                //   backgroundColor: roleStyle.solid,
+                //   boxShadow: `0 6px 14px -6px ${roleStyle.glow}`,
+                // }}
+                title={name}
+              >
+                <RoleIcon
+                  aria-hidden
+                  size={25}
+                  strokeWidth={2}
+                  className="pointer-events-none absolute "
+                />
+                {/* <span className="text-gray-900 z-100">
               {initials(name || "Staff")}
             </span> */}
-            </div>
+              </div>
+            )}
 
             <div className="min-w-0">
               <div className="flex items-center gap-2">
