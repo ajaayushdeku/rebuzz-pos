@@ -205,15 +205,21 @@ export default function CashFlowTrend() {
                 dataKey="month"
                 axisLine={false}
                 tickLine={false}
-                tick={AXIS_TICK}
+                tick={{
+                  ...AXIS_TICK,
+                  fontSize: isSmallScreen ? 10 : 12,
+                }}
                 dy={8}
               />
               <YAxis
                 tickFormatter={fmtK}
                 axisLine={false}
                 tickLine={false}
-                tick={AXIS_TICK}
-                width={isSmallScreen ? 60 : 80}
+                tick={{
+                  ...AXIS_TICK,
+                  fontSize: isSmallScreen ? 10 : 12,
+                }}
+                width={isSmallScreen ? 55 : 80}
                 label={!isSmallScreen ? yAxisTitle("Amount") : undefined}
               />
               <Tooltip content={<CustomTooltip />} />

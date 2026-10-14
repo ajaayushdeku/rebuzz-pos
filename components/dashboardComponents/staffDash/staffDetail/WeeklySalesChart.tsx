@@ -295,7 +295,10 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
                 dataKey="name"
                 axisLine={false}
                 tickLine={false}
-                tick={AXIS_TICK}
+                tick={{
+                  ...AXIS_TICK,
+                  fontSize: isSmallScreen ? 10 : 12,
+                }}
                 dy={8}
                 angle={-20}
                 textAnchor="end"
@@ -305,7 +308,10 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
                 allowDecimals={false}
                 axisLine={false}
                 tickLine={false}
-                tick={AXIS_TICK}
+                tick={{
+                  ...AXIS_TICK,
+                  fontSize: isSmallScreen ? 10 : 12,
+                }}
                 width={isSmallScreen ? 35 : 70}
                 domain={[0, yMax]}
                 label={!isSmallScreen ? yAxisTitle("Sales") : undefined}

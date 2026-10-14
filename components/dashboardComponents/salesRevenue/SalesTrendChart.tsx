@@ -198,13 +198,19 @@ export default function SalesTrendChart() {
                   axisLine={false}
                   tickLine={{ stroke: CHART_PALETTE.control }}
                   tickSize={6}
-                  tick={AXIS_TICK}
+                  tick={{
+                    ...AXIS_TICK,
+                    fontSize: isSmallScreen ? 10 : 12,
+                  }}
                 />
                 <YAxis
                   tickFormatter={formatYAxis}
                   axisLine={false}
                   tickLine={false}
-                  tick={AXIS_TICK}
+                  tick={{
+                    ...AXIS_TICK,
+                    fontSize: isSmallScreen ? 10 : 12,
+                  }}
                   ticks={ticks}
                   domain={[ticks[0], ticks[ticks.length - 1]]}
                   width={isSmallScreen ? 55 : 80}

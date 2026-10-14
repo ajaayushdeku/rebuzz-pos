@@ -402,7 +402,10 @@ export default function GrossVsCOGSVsNetProfit({
                     axisLine={false}
                     tickLine={{ stroke: CHART_PALETTE.control }}
                     tickSize={6}
-                    tick={AXIS_TICK}
+                    tick={{
+                      ...AXIS_TICK,
+                      fontSize: isSmallScreen ? 10 : 12,
+                    }}
                     interval={0}
                     // Truncate long category names on X axis
                     tickFormatter={(val: string) =>
@@ -413,7 +416,10 @@ export default function GrossVsCOGSVsNetProfit({
                     tickFormatter={formatYAxis}
                     axisLine={false}
                     tickLine={false}
-                    tick={AXIS_TICK}
+                    tick={{
+                      ...AXIS_TICK,
+                      fontSize: isSmallScreen ? 10 : 12,
+                    }}
                     ticks={ticks}
                     domain={[ticks[0], ticks[ticks.length - 1]]}
                     width={isSmallScreen ? 55 : 80}

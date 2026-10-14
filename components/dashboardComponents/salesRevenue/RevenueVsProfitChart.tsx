@@ -225,7 +225,10 @@ export default function RevenueVsProfitChart({
                 axisLine={false}
                 tickLine={{ stroke: CHART_PALETTE.control }}
                 tickSize={6}
-                tick={AXIS_TICK}
+                tick={{
+                  ...AXIS_TICK,
+                  fontSize: isSmallScreen ? 10 : 12,
+                }}
                 interval={0}
                 tickFormatter={(val: string) =>
                   val.length > 12 ? val.slice(0, 11) + "…" : val
@@ -235,7 +238,10 @@ export default function RevenueVsProfitChart({
                 tickFormatter={formatYAxis}
                 axisLine={false}
                 tickLine={false}
-                tick={AXIS_TICK}
+                tick={{
+                  ...AXIS_TICK,
+                  fontSize: isSmallScreen ? 10 : 12,
+                }}
                 ticks={ticks}
                 domain={[ticks[0], ticks[ticks.length - 1]]}
                 width={isSmallScreen ? 55 : 80}

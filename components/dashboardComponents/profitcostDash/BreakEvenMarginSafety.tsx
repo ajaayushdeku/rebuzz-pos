@@ -220,7 +220,7 @@ export default function BreakEvenMarginSafety() {
 
           {/* Labels — the right-hand figure is the axis end, not revenue. It
               previously printed axisMax / 1.2, understating the scale by 20%. */}
-          <div className="mt-2 flex justify-between text-xs text-[#5f6368] dark:text-[#a9b4c7]">
+          <div className="mt-2 flex justify-between text-[11px] sm:text-xs text-[#5f6368] dark:text-[#a9b4c7]">
             <span className="tracking-wide">{money(0)}</span>
             <span className="tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
               {/* Says what is in the figure only when something extra is —
@@ -235,7 +235,7 @@ export default function BreakEvenMarginSafety() {
             className="relative mt-6"
             style={{ marginLeft: `${breakEvenPos}%` }}
           >
-            <div className="absolute -translate-x-1/2 -top-5">
+            <div className="absolute -translate-x-1/2 -top-8">
               <span className="whitespace-nowrap bg-white px-1 text-[10px] font-medium tracking-wide text-[#5f6368] dark:text-[#a9b4c7] dark:bg-white/5">
                 BREAK-EVEN
               </span>
@@ -252,7 +252,7 @@ export default function BreakEvenMarginSafety() {
       )}
 
       {/* The working behind the two figures. */}
-      <div className="mt-6 grid grid-cols-3 gap-3 border-t pt-4 border-[#e8eaed] dark:border-white/10">
+      <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 border-t pt-4 border-[#e8eaed] dark:border-white/10">
         <div>
           <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
             Fixed costs

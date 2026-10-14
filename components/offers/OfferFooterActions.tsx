@@ -1,6 +1,6 @@
 "use client";
 
-import toast from "react-hot-toast";
+// import toast from "react-hot-toast";
 import { useOfferForm } from "@/providers/OfferFormContext";
 
 /**
@@ -17,14 +17,14 @@ export default function OfferFooterActions() {
   // being reached for, and the nearest the thumb.
   return (
     <div className="flex flex-col gap-2.5 sm:ml-12 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-3">
-      <button
+      {/* <button
         type="button"
         onClick={() => toast.success("Saved as draft")}
         disabled={isSaving}
         className="h-10 w-full cursor-pointer rounded-xl bg-gray-100 px-6 sm:w-auto text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:text-[#c3ccdc] dark:bg-white/10"
       >
         Save as draft
-      </button>
+      </button> */}
 
       <button
         type="button"

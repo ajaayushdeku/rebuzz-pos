@@ -49,10 +49,12 @@ function WrappedTick({
   x = 0,
   y = 0,
   payload,
+  isSmallScreen,
 }: {
   x?: number;
   y?: number;
   payload?: { value: string };
+  isSmallScreen?: boolean;
 }) {
   const text = String(payload?.value ?? "");
   let lines = [text];
@@ -92,7 +94,7 @@ function WrappedTick({
       y={y + 14}
       textAnchor="middle"
       fill={AXIS_TICK.fill}
-      fontSize={11}
+      fontSize={isSmallScreen ? 10 : 12}
     >
       {lines.map((line, i) => (
         <tspan key={i} x={x} dy={i === 0 ? 0 : 13}>
@@ -272,7 +274,7 @@ export default function ProfitWaterfallBridge({
                     axisLine={false}
                     tickLine={{ stroke: CHART_PALETTE.control }}
                     tickSize={6}
-                    tick={<WrappedTick />}
+                    tick={<WrappedTick isSmallScreen={isSmallScreen} />}
                     height={40}
                     interval={0}
                   />
@@ -282,7 +284,10 @@ export default function ProfitWaterfallBridge({
                     }
                     axisLine={false}
                     tickLine={false}
-                    tick={AXIS_TICK}
+                    tick={{
+                      ...AXIS_TICK,
+                      fontSize: isSmallScreen ? 10 : 12,
+                    }}
                     ticks={ticks}
                     domain={[ticks[0], ticks[ticks.length - 1]]}
                     width={isSmallScreen ? 55 : 80}

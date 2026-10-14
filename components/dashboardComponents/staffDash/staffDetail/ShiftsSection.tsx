@@ -302,7 +302,7 @@ export default function ShiftsSection({
                       title="View shift details"
                       className="cursor-pointer border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa] focus:bg-[#f8f9fa] dark:focus:bg-white/5 focus:outline-none dark:border-white/10 dark:hover:bg-white/10"
                     >
-                      <td className="py-3.5 pr-3 pl-2 font-mono text-[11px] text-gray-400 align-top dark:text-[#7b869b]">
+                      <td className="py-3.5 pr-3 pl-2 font-mono text-[11px] text-gray-400  dark:text-[#7b869b]">
                         #{String(shiftPage * pageSize + idx + 1)}
                       </td>
                       <td className="py-3.5 px-3 align-top">
@@ -336,7 +336,7 @@ export default function ShiftsSection({
                           </div>
                         </div>
                       </td>
-                      <td className="py-3.5 px-3 align-top ">
+                      <td className="py-3.5 px-3 ">
                         <span className="inline-flex items-center gap-1.5 text-[13px]  tabular-nums font-medium text-[#3c4043] dark:text-[#e8ecf4]">
                           <Timer
                             size={12}
@@ -345,7 +345,7 @@ export default function ShiftsSection({
                           {shiftDuration(shift)}
                         </span>
                       </td>
-                      <td className="py-3.5 px-3 text-right align-top">
+                      <td className="py-3.5 px-3 text-right ">
                         <span className="text-[13px]  font-medium tabular-nums  text-[#3c4043] dark:text-[#e8ecf4]">
                           {formatCurrencySymbol(
                             shift.openingCash ?? 0,
@@ -354,7 +354,7 @@ export default function ShiftsSection({
                           )}
                         </span>
                       </td>
-                      <td className="py-3.5 px-3 text-right align-top">
+                      <td className="py-3.5 px-3 text-right ">
                         <div className="leading-tight space-y-1">
                           <p className="flex items-center justify-end gap-1.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
                             <ArrowDownLeft size={10} className="shrink-0" />
@@ -374,7 +374,7 @@ export default function ShiftsSection({
                           </p>
                         </div>
                       </td>
-                      <td className="py-3.5 px-3 text-right align-top">
+                      <td className="py-3.5 px-3 text-right ">
                         <span className="text-[13px]  font-medium tabular-nums  text-[#3c4043] dark:text-[#e8ecf4]">
                           {formatCurrencySymbol(
                             shift.closingCash ?? 0,
@@ -383,7 +383,7 @@ export default function ShiftsSection({
                           )}
                         </span>
                       </td>
-                      <td className="py-3.5 px-3 text-right align-top">
+                      <td className="py-3.5 px-3 text-right ">
                         <span className="text-[13px]  font-medium tabular-nums  text-[#3c4043] dark:text-[#e8ecf4]">
                           {formatCurrencySymbol(
                             shift.totalSale ?? 0,
@@ -392,7 +392,7 @@ export default function ShiftsSection({
                           )}
                         </span>
                       </td>
-                      <td className="py-3.5 px-3 text-center align-top">
+                      <td className="py-3.5 px-3 text-center">
                         <div className="inline-flex">
                           <StatusBadge closingTime={shift.closingTIme} />
                         </div>

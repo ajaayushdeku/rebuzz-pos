@@ -342,8 +342,6 @@ export default function TaxSettingsPage() {
           title="Tax Settings"
           subtitle="Manage tax rates and modes"
           spaceBelow={false}
-          flexItems="items-start flex-col"
-          actionWidth="w-full"
           actions={<CreateTaxDialog />}
         />
 
@@ -358,7 +356,7 @@ export default function TaxSettingsPage() {
             the mode is one setting for the business, not a property of
             standard rates or of group rates. */}
         <section className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 dark:border-white/10 dark:bg-[#0F1420]">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
               <span className="flex h-8 sm:h-9 w-8 sm:w-9 shrink-0 items-center justify-center rounded-lg  border border-blue-100 bg-blue-50 text-blue-600 dark:border-white/10 dark:bg-blue-400/10 dark:text-[#7ba2e3]">
                 <Receipt className="w-4 sm:h-4.5 w-4 sm:w-4.5 " />

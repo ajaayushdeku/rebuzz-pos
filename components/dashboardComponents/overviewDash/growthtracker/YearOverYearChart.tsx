@@ -220,7 +220,10 @@ export default function YearOverYearChart({ data }: YearOverYearProps) {
             dataKey="month"
             axisLine={false}
             tickLine={false}
-            tick={AXIS_TICK}
+            tick={{
+              ...AXIS_TICK,
+              fontSize: isSmallScreen ? 10 : 12,
+            }}
             dy={8}
           />
 
@@ -228,7 +231,10 @@ export default function YearOverYearChart({ data }: YearOverYearProps) {
             tickFormatter={formatYAxis}
             axisLine={false}
             tickLine={false}
-            tick={AXIS_TICK}
+            tick={{
+              ...AXIS_TICK,
+              fontSize: isSmallScreen ? 10 : 12,
+            }}
             ticks={yTicks}
             domain={[0, yMax]}
             width={isSmallScreen ? 55 : 80}

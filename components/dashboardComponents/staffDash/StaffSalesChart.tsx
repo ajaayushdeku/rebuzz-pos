@@ -532,7 +532,7 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
                       y={Number(y) + 8}
                       textAnchor="middle"
                       className="fill-[#5f6368] dark:fill-[#9aa6bd]"
-                      fontSize={12}
+                      fontSize={isSmallScreen ? 10 : 12}
                     >
                       {payload.value}
                       <tspan
@@ -548,7 +548,10 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={AXIS_TICK}
+                  tick={{
+                    ...AXIS_TICK,
+                    fontSize: isSmallScreen ? 10 : 12,
+                  }}
                   ticks={yTicks}
                   domain={[0, paddedMax]}
                   width={isSmallScreen ? 40 : 60}

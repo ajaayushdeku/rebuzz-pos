@@ -9,6 +9,7 @@ import {
   FileDown,
   Gift,
   Layers,
+  ListChecks,
   PiggyBank,
   Percent,
   ReceiptText,
@@ -393,11 +394,49 @@ export const HELP_GUIDES: HelpGuide[] = [
     href: "/offers",
     hrefLabel: "Offer",
     steps: [
-      "Open Offer and work through the four steps.",
-      "Choose the dates it runs for.",
-      "Check the preview — it shows the offer as a customer sees it.",
+      "Open Offer. Step 1, The Deal: percentage off, a flat Rs amount, buy-one-get-one, or a free item. Each one comes with a title already written — that title is the line the customer reads, so change it if the wording matters.",
+      "A buy-one-get-one or a free item then asks which items it is on. Pick the exact row: variants are listed separately, and “Coke · small” is a different offer from “Coke · large”.",
+      "Step 2, Conditions: a minimum spend and a per-customer limit. Both optional — blank means no limit.",
+      "Step 3, When It Runs: pick a festival occasion, or set your own start and end dates, the days of the week and the hours.",
+      "Step 4, Promo Code: optional. Left blank, the offer needs no code at the till.",
+      "Watch the phone preview as you go — it is the offer as a customer sees it — then save.",
     ],
-    keywords: ["promotion", "campaign", "deal", "marketing"],
+    note: "Saving makes the offer live immediately, if today falls inside its dates. Everything after that — editing, pausing, deleting — happens in Settings → Offers.",
+    keywords: [
+      "promotion",
+      "campaign",
+      "deal",
+      "marketing",
+      "bogo",
+      "buy one get one",
+      "free item",
+      "promo code",
+      "festival",
+    ],
+  },
+  {
+    id: "offer-manage",
+    title: "Edit, pause or delete an offer",
+    summary: "Change an offer you have already built, or take it down.",
+    icon: ListChecks,
+    href: "/settings/offers",
+    hrefLabel: "Settings → Offers",
+    steps: [
+      "Open Settings → Offers. Every offer you have made is listed with its deal, when it runs, and whether it is live.",
+      "Tap the Live or Off pill to pause an offer, or to bring it back, without changing anything else about it.",
+      "Use the pencil to edit. Which fields are editable follows the deal type — a percentage offer has no free item to set, so that field is not offered.",
+      "Search by the offer’s name or by its promo code: the code is usually what you have in front of you, off a receipt or a poster.",
+    ],
+    note: "Deleting an offer is permanent, and it does not undo discounts already given. To stop an offer without losing it, switch it to Off instead.",
+    keywords: [
+      "edit offer",
+      "pause",
+      "stop",
+      "disable",
+      "delete",
+      "offer list",
+      "promo code",
+    ],
   },
   {
     id: "ai-key",
@@ -413,6 +452,32 @@ export const HELP_GUIDES: HelpGuide[] = [
     ],
     note: "Until a key is saved, the insight sections show example cards marked “Sample data”. Those name items and customers that are not yours — do not act on them.",
     keywords: ["gemini", "openrouter", "api", "insights", "model", "token"],
+  },
+  {
+    id: "period-insights",
+    title: "Read a period’s AI insights",
+    summary: "Generate advice for a finished month, quarter or year.",
+    icon: CalendarClock,
+    href: "/ai-insights",
+    hrefLabel: "AI Insights",
+    steps: [
+      "Open AI Insights. Choose Monthly, Quarterly or Yearly, then the period — it opens on the most recent finished one.",
+      "Press Generate insights. The sections are generated a couple at a time, and one that fails does not stop the rest; the header counts them off as they land.",
+      "Read each section’s cards. Shortlist the ones worth acting on, and dismiss the ones that are not.",
+      "Generate more adds a further batch to a section. Refresh replaces the cards in it.",
+    ],
+    note: "Needs your own AI key — see Connect AI Insights. Once a period is generated it is saved, so coming back to it costs nothing; only Generate and Refresh spend from the hourly allowance.",
+    keywords: [
+      "monthly",
+      "quarterly",
+      "yearly",
+      "september",
+      "last month",
+      "generate",
+      "report",
+      "advice",
+      "recommendations",
+    ],
   },
   {
     id: "currency",
@@ -448,6 +513,71 @@ export const EXCLUSIVE_TAX_CONCEPT: HelpConcept = {
 
 export const HELP_CONCEPTS: HelpConcept[] = [
   EXCLUSIVE_TAX_CONCEPT,
+  {
+    id: "insight-period",
+    term: "Why insights cover a finished period",
+    body: "Insights are generated for a whole month, quarter or year that has ended, and then saved. Opening that period again shows the same answer instead of asking the model afresh — so reading is free, and two people looking at September see the same advice.",
+    watchOut:
+      "The period in progress is not offered until it ends. An insight about a half-finished month would be comparing a partial period against a whole one, which makes every trend look like a collapse.",
+    keywords: [
+      "month",
+      "september",
+      "this month",
+      "current",
+      "saved",
+      "cached",
+      "quarter",
+      "year",
+    ],
+  },
+  {
+    id: "refresh-vs-generate-more",
+    term: "Refresh vs Generate more",
+    body: "Refresh throws a section’s cards away and asks again — for when the advice looks wrong. Generate more keeps them and asks for a further batch, telling the model what is already on screen so it does not repeat itself.",
+    watchOut:
+      "Both spend one request from the hourly allowance, and Refresh cannot be undone: the cards it replaced are gone even if what comes back is worse.",
+    keywords: [
+      "regenerate",
+      "generate more",
+      "again",
+      "allowance",
+      "quota",
+      "batch",
+      "undo",
+    ],
+  },
+  {
+    id: "offer-live",
+    term: "An offer being “Live”",
+    body: "The Live switch in Settings → Offers and the schedule inside the offer are two separate gates. An offer reaches a customer only when it is switched Live *and* today falls inside its dates, on one of its days, within its hours.",
+    watchOut:
+      "A row reading Live is not proof the offer is being applied. If it is not showing up at the till, check the dates first — an offer that ended last week still reads Live.",
+    keywords: [
+      "enabled",
+      "not working",
+      "not applying",
+      "expired",
+      "schedule",
+      "till",
+      "why",
+    ],
+  },
+  {
+    id: "offer-variant",
+    term: "Offers on an item with variants",
+    body: "Set a buy-one-get-one or a free item on something sold in variants, and it is set on the variant you picked — the small Coke, not every Coke. That is why the pickers list variants as their own rows rather than one row per product.",
+    watchOut:
+      "To run the same deal on every size, add it for each variant. Picking one does not cover the others, and the offer looks broken to whoever ordered a different size.",
+    keywords: [
+      "variant",
+      "size",
+      "small",
+      "large",
+      "option",
+      "bogo",
+      "free item",
+    ],
+  },
   {
     id: "credit-vs-unpaid",
     term: "Credit vs unpaid invoice",
@@ -684,12 +814,17 @@ export const HELP_PAGES: Record<string, HelpPageEntry> = {
   "/offers": {
     what: "Building a promotion, and seeing it before it runs.",
     shows:
-      "A four-step builder — what the offer is, what it applies to, the dates it runs and the terms — with a live preview of how it reaches a customer.",
+      "A four-step builder — the deal, the conditions, when it runs and an optional promo code — beside a phone preview of how it reaches a customer. A buy-one-get-one or free-item deal names the exact items, variants included.",
+  },
+  "/settings/offers": {
+    what: "The offers you have already built.",
+    shows:
+      "Every offer with its deal, what it runs on, the dates it covers in both calendars, and a Live or Off switch you can flip from the row. Editing and deleting are here too; building a new one sends you to the four-step builder.",
   },
   "/ai-insights": {
-    what: "Your own sales, read back to you as advice.",
+    what: "A finished month, quarter or year read back to you as advice.",
     shows:
-      "Eight sections — menu ideas, slow items, pricing, hour-by-hour, festivals, sales, retention and staffing — each generated from your own data, with the hourly allowance shown in the header. Needs your own AI key; until then each section shows examples marked “Sample data”.",
+      "Sections for pricing, slow items, menu ideas, sales, retention, the hour-by-hour playbook and staffing — each generated from your own figures for the period you pick, then saved. The header counts the sections still ungenerated and shows this hour’s allowance. Needs your own AI key; until then each section shows examples marked “Sample data”.",
   },
   "/settings/business": {
     what: "Your business as customers see it.",
@@ -826,6 +961,31 @@ export const HELP_FAQS: HelpFaqGroup[] = [
       {
         q: "How does staff login work?",
         a: "An admin adds a staff member by entering their name, email, phone and role — no password is set in the app. The system creates the account and sends the login password to the staff member’s registered email. They then sign in on the normal login screen using their email or phone number and that password.",
+      },
+    ],
+  },
+  {
+    group: "Offers & insights",
+    items: [
+      {
+        q: "Why isn’t my offer applying at the till?",
+        a: "Work through the three gates in order. First, is it switched Live in Settings → Offers — the pill on its row. Second, does today fall inside its start and end dates, on one of its days, within its hours? An offer that has ended still shows as Live, so the dates are the usual answer. Third, if it is a buy-one-get-one or a free item, is it set on the item actually being ordered? On something sold in variants the offer is set on the one variant you picked, so a deal added for the small size will not fire on the large one. If it has a promo code, the code has to be entered at the till.",
+      },
+      {
+        q: "Can I run more than one offer at the same time?",
+        a: "Yes — nothing stops several offers being Live at once, and Settings → Offers shows how many are. Keep an eye on the ones that overlap, though: two offers that both fit the same bill are two discounts off the same sale, which is easy to set up without meaning to.",
+      },
+      {
+        q: "Why can’t I get insights for this month?",
+        a: "Insights cover a period that has finished, so the current month appears once it ends — the list offers the twelve most recent completed ones, and opens on the latest. A half-finished month would be compared against whole ones, which makes normal trading look like a collapse. For how today is going, use the dashboards instead: those are live.",
+      },
+      {
+        q: "Does reading AI insights cost me anything?",
+        a: "No. A period is generated once and then saved, so opening it again — by you or by anyone else on the account — asks the model nothing and spends nothing. Only Generate insights, Refresh and Generate more send a request, and those come off the hourly allowance shown in the header. The allowance is on your own AI key, so the cost is whatever your provider charges; Google Gemini and OpenRouter both have a free tier.",
+      },
+      {
+        q: "What is the difference between Refresh and Generate more?",
+        a: "Refresh replaces a section’s cards — use it when the advice looks wrong, and know that what it replaces is gone. Generate more keeps the cards you have and asks for a further batch, telling the model which ones are already on screen so it does not hand you the same advice twice. Both spend one request. A section stops offering Generate more once the model says it has nothing further to add.",
       },
     ],
   },

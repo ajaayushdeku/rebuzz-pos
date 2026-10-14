@@ -75,22 +75,22 @@ const OfferTable = ({
       {/* Scrolls sideways below ~760px rather than wrapping: a schedule broken
           over four lines stops being readable as a schedule. */}
       <div className="-mx-5 overflow-x-auto scrollbar-hide px-5">
-        <table className="w-full min-w-[760px] md:min-w-[1050px] table-fixed text-sm">
+        <table className="w-full min-w-[760px] md:min-w-[1200px] table-fixed text-sm">
           <colgroup>
             <col className="w-12" />
             <col className="w-80 md:w-65" />
+            <col className="w-65 md:w-65" />
             <col className="w-25 md:w-30" />
-            <col className="w-50 md:w-50" />
             <col className="w-25 md:w-25" />
-            <col className="w-25 md:w-25" />
+            <col className="w-30 md:w-30" />
             <col className="w-15 md:w-20" />
           </colgroup>
           <thead>
             <tr className="border-b border-[#e8eaed] text-[11px] tracking-wider text-[#5f6368] dark:border-white/10 dark:text-[#9aa6bd]">
               <th className=" pb-2.5 text-left font-normal">S.No.</th>
               <th className="pb-2.5 text-left font-normal">Offer</th>
-              <th className="pb-2.5 text-left font-normal">Deal</th>
               <th className="pb-2.5 text-left font-normal">Runs</th>
+              <th className="pb-2.5 text-left font-normal">Deal</th>
               <th className="pb-2.5 text-center font-normal">Status</th>
               <th className="pb-2.5 text-center font-normal">Use Count</th>
               <th className="pb-2.5 text-right font-normal">Actions</th>
@@ -170,17 +170,6 @@ const OfferTable = ({
                     </td>
 
                     <td className="py-3 pr-3">
-                      <p className="truncate text-[12px] text-[#3c4043] dark:text-[#e8ecf4]">
-                        {TYPE_LABEL[offer.type]}
-                      </p>
-                      {amount && (
-                        <p className="mt-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-300">
-                          {amount}
-                        </p>
-                      )}
-                    </td>
-
-                    <td className="py-3 pr-3">
                       {schedule.length === 0 ? (
                         <span className="text-[12px] text-gray-400 dark:text-[#7b869b]">
                           Always on
@@ -206,6 +195,17 @@ const OfferTable = ({
                             )}
                           </div>
                         ))
+                      )}
+                    </td>
+
+                    <td className="py-3 pr-3">
+                      <p className="truncate text-[12px] text-[#3c4043] dark:text-[#e8ecf4]">
+                        {TYPE_LABEL[offer.type]}
+                      </p>
+                      {amount && (
+                        <p className="mt-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-300">
+                          {amount}
+                        </p>
                       )}
                     </td>
 

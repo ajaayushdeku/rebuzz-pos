@@ -169,7 +169,10 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
               dataKey="name"
               axisLine={false}
               tickLine={false}
-              tick={AXIS_TICK}
+              tick={{
+                ...AXIS_TICK,
+                fontSize: isSmallScreen ? 10 : 12,
+              }}
               dy={10}
             />
 
@@ -177,7 +180,10 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
               tickFormatter={formatYAxis}
               axisLine={false}
               tickLine={false}
-              tick={AXIS_TICK}
+              tick={{
+                ...AXIS_TICK,
+                fontSize: isSmallScreen ? 10 : 12,
+              }}
               ticks={yTicks}
               domain={[0, yMax]}
               width={isSmallScreen ? 55 : 80}

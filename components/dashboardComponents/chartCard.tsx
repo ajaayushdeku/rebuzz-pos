@@ -350,7 +350,7 @@ export function ChartLegend({
       {items.map(({ label, color, shape }) => (
         <span key={label} className="flex items-center gap-1.5">
           <LegendSwatch color={color} shape={shape} />
-          <span className="text-[13px] text-[#3c4043] dark:text-[#c3ccdc]">
+          <span className="text-[11px] sm:text-[13px] text-[#3c4043] dark:text-[#c3ccdc]">
             {label}
           </span>
         </span>
@@ -365,11 +365,11 @@ export function ChartLegendEmployee({
   items: { key: string; color: string; shape: LegendShape }[];
 }) {
   return (
-    <div className="mt-3 flex flex-wrap items-center justify-end gap-x-5 gap-y-1 pr-2">
+    <div className="mt-1 flex flex-wrap items-center justify-end gap-x-5 gap-y-1 pr-2">
       {items.map(({ key, color, shape }) => (
         <span key={key} className="flex items-center gap-1.5">
           <LegendSwatch color={color} shape={shape} />
-          <span className="text-[13px] text-[#3c4043] dark:text-[#c3ccdc]">
+          <span className="text-[11px] sm:text-[13px] text-[#3c4043] dark:text-[#c3ccdc]">
             {key}
           </span>
         </span>

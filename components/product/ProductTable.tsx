@@ -51,7 +51,7 @@ const PRODUCT_COLUMNS: TableColumn[] = [
  */
 const COLUMN_WIDTHS: Record<string, string> = {
   profile: "w-25",
-  name: "w-56",
+  name: "w-65",
   price: "w-42",
   tax: "w-40",
   stock: "w-40",
@@ -311,7 +311,7 @@ export default function ProductTable({
           // Scales with what is actually shown. A fixed floor sized for every
           // column left a horizontal scrollbar over empty space once a few
           // were hidden.
-          style={{ minWidth: `${Math.max(640, colCount * 150)}px` }}
+          style={{ minWidth: `${Math.max(940, colCount * 180)}px` }}
         >
           {/* Built from the visible columns, in the same order the header
               draws them, so hiding one drops its track with it. Description
@@ -451,44 +451,47 @@ export default function ProductTable({
                     )}
                     {showColumn("name") && (
                       <td className="py-3  px-4">
-                        <span className="flex items-left gap-2">
+                        <span className="flex flex-col  items-left gap-2">
                           <span className="font-medium text-[13px]  text-[#3c4043] dark:text-[#e8ecf4]">
                             {product.name}
                           </span>
-                          {variantCount > 0 && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-50 text-purple-600 border border-purple-200 dark:bg-purple-400/15 dark:text-purple-300 dark:border-purple-400/25">
-                              {variantCount} variant
-                              {variantCount > 1 ? "s" : ""}
-                            </span>
-                          )}
-                          {/* Expander sits in the name cell rather than taking a
+                          <span className="flex flex-row items-center justify-between gap-2">
+                            {" "}
+                            {variantCount > 0 && (
+                              <span className="inline-flex flex-row items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-50 text-purple-600 border border-purple-200 dark:bg-purple-400/15 dark:text-purple-300 dark:border-purple-400/25">
+                                {variantCount} variant
+                                {variantCount > 1 ? "s" : ""}
+                              </span>
+                            )}
+                            {/* Expander sits in the name cell rather than taking a
                               column of its own, so the header stays unchanged. */}
-                          {variantCount > 0 ? (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleExpanded(product.id);
-                              }}
-                              aria-expanded={isExpanded}
-                              aria-label={
-                                isExpanded
-                                  ? `Hide variants of ${product.name}`
-                                  : `Show variants of ${product.name}`
-                              }
-                              className="shrink-0 rounded-md p-0.5 text-gray-400 transition-colors hover:bg-blue-100 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[#7b869b] dark:hover:bg-blue-400/20 dark:hover:text-[#a8c4ee]"
-                            >
-                              {isExpanded ? (
-                                <ChevronDown className="h-3.5 w-3.5" />
-                              ) : (
-                                <ChevronRight className="h-3.5 w-3.5" />
-                              )}
-                            </button>
-                          ) : (
-                            // Keeps names aligned down the column whether or not
-                            // a product has variants.
-                            <span className="w-[1.125rem] shrink-0" />
-                          )}
+                            {variantCount > 0 ? (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleExpanded(product.id);
+                                }}
+                                aria-expanded={isExpanded}
+                                aria-label={
+                                  isExpanded
+                                    ? `Hide variants of ${product.name}`
+                                    : `Show variants of ${product.name}`
+                                }
+                                className="shrink-0 rounded-md p-0.5 text-gray-400 transition-colors hover:bg-blue-100 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[#7b869b] dark:hover:bg-blue-400/20 dark:hover:text-[#a8c4ee]"
+                              >
+                                {isExpanded ? (
+                                  <ChevronDown className="h-3.5 w-3.5" />
+                                ) : (
+                                  <ChevronRight className="h-3.5 w-3.5" />
+                                )}
+                              </button>
+                            ) : (
+                              // Keeps names aligned down the column whether or not
+                              // a product has variants.
+                              <span className="w-[1.125rem] shrink-0" />
+                            )}
+                          </span>
                         </span>
                       </td>
                     )}

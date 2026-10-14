@@ -152,7 +152,7 @@ export default function ProfitPerProduct({
       {/* Table: no zebra or shadow, hairline rows, quiet grey headings;
           horizontally scrollable on mobile. */}
       <div className="overflow-x-auto scrollbar-hide">
-        <table className="w-full min-w-[600px] table-auto">
+        <table className="w-full min-w-[620px] table-auto">
           <thead>
             <tr className="border-b text-left border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
               <th className="w-12 px-3 pb-2.5 pt-1 text-[11px] font-normal whitespace-nowrap">

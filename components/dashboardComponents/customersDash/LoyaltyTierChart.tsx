@@ -215,6 +215,21 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
 
   const AXIS_TICK = getAxisTick(isDark);
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
   return (
     <ChartCard
       icon={Award}
@@ -336,7 +351,10 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
                 type="number"
                 axisLine={false}
                 tickLine={false}
-                tick={AXIS_TICK}
+                tick={{
+                  ...AXIS_TICK,
+                  fontSize: isSmallScreen ? 10 : 12,
+                }}
                 ticks={xTicks}
                 domain={[0, xDomain]}
                 allowDecimals={false}
@@ -347,7 +365,10 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
                 dataKey="tier"
                 axisLine={false}
                 tickLine={false}
-                tick={AXIS_TICK}
+                tick={{
+                  ...AXIS_TICK,
+                  fontSize: isSmallScreen ? 10 : 12,
+                }}
                 width={yAxisWidth}
               />
 

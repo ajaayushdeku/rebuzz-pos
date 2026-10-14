@@ -153,13 +153,19 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
               dataKey="day"
               axisLine={false}
               tickLine={false}
-              tick={AXIS_TICK}
+              tick={{
+                ...AXIS_TICK,
+                fontSize: isSmallScreen ? 10 : 12,
+              }}
             />
             <YAxis
               tickFormatter={formatYAxis}
               axisLine={false}
               tickLine={false}
-              tick={AXIS_TICK}
+              tick={{
+                ...AXIS_TICK,
+                fontSize: isSmallScreen ? 10 : 12,
+              }}
               domain={[0, domainMax]}
               width={isSmallScreen ? 55 : 80}
               label={!isSmallScreen ? yAxisTitle("Revenue") : undefined}

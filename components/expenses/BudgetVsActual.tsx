@@ -12,7 +12,7 @@ import { BudgetVsActualSkeleton } from "./ExpenseAnalyticsSkeletons";
 
 /** The four columns, shared by the header row and the rows. */
 const COLUMNS =
-  "grid grid-cols-[1.4fr_1fr_1fr_1.5fr_1.4fr] items-center gap-3 min-w-[520px]";
+  "grid grid-cols-[1.4fr_1fr_1fr_1.5fr_1.4fr] items-center gap-3 min-w-[900px]";
 
 function getPctStyle(pct: number): string {
   if (pct >= 100)

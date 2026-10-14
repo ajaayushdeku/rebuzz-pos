@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { ChartPie } from "lucide-react";
 import type { CategoryTax } from "@/hooks/useTaxByCategory";
 import {
@@ -172,6 +172,21 @@ const TaxByCategory = ({
 
   const AXIS_TICK = getAxisTick(isDark);
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
   return (
     <ChartCard
       icon={ChartPie}
@@ -257,9 +272,12 @@ const TaxByCategory = ({
                   type="number"
                   axisLine={false}
                   tickLine={false}
-                  tick={AXIS_TICK}
+                  tick={{
+                    ...AXIS_TICK,
+                    fontSize: isSmallScreen ? 10 : 12,
+                  }}
                   tickFormatter={(v: number) =>
-                    v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`
+                    formatCompactNumber(v, currency.locale)
                   }
                 />
                 <YAxis
@@ -267,7 +285,10 @@ const TaxByCategory = ({
                   type="category"
                   axisLine={false}
                   tickLine={false}
-                  tick={AXIS_TICK}
+                  tick={{
+                    ...AXIS_TICK,
+                    fontSize: isSmallScreen ? 10 : 12,
+                  }}
                   width={90}
                   tickFormatter={(val: string) =>
                     val.length > 11 ? val.slice(0, 10) + "…" : val

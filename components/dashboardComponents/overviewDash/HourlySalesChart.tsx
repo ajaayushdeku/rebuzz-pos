@@ -404,7 +404,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                         y={yNum + 8}
                         textAnchor="middle"
                         className="fill-[#5f6368] dark:fill-[#9aa6bd]"
-                        fontSize={11}
+                        fontSize={10}
                       >
                         {payload.value}
                         <tspan
@@ -423,7 +423,10 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                   tickFormatter={formatYAxis}
                   axisLine={false}
                   tickLine={false}
-                  tick={AXIS_TICK}
+                  tick={{
+                    ...AXIS_TICK,
+                    fontSize: isSmallScreen ? 10 : 12,
+                  }}
                   ticks={ticks}
                   domain={[0, domainMax]}
                   width={isSmallScreen ? 55 : 80}

@@ -10,11 +10,13 @@ import {
   ChartLegend,
   ChartPager,
 } from "../chartCard";
+import { formatCompactNumber } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 
 const PAGE_SIZE = 8;
 
 /** Gutter widths, shared by the bars and the axis so ticks line up. */
-const LABEL_W = "w-16 sm:w-24";
+const LABEL_W = "w-18 sm:w-26";
 const VALUE_W = "w-10";
 
 const VELOCITY_COLOR: Record<Velocity, string> = {
@@ -34,6 +36,7 @@ export default function StockMovementChart({
 }: {
   items: MergedSalesItem[];
 }) {
+  const { currency } = useCurrency();
   const [page, setPage] = useState(0);
 
   // Velocity comes from the whole catalogue, not just the bars on screen, so
@@ -100,7 +103,7 @@ export default function StockMovementChart({
               return (
                 <div key={item.name} className="flex items-center gap-3">
                   <span
-                    className={`text-[13px] ${LABEL_W} shrink-0 truncate text-right leading-tight text-[#3c4043] dark:text-[#e8ecf4]`}
+                    className={`text-[10px] sm:text-xs ${LABEL_W} shrink-0 truncate text-right leading-tight text-[#3c4043] dark:text-[#e8ecf4]`}
                     title={item.name}
                   >
                     {item.name}
@@ -117,7 +120,7 @@ export default function StockMovementChart({
                   <span
                     className={`text-xs tabular-nums ${VALUE_W} shrink-0 text-right text-[#5f6368] dark:text-[#a9b4c7]`}
                   >
-                    {item.count.toLocaleString()}
+                    {formatCompactNumber(item.count, currency.locale)}
                   </span>
                 </div>
               );
@@ -132,9 +135,9 @@ export default function StockMovementChart({
               {ticks.map((v) => (
                 <span
                   key={v}
-                  className="text-xs tabular-nums text-[#5f6368] dark:text-[#a9b4c7]"
+                  className="text-[10px] sm:text-xs tabular-nums text-[#5f6368] dark:text-[#a9b4c7]"
                 >
-                  {v.toLocaleString()}
+                  {formatCompactNumber(v, currency.locale)}
                 </span>
               ))}
             </div>

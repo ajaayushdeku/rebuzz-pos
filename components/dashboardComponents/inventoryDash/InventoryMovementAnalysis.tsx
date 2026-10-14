@@ -110,12 +110,17 @@ const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
                 className="border-b py-3.5 first:pt-0 last:border-0 last:pb-0 border-[#e8eaed] dark:border-white/10"
               >
                 <div className="mb-1 flex items-center justify-between gap-2">
-                  <div className="flex min-w-0 items-center gap-1.5">
-                    <Icon size={14} className={colorClass} />
-                    <span className={`text-[13px] ${colorClass}`}>{label}</span>
-                    <span className="truncate text-[11px] tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
-                      {group.length} {group.length === 1 ? "item" : "items"} ·{" "}
-                      {unitShare(group, totalUnits)}% of units
+                  <div className="flex flex-row  min-w-0 items-start sm:items-center gap-1.5">
+                    <Icon size={14} className={`mt-0.5 ${colorClass}`} />
+                    <span
+                      className={`flex flex-col sm:flex-row items-start sm:items-center gap-0 sm:gap-2 text-[13px] ${colorClass}`}
+                    >
+                      {" "}
+                      {label}
+                      <span className="truncate text-[11px] tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
+                        {group.length} {group.length === 1 ? "item" : "items"} ·{" "}
+                        {unitShare(group, totalUnits)}% of units
+                      </span>
                     </span>
                   </div>
                   <span

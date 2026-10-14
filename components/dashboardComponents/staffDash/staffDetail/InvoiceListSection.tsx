@@ -357,7 +357,7 @@ export default function InvoiceListSection({
                     <td className="py-3 px-4">
                       {stamp ? (
                         <div>
-                          <span className="text-xs tracking-wide block text-[#3c4043] dark:text-[#e8ecf4]">
+                          <span className="text-xs  tracking-wide block text-[#3c4043] dark:text-[#e8ecf4]">
                             {stamp.time24}
                             <span className="text-[10px] font-normal text-[#9aa0a6] dark:text-[#9aa6bd]">
                               {"  "}[ {stamp.time12} ]

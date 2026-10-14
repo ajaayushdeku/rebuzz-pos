@@ -31,7 +31,7 @@ export default function CategoryLegend({
           />
           {/* Grey, not the series colour: pale swatches like amber or cyan are
               legible as a block and not as small text. */}
-          <span className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
+          <span className="text-[11px] sm:text-[13px] text-[#3c4043] dark:text-[#c3ccdc]">
             {cat.name}
           </span>
         </span>

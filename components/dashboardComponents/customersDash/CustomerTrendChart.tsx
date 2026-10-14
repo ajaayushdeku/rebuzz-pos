@@ -282,14 +282,20 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
               dataKey="month"
               axisLine={false}
               tickLine={false}
-              tick={AXIS_TICK}
+              tick={{
+                ...AXIS_TICK,
+                fontSize: isSmallScreen ? 10 : 12,
+              }}
               dy={8}
             />
 
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={AXIS_TICK}
+              tick={{
+                ...AXIS_TICK,
+                fontSize: isSmallScreen ? 10 : 12,
+              }}
               ticks={yTicks}
               domain={[0, yMax]}
               width={isSmallScreen ? 40 : 80}

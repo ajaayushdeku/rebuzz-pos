@@ -6,7 +6,7 @@ import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/
 import { ChartCard, ChartPager } from "../../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 
 interface TopItem {
   itemId: string;
@@ -153,7 +153,7 @@ function getBarColor(quantity: number, max: number): string {
  * two never agreed.
  */
 const ROW_GRID =
-  "grid grid-cols-[1.25rem_5.5rem_1fr_2.75rem] items-center gap-3 md:grid-cols-[1.25rem_7rem_1fr_4rem]";
+  "grid grid-cols-[0.5rem_5rem_1fr_2rem] items-center gap-1 sm:gap-3  md:gap-3 sm:grid-cols-[0.5rem_7rem_1fr_2rem] md:grid-cols-[1.25rem_7rem_1fr_4rem]";
 
 /**
  * The card, in whichever of its four states.
@@ -428,18 +428,18 @@ export default function TopItemsSales({
           // the data ever repeats an id again.
           <div key={safePage * PAGE_SIZE + idx} className={ROW_GRID}>
             {/* Rank continues across pages — page 2 starts at 9, not 1. */}
-            <span className="text-[11px] tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
+            <span className="text-[10px] sm:text-xs tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
               {safePage * PAGE_SIZE + idx + 1}
             </span>
 
             <span
-              className="min-w-0 truncate text-[13px] leading-tight text-[#3c4043] dark:text-[#e8ecf4]"
+              className="min-w-0 w-18 sm:w-26  truncate text-[10px] sm:text-xs leading-tight text-[#3c4043] dark:text-[#e8ecf4]"
               title={row.name}
             >
               {row.name}
             </span>
 
-            <div className="relative h-2 sm:h-4 overflow-hidden rounded-full bg-[#e8eaed] dark:bg-white/10">
+            <div className="relative h-2 sm:h-4 flex-1 overflow-hidden rounded-full bg-[#e8eaed] dark:bg-white/10">
               <div
                 className="h-2 sm:h-4 rounded-full transition-all duration-700"
                 style={{
@@ -450,8 +450,8 @@ export default function TopItemsSales({
             </div>
 
             <div className="text-right">
-              <span className="text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
-                {row.quantity.toLocaleString()}
+              <span className="text-[10px] w-10 sm:text-xs font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
+                {formatCompactNumber(row.quantity, currency.locale)}
               </span>
               {/* Only the analytics endpoint carries revenue. */}
               {/* {row.revenue !== undefined && (
@@ -476,9 +476,9 @@ export default function TopItemsSales({
           {axisTicks.map((tick, i) => (
             <span
               key={`${tick}-${i}`}
-              className="text-xs tabular-nums text-[#5f6368] dark:text-[#a9b4c7]"
+              className="text-[10px] sm:text-xs tabular-nums text-[#5f6368] dark:text-[#a9b4c7]"
             >
-              {tick}
+              {formatCompactNumber(tick, currency.locale)}
             </span>
           ))}
         </div>

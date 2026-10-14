@@ -85,7 +85,7 @@ export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
       buttons={<RangeBadge variant="pill" />}
       className="h-full"
     >
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gird-cols-1 sm:grid-cols-2 gap-3">
         {metrics.map((item) => {
           const Icon = item.icon;
 

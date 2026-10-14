@@ -400,10 +400,13 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
                   tickFormatter={formatYAxis}
                   axisLine={false}
                   tickLine={false}
-                  tick={AXIS_TICK}
+                  tick={{
+                    ...AXIS_TICK,
+                    fontSize: isSmallScreen ? 10 : 12,
+                  }}
                   ticks={ticks}
                   domain={[ticks[0], ticks[ticks.length - 1]]}
-                  width={isSmallScreen ? 20 : 50}
+                  width={isSmallScreen ? 35 : 50}
                   label={!isSmallScreen ? yAxisTitle("Avg. orders") : undefined}
                 />
 

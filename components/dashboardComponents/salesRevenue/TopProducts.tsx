@@ -137,7 +137,7 @@ export default function TopProducts({
 
       {/* Table: no zebra or shadow, hairline rows, quiet grey headings. */}
       <div className="overflow-x-auto scrollbar-hide">
-        <table className="w-full table-auto">
+        <table className="w-full table-auto min-w-[780px]">
           <thead>
             <tr className="border-b text-left border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
               <th className="px-3 pb-2.5 pt-1 text-[11px] font-normal whitespace-nowrap">
@@ -148,8 +148,11 @@ export default function TopProducts({
                   Product {SortIcon({ colKey: "name" })}
                 </span>
               </th>
-              <th className={TH} onClick={() => toggleSort("count")}>
-                <span className="flex items-center justify-end gap-1">
+              <th
+                className={`${TH} flex justify-end text-center items-center `}
+                onClick={() => toggleSort("count")}
+              >
+                <span className="flex items-center text-center w-fit justify-end gap-1">
                   Sold {SortIcon({ colKey: "count" })}
                 </span>
               </th>

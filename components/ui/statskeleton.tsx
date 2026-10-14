@@ -1,12 +1,11 @@
 import { cn } from "@/lib/utils";
-import { STAT_ROW_ITEM } from "../dashboardComponents/overviewDash/statRow";
+// import { STAT_ROW_ITEM } from "../dashboardComponents/overviewDash/statRow";
 
 export default function StatSkeleton() {
   return (
     <div
       className={cn(
         "border w-full mt-4 px-3 md:px-6 py-4 md:py-6 rounded-lg shadow-md animate-pulse dark:bg-[#161d2e]",
-        STAT_ROW_ITEM,
       )}
     >
       {/* Label + icon row */}

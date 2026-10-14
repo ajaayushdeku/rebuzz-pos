@@ -238,7 +238,7 @@ export default function AtRiskCustomer({
                     </span>
                   </td>
                   <td className="py-3 px-4 text-left">
-                    <span className=" text-xs text-gray-600  rounded-2xl inline-block  dark:text-[#a9b4c7]">
+                    <span className="text-xs text-gray-600  rounded-2xl inline-block  dark:text-[#a9b4c7]">
                       {`Inactive for about 2 weeks`}
                     </span>
                   </td>

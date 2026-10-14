@@ -156,49 +156,52 @@ const TaxOnRefundedBills = ({
               Recent refunds
             </p>
 
-            <div className="max-h-80 overflow-y-auto scrollbar-hide border-t border-[#e8eaed] dark:border-white/10">
-              {data.map((bill) => (
-                <div
-                  key={bill.billNumber}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => router.push(`/invoices/${bill.billNumber}`)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      router.push(`/invoices/${bill.billNumber}`);
-                    }
-                  }}
-                  className="flex cursor-pointer items-center justify-between gap-3 border-b px-3 py-3 transition-colors last:border-0 hover:bg-blue-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 border-[#e8eaed] dark:border-white/10"
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 bg-rose-50 text-rose-600 dark:bg-rose-400/10 dark:text-rose-400">
-                      <RefreshCcw size={15} />
+            <div className="overflow-x-auto scrollbar-hide">
+              {" "}
+              <div className="max-h-80 min-w-[500px] overflow-y-auto scrollbar-hide border-t border-[#e8eaed] dark:border-white/10">
+                {data.map((bill) => (
+                  <div
+                    key={bill.billNumber}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => router.push(`/invoices/${bill.billNumber}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        router.push(`/invoices/${bill.billNumber}`);
+                      }
+                    }}
+                    className="flex cursor-pointer items-center justify-between gap-3 border-b px-3 py-3 transition-colors last:border-0 hover:bg-blue-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 border-[#e8eaed] dark:border-white/10"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 bg-rose-50 text-rose-600 dark:bg-rose-400/10 dark:text-rose-400">
+                        <RefreshCcw size={15} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
+                          ORD-{bill.billNumber}
+                        </p>
+                        <p className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
+                          <span className="truncate">{bill.reason}</span>
+                          <span className="flex shrink-0 items-center gap-1">
+                            <Calendar size={11} />
+                            {bill.date}
+                          </span>
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
-                        ORD-{bill.billNumber}
-                      </p>
-                      <p className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
-                        <span className="truncate">{bill.reason}</span>
-                        <span className="flex shrink-0 items-center gap-1">
-                          <Calendar size={11} />
-                          {bill.date}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="shrink-0 text-right">
-                    <p className="text-[13px] font-medium tabular-nums text-[#d93025] dark:text-[#f87171]">
-                      −{fmt(bill.refundedAmount)}
-                    </p>
-                    <p className="mt-0.5 text-[11px] tabular-nums text-[#e37400] dark:text-amber-400">
-                      Tax: −{fmt(bill.taxRefunded)}
-                    </p>
+                    <div className="shrink-0 text-right">
+                      <p className="text-[13px] font-medium tabular-nums text-[#d93025] dark:text-[#f87171]">
+                        −{fmt(bill.refundedAmount)}
+                      </p>
+                      <p className="mt-0.5 text-[11px] tabular-nums text-[#e37400] dark:text-amber-400">
+                        Tax: −{fmt(bill.taxRefunded)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </>

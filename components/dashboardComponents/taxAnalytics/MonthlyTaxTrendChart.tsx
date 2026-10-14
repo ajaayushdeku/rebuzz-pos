@@ -155,14 +155,20 @@ export default function MonthlyTaxTrendChart() {
                 dataKey="month"
                 axisLine={false}
                 tickLine={false}
-                tick={AXIS_TICK}
+                tick={{
+                  ...AXIS_TICK,
+                  fontSize: isSmallScreen ? 10 : 12,
+                }}
                 dy={8}
               />
               <YAxis
                 tickFormatter={formatY}
                 axisLine={false}
                 tickLine={false}
-                tick={AXIS_TICK}
+                tick={{
+                  ...AXIS_TICK,
+                  fontSize: isSmallScreen ? 10 : 12,
+                }}
                 width={isSmallScreen ? 55 : 80}
                 label={!isSmallScreen ? yAxisTitle("Tax generated") : undefined}
               />

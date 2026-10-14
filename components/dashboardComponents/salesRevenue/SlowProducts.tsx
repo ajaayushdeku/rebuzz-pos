@@ -236,7 +236,7 @@ export default function SlowProducts({
 
       {/* Table: no zebra or shadow, hairline rows, quiet grey headings. */}
       <div className="overflow-x-auto scrollbar-hide">
-        <table className="w-full">
+        <table className="w-full min-w-[550px]">
           <thead>
             <tr className="border-b text-left border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
               <th className="w-12 px-3 pb-2.5 pt-1 text-[11px] font-normal whitespace-nowrap">
@@ -304,7 +304,7 @@ export default function SlowProducts({
                     className="border-b transition-colors last:border-0 hover:bg-[#f8f9fa] border-[#e8eaed] dark:hover:bg-white/10 dark:border-white/10"
                   >
                     <td
-                      className={`${TD} tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]`}
+                      className={`${TD}  tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]`}
                     >
                       {page * pageSize + idx + 1}
                     </td>

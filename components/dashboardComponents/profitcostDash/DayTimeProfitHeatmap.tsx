@@ -203,7 +203,7 @@ export default function DayTimeProfitHeatmap({
       </div>
 
       {/* Legend: the colour scale, under the grid on the right */}
-      <div className="mt-3 flex items-center justify-end gap-2 pr-2 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
+      <div className="mt-3 flex items-center justify-end gap-2 pr-2 text-[11px] sm:text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
         <span className={`h-2.5 w-2.5 rounded-[2px] ${getColor(-1)}`} />
         <span>Loss</span>
         <span className="mx-1 h-3 w-px bg-[#dadce0] dark:bg-white/15" />

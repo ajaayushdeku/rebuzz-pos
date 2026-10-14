@@ -166,7 +166,7 @@ export default function WhatChangedAndWhy() {
                   ) : (
                     <TrendingDown size={12} />
                   )}
-                  {fmt(Math.abs(data.change))} ({data.changePct}%)
+                  {fmt(Math.abs(data.change))} ({fmt(data.changePct)}%)
                 </span>
               </div>
             </div>
