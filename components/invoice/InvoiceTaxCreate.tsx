@@ -210,7 +210,7 @@ export default function InvoiceTaxCreate({
           {/* ── Controls: create + enable switch + picker ── */}
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-2 h-8 rounded-lg border border-gray-200 px-3 dark:border-white/15">
-              <span className="text-xs font-medium text-gray-600 dark:text-[#a9b4c7]">
+              <span className="text-[12px] sm:text-xs font-medium text-gray-600 dark:text-[#a9b4c7]">
                 Enable Tax
               </span>
               <Toggle
@@ -226,7 +226,7 @@ export default function InvoiceTaxCreate({
               <button
                 type="button"
                 onClick={() => setTaxModalOpen(true)}
-                className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer dark:hover:border-blue-400/50 dark:hover:bg-blue-400/15 dark:border-white/20 dark:text-blue-300"
+                className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-[12px] sm:text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer dark:hover:border-blue-400/50 dark:hover:bg-blue-400/15 dark:border-white/20 dark:text-blue-300"
                 title="Select tax"
               >
                 <Tags className="w-3.5 h-3.5" />
@@ -250,7 +250,7 @@ export default function InvoiceTaxCreate({
               {activeNormalTaxes.map((tax) => (
                 <div
                   key={tax._id}
-                  className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium px-3 py-1.5 rounded-full dark:border-blue-400/25 dark:text-blue-300 dark:bg-blue-400/10"
+                  className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full dark:border-blue-400/25 dark:text-blue-300 dark:bg-blue-400/10"
                 >
                   <span className="tabular-nums  text-[11px] font-semibold  tracking-wider">
                     {tax.name} ({tax.rate}%)
@@ -291,19 +291,19 @@ export default function InvoiceTaxCreate({
           <div className="space-y-1.5  border-b border-gray-100 pb-1.5 dark:border-white/10">
             {" "}
             <div className="flex justify-between gap-12 text-sm text-gray-500 dark:text-[#9aa6bd]">
-              <span className="text-[13px] font-semibold  tracking-wider">
+              <span className="text-xs sm:text-[13px] font-semibold  tracking-wider">
                 After Discount
               </span>
-              <span className="font-medium text-gray-800 tabular-nums text-[13px] font-semibold  tracking-wider dark:text-[#e8ecf4]">
+              <span className="font-medium text-gray-800 tabular-nums text-xs sm:text-[13px] font-semibold  tracking-wider dark:text-[#e8ecf4]">
                 {fmt(subtotal)}
               </span>
             </div>
             {taxAmount > 0 && (
               <div className="flex justify-between gap-12 text-sm text-red-600 dark:text-red-300">
-                <span className="text-[13px] font-semibold  tracking-wider">
+                <span className="text-xs sm:text-[13px] font-semibold  tracking-wider">
                   Tax
                 </span>
-                <span className="tabular-nums text-[13px] font-semibold  tracking-wider">
+                <span className="tabular-nums text-xs sm:text-[13px] font-semibold  tracking-wider">
                   + {fmt(taxAmount)}
                 </span>
               </div>
@@ -311,10 +311,10 @@ export default function InvoiceTaxCreate({
           </div>
 
           <div className="flex justify-between gap-12 text-sm font-bold text-blue-600 dark:text-blue-300 ">
-            <span className="text-[13px] font-semibold  tracking-wider">
+            <span className="text-xs sm:text-[13px] font-semibold  tracking-wider">
               Grand Total
             </span>
-            <span className="tabular-nums text-[13px] font-semibold  tracking-wider">
+            <span className="tabular-nums text-xs  sm:text-[13px] font-semibold  tracking-wider">
               {fmt(finalTotal)}
             </span>
           </div>

@@ -24,7 +24,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { Save } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody } from "@/components/ui/table";
@@ -317,7 +316,8 @@ function rawDiscountIds(rawDiscounts: any[] | undefined): string[] {
  * guess at the list price would be worse than showing what was stored.
  */
 type RawDiscountEntry =
-  string | { discount?: string; _id?: string; type?: string; rate?: number };
+  | string
+  | { discount?: string; _id?: string; type?: string; rate?: number };
 
 function listUnitPrice(
   net: number,
@@ -1379,21 +1379,21 @@ export default function InvoiceForm({
   };
 
   return (
-    <div className="min-h-screen bg-50 p-6 md:p-8">
+    <div className="min-h-screen px-0 pt-5 pb-0 sm:py-8 sm:px-5 md:px-10">
       {/* ── Page header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="md:text-3xl text-2xl font-bold text-gray-900 dark:text-[#e8ecf4]">
+      <div className="flex flex-col sm:flex-row sm:items-end px-5 sm:px-0 justify-between gap-4 mb-5 sm:mb-7">
+        <div className="mt-0 sm:mt-2">
+          <h1 className="truncate text-[18px]  font-semibold tracking-wide text-[#3c4043] sm:text-[22px] md:text-[26px] dark:text-[#e8ecf4]">
             {isEditMode ? `Edit Invoice #${invoiceNumber}` : "New Invoice"}
           </h1>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 ">
             {isCreditInvoice && (
-              <span className="text-[10px] font-bold uppercase tracking-wide text-violet-700 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-full dark:border-violet-400/25 dark:text-violet-300 dark:bg-violet-400/10">
+              <span className="text-[9px] font-bold uppercase tracking-wide text-violet-700 bg-violet-50 border border-violet-200 px-2  rounded-full dark:border-violet-400/25 dark:text-violet-300 dark:bg-violet-400/10">
                 Credit
               </span>
             )}
             {isEditMode && tickets?.createdAt && (
-              <p className="text-sm text-gray-400 dark:text-[#9aa6bd]">
+              <p className="  ml-0.5 w-[80%] sm:w-full max-w-xl text-[11px] md:text-[12px] sm:text-[12px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
                 Created at{" "}
                 {new Date(tickets.createdAt).toLocaleDateString(undefined, {
                   month: "short",
@@ -1405,21 +1405,20 @@ export default function InvoiceForm({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-row items-center   justify-end gap-3">
           {isEditMode && (
-            <Button
+            <button
               type="button"
-              variant="outline"
               onClick={() => router.push(returnHref)}
-              className="border-gray-300 text-gray-600 hover:text-gray-800 px-6 py-3 rounded-lg dark:border-white/20 dark:text-[#a9b4c7]"
+              className="bg-gray-100 hover:bg-gray-700 text-gray-500 rounded-lg flex items-center gap-2 text-xs sm:text-[13px] inline-flex h-9 shrink-0 cursor-pointer border hover:border-gray-400 hover:bg-gray-50 active:bg-gray-100 select-none justify-center tracking-wide whitespace-nowrap   px-3.5 text-sm font-semibold transition-colors outline-none focus-visible:border-gray-500 focus-visible:ring-[3px] focus-visible:ring-gray-500/30 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 dark:border-white/30 dark:bg-white/5 dark:text-white/50 dark:hover:border-white/60 dark:hover:bg-white/10"
             >
               Cancel
-            </Button>
+            </button>
           )}
-          <Button
+          <button
             onClick={handleSave}
             disabled={isPending}
-            className="bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white rounded-lg flex items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 text-xs sm:text-[13px] inline-flex h-9 shrink-0 cursor-pointer border hover:border-blue-400 hover:bg-blue-50 active:bg-blue-100 select-none justify-center tracking-wide whitespace-nowrap   px-3.5 text-sm font-semibold transition-colors outline-none focus-visible:border-blue-500 focus-visible:ring-[3px] focus-visible:ring-blue-500/30 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 dark:border-[#7ba2e3]/40 dark:bg-white/5 dark:text-[#7ba2e3] dark:hover:border-[#7ba2e3]/60 dark:hover:bg-white/10"
           >
             {isPending ? (
               <>
@@ -1429,7 +1428,7 @@ export default function InvoiceForm({
             ) : isEditMode ? (
               <>
                 <Save className="h-4 w-4" />
-                Update Invoice
+                {isCreditInvoice ? "Update Credited Invoice" : "Update Invoice"}
               </>
             ) : (
               <>
@@ -1437,11 +1436,11 @@ export default function InvoiceForm({
                 Save and Continue
               </>
             )}
-          </Button>
+          </button>
         </div>
       </div>
 
-      <div className="border-gray-200 border shadow-sm rounded-xl bg-white dark:bg-[#161d2e] overflow-hidden dark:border-white/15">
+      <div className="border-gray-200 border  sm:rounded-xl bg-white dark:bg-[#161d2e] overflow-hidden dark:border-white/15">
         {/* ── Bill to + Invoice title ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 px-5 pt-5 border-b border-gray-100 pb-8 dark:border-white/10">
           {/* Customer */}
@@ -1474,7 +1473,7 @@ export default function InvoiceForm({
 
             {/* Existing selector — unchanged, just revealed on demand */}
             {showCustomerPicker && (
-              <div className="mt-3">
+              <div className="mt-3 ">
                 <CustomerSelector
                   value={selectedCustomer}
                   onCustomerSelect={(c) => {
@@ -1610,12 +1609,12 @@ export default function InvoiceForm({
         )}
 
         {/* ── Notes ── */}
-        <div className="px-5 py-4 border-t border-gray-100 dark:border-white/10">
-          <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5 dark:text-[#9aa6bd]">
+        <div className="border-t border-gray-200 bg-gray-50/80 px-5 py-4 dark:border-white/10 dark:bg-white/[0.03]">
+          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
             Notes / Terms
           </label>
           <input
-            className="w-full focus:outline-none text-sm text-gray-700 placeholder:text-gray-300 p-2 rounded-lg border border-transparent focus:border-gray-200 hover:border-gray-200 transition dark:hover:border-white/20 dark:text-[#c3ccdc]"
+            className="w-full rounded-lg border border-gray-300 bg-white p-2 text-xs sm:text-sm text-gray-900 placeholder:text-gray-400 transition-colors hover:border-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/15 dark:border-white/15 dark:bg-[#151b28] dark:text-gray-100 dark:placeholder:text-gray-500 dark:hover:border-white/25 dark:focus:border-blue-400 dark:focus:ring-blue-400/15"
             placeholder="Enter notes or terms of service..."
             type="text"
             value={notes}

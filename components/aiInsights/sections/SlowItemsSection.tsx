@@ -31,15 +31,18 @@ const KIND: Record<SlowKind, { label: string; accent: AccentName }> = {
 };
 
 /**
- * Where each fix is carried out: prices, recipes and the menu itself on the
- * products page; a bundle or a push as an offer.
+ * Where each fix is carried out.
+ *
+ * The menu price, the recipe and the menu itself on the products page; the two
+ * moves that need an offer in the offer builder. Each card's button is a link
+ * here, so a move only exists if there is a screen that performs it.
  */
 const MOVE_HREF: Record<SlowItemMove, string> = {
-  rework: "/records/products",
   reprice: "/records/products",
+  rework: "/records/products",
   remove: "/records/products",
-  bundle: "/offers",
-  promote: "/offers",
+  discount: "/offers",
+  freebie: "/offers",
 };
 
 export default function SlowItemsSection({

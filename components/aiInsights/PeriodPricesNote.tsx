@@ -25,7 +25,7 @@ function Note() {
   return (
     <p className="flex items-start gap-2 rounded-xl border border-[#e3e3e3] bg-[#f8f9fa] px-4 py-2.5 text-[11px] leading-relaxed text-[#5f6368] dark:border-white/10 dark:bg-white/5 dark:text-[#a9b4c7]">
       <Info
-        className="mt-px h-3.5 w-3.5 shrink-0 text-[#9aa0a6] dark:text-[#7b869b]"
+        className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#9aa0a6] dark:text-[#7b869b]"
         aria-hidden
       />
       <span>{note}</span>

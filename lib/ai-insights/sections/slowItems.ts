@@ -28,7 +28,7 @@ import {
 } from "./shared";
 
 /** Part of the cache key: bump when the prompt or the facts change. */
-export const SLOW_ITEMS_VERSION = "v3";
+export const SLOW_ITEMS_VERSION = "v4";
 
 // ── Facts ─────────────────────────────────────────────────────────────────
 
@@ -290,12 +290,14 @@ For each item:
 - icon: one emoji that fits the item.
 - description: one sentence on what is going wrong, under 140 characters.
 - tips: two or three different things to try, best first. Each one short sentence under 140 characters, and each a genuinely different approach \u2014 not the same fix worded twice.
-- move: "rework" (change the recipe or format), "bundle" (pair it with a best seller), "reprice", "promote" (show it more, or offer it at a better time), or "remove" (take it off the menu).
-- action: a short button label for the move, under 30 characters, e.g. "Bundle with Tea" or "Take off the menu".
+- move: where the owner goes to act on it — "discount" (run a percentage or flat Rs offer on it), "freebie" (give it away with a best seller, as a free-item or buy-one-get-one offer), "reprice" (change its menu price for good), "rework" (change the recipe or format), or "remove" (take it off the menu).
+- action: a short button label for the move, under 30 characters, naming the thing the owner is about to set up — e.g. "20% off for a week", "Free with Milk Tea", "Take off the menu".
 
 Rules:
 - Use only the facts given. Never invent numbers, items, sales forecasts or ingredients the facts do not mention.
 - Only pair an item with a best seller listed in the facts, named exactly as written.
+- A "discount" or a "freebie" is carried out in the app's offer builder, which makes four kinds of offer and no others: a percentage off, a flat Rs amount off, buy-one-get-one, and a free item. Advice has to be one of those. Never suggest a combo price, a set menu, a bundle SKU, a loyalty multiplier or a meal deal — the owner has no way to set those up, and an instruction they cannot follow is worse than no advice.
+- "reprice" is a permanent change to the menu price. Use "discount" when the cut should run for a while and then stop.
 - When you say sales fell, give both sides in the same unit, then the percent: "fell from 94 a week to 6 a week (down 94%)", using the figures given. Never a percent with only one side, as in "fell 94% to 6 a week".
 - When a lot of stock is sitting unsold, say how much money is tied up.
 - When the margin is unknown, do not judge the margin.
@@ -320,7 +322,7 @@ export const SLOW_ITEMS_SCHEMA = {
           },
           move: {
             type: "string",
-            enum: ["rework", "bundle", "reprice", "promote", "remove"],
+            enum: ["discount", "freebie", "reprice", "rework", "remove"],
           },
           action: { type: "string" },
         },
@@ -333,16 +335,43 @@ export const SLOW_ITEMS_SCHEMA = {
 
 // ── Answer ────────────────────────────────────────────────────────────────
 
+/**
+ * What to do about a slow item, named after where it gets done.
+ *
+ * Two of these live in the offer builder and three on the products page, and
+ * that split is the point: every move has to be a thing the app can actually
+ * carry out. "bundle" and "promote" were here until v4 and were neither — the
+ * builder has no bundle, and "promote" was advice to go and do something
+ * undefined somewhere else. A card whose button reads "Bundle with Tea" and
+ * lands on a builder with no bundle in it has sent the owner on an errand.
+ */
 export type SlowItemMove =
-  "rework" | "bundle" | "reprice" | "promote" | "remove";
+  "discount" | "freebie" | "reprice" | "rework" | "remove";
 
 const MOVES: readonly SlowItemMove[] = [
-  "rework",
-  "bundle",
+  "discount",
+  "freebie",
   "reprice",
-  "promote",
+  "rework",
   "remove",
 ];
+
+/**
+ * Moves that answers stored before v4 still carry.
+ *
+ * Translated rather than rejected: `parseSlowItems` drops an entry whose move it
+ * does not recognise, so without this a card the owner had already read would
+ * blank out when the page was reopened. The intent maps cleanly — pairing with
+ * a best seller is a free-item offer, and pushing an item is a discount — and
+ * both landed on /offers before, as they do now.
+ *
+ * The button label on such a card is still whatever the model wrote at the time
+ * ("Bundle with Tea"); only Refresh will reword it.
+ */
+const LEGACY_MOVES: Readonly<Record<string, SlowItemMove>> = {
+  bundle: "freebie",
+  promote: "discount",
+};
 
 export interface SlowItemInsight {
   id: string;
@@ -439,9 +468,10 @@ export function parseSlowItems(
       .filter((t): t is string => Boolean(t))
       .slice(0, MAX_TIPS);
     const action = textOr(e.action, 40);
-    const move = MOVES.includes(e.move as SlowItemMove)
-      ? (e.move as SlowItemMove)
-      : null;
+    const rawMove = typeof e.move === "string" ? e.move.trim() : "";
+    const move = MOVES.includes(rawMove as SlowItemMove)
+      ? (rawMove as SlowItemMove)
+      : (LEGACY_MOVES[rawMove] ?? null);
     if (!description || tips.length === 0 || !action || !move) continue;
 
     seen.add(ref);

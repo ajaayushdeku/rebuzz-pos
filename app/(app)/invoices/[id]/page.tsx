@@ -15,10 +15,12 @@ import {
   CreditCard,
   Eye,
   EyeOff,
-  FileText,
   Mail,
   Plus,
   Send,
+  FileText,
+  ReceiptText,
+  FileCheck,
 } from "lucide-react";
 
 import { useBusiness } from "@/hooks/useBusiness";
@@ -72,10 +74,14 @@ import {
 
 type InvoiceTypeKey = "proforma" | "invoice" | "tax";
 
-const INVOICE_TABS: Array<{ key: InvoiceTypeKey; label: string }> = [
-  { key: "proforma", label: "Proforma" },
-  { key: "invoice", label: "Regular Invoice" },
-  { key: "tax", label: "Tax Invoice" },
+const INVOICE_TABS: Array<{
+  key: InvoiceTypeKey;
+  label: string;
+  icon: typeof FileText;
+}> = [
+  { key: "proforma", label: "Proforma", icon: FileText },
+  { key: "invoice", label: "Regular Invoice", icon: ReceiptText },
+  { key: "tax", label: "Tax Invoice", icon: FileCheck },
 ];
 
 const InvoiceDetailPage = () => {
@@ -618,11 +624,11 @@ const InvoiceDetailPage = () => {
   return (
     <div className="min-h-screen dark:bg-[#0f1420] ">
       {/* ── Top bar ── */}
-      <div className="sticky top-0 z-30 bg-white dark:bg-[#161d2e] border-b border-gray-200 px-6 md:px-10 py-4 pt-6 flex items-center justify-between dark:border-white/15">
+      <div className="sticky top-0 z-30 bg-white dark:bg-[#161d2e] border-b border-gray-200 px-6 md:px-10 py-4 sm:pt-6 flex items-center justify-between dark:border-white/15">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.back()}
-            className="h-8 w-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors dark:hover:bg-white/15 dark:text-[#9aa6bd] dark:bg-white/10"
+            className="h-8 w-8 hidden sm:flex items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors dark:hover:bg-white/15 dark:text-[#9aa6bd] dark:bg-white/10"
           >
             <ArrowLeft size={18} />
           </button>
@@ -634,7 +640,7 @@ const InvoiceDetailPage = () => {
                 #{invoice?.invoice}
               </span>
             </h1>
-            <p className="text-xs text-gray-400 mt-0.5 dark:text-[#9aa6bd]">
+            <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 dark:text-[#9aa6bd]">
               {isCreditArchived
                 ? "Credit Archived"
                 : invoice.paidStatus === "paid"
@@ -708,7 +714,11 @@ const InvoiceDetailPage = () => {
                 : "border-gray-200 text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#9aa6bd]"
             }`}
           >
-            {showPan ? <Eye size={15} /> : <EyeOff size={15} />}
+            {showPan ? (
+              <Eye className="h-3.5 w-3.5 sm:h-[15px] sm:w-[15px]" />
+            ) : (
+              <EyeOff className="h-3.5 w-3.5 sm:h-[15px] sm:w-[15px]" />
+            )}
             <span className="hidden lg:inline">PAN</span>
           </button>
 
@@ -716,7 +726,7 @@ const InvoiceDetailPage = () => {
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-1.5 border border-gray-200 rounded-full px-2 sm:px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors dark:hover:bg-white/5 dark:border-white/15 dark:text-[#c3ccdc]">
                 <span>
-                  <ChevronDown size={15} />
+                  <ChevronDown className="h-3.5 w-3.5 sm:h-[15px] sm:w-[15px]" />
                 </span>
                 <span className="hidden lg:inline">More actions</span>
               </button>
@@ -803,7 +813,7 @@ const InvoiceDetailPage = () => {
             className="bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white text-xs font-semibold px-2 sm:px-4 py-1.5 rounded-full transition-colors dark:bg-[#244074]"
           >
             <span className="lg:hidden">
-              <Plus size={16} />
+              <Plus className="h-3.5 w-3.5 sm:h-[16px] sm:w-[16px]" />
             </span>
             <span className="hidden lg:inline">Create another invoice</span>
           </button>
@@ -889,7 +899,7 @@ const InvoiceDetailPage = () => {
                   <div>
                     <div className="flex items-end justify-between gap-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-base font-bold text-blue-600 dark:text-blue-300">
+                        <span className="text-[14px] sm:text-base font-bold text-blue-600 dark:text-blue-300">
                           {customerProfile?.name ||
                             invoice?.customerEmail ||
                             "Guest"}
@@ -919,7 +929,7 @@ const InvoiceDetailPage = () => {
                 )}
               </div>
             </div>
-            <div className="flex flex-row justify-content gap-6">
+            <div className="flex flex-row w-full sm:w-fit justify-end sm:justify-content gap-6">
               {/* Hidden once settled: see `isSettled`. */}
               {!isSettled && (
                 <div>
@@ -957,7 +967,7 @@ const InvoiceDetailPage = () => {
                   ) : (
                     <button
                       onClick={() => setIsDueDateOpen(true)}
-                      className="text-base font-semibold text-blue-600 tracking-wide cursor-pointer hover:underline dark:text-blue-300"
+                      className="text-[14px] sm:text-base font-semibold text-blue-600 tracking-wide cursor-pointer hover:underline dark:text-blue-300"
                     >
                       Set due date
                     </button>
@@ -969,7 +979,7 @@ const InvoiceDetailPage = () => {
                 <p className="text-[10px] text-right font-semibold text-gray-400 uppercase tracking-widest mb-1.5 dark:text-[#9aa6bd]">
                   Amount due
                 </p>
-                <p className="text-xl font-bold font-sans text-gray-800 dark:text-[#e8ecf4]">
+                <p className="text-[14px] sm:text-xl font-bold font-sans text-gray-800 dark:text-[#e8ecf4]">
                   {displayBillData && displayBillData.status === "refunded" ? (
                     <span className="text-orange-600 font-semibold dark:text-orange-300">
                       {currency.symbol} 0.00
@@ -1004,7 +1014,7 @@ const InvoiceDetailPage = () => {
                   <p className="text-sm font-semibold text-gray-900 dark:text-[#e8ecf4]">
                     Create
                   </p>
-                  <p className="text-xs text-gray-500 mt-0.5 dark:text-[#9aa6bd]">
+                  <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 dark:text-[#9aa6bd]">
                     <span className="font-medium text-gray-700 dark:text-[#c3ccdc]">
                       Created:
                     </span>{" "}
@@ -1026,7 +1036,7 @@ const InvoiceDetailPage = () => {
                 {canEditInvoice && (
                   <button
                     onClick={handleEditInvoice}
-                    className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0 dark:hover:bg-blue-400/15 dark:border-blue-400/25 dark:text-blue-300"
+                    className="text-[11px] sm:text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-3 sm:px-4 py-1 sm:py-1.5 transition-colors shrink-0 dark:hover:bg-blue-400/15 dark:border-blue-400/25 dark:text-blue-300"
                   >
                     Edit invoice
                   </button>
@@ -1048,7 +1058,7 @@ const InvoiceDetailPage = () => {
                   <p className="text-sm font-semibold text-gray-900 dark:text-[#e8ecf4]">
                     Send
                   </p>
-                  <p className="text-xs text-gray-500 mt-0.5 dark:text-[#9aa6bd]">
+                  <p className="text-[10px] text-xs text-gray-500 mt-0.5 dark:text-[#9aa6bd]">
                     <span className="font-medium text-gray-700 dark:text-[#c3ccdc]">
                       Last sent:
                     </span>{" "}
@@ -1068,7 +1078,7 @@ const InvoiceDetailPage = () => {
                   </button> */}
                   <button
                     onClick={() => setIsSendInvoiceModalOpen(true)}
-                    className="text-xs font-semibold bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white rounded-full px-4 py-1.5 transition-colors dark:bg-[#244074]"
+                    className="text-[11px] sm:text-xs font-semibold bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white rounded-full px-3 sm:px-4 py-1 sm:py-1.5 transition-colors dark:bg-[#244074]"
                   >
                     {lastSentAt ? "Send again" : "Send Invoice"}
                   </button>
@@ -1078,29 +1088,32 @@ const InvoiceDetailPage = () => {
               {/* Reminders section — hidden once settled: see `isSettled`. */}
               {!isSettled && (
                 <div className="mt-4 ml-13 border border-gray-100 rounded-xl p-4 dark:border-white/10">
-                  <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-2 sm:gap-3 mb-3">
                     <div className="flex items-center gap-2">
                       <Bell
-                        size={13}
+                        size={14}
                         className="text-gray-500 dark:text-[#9aa6bd]"
                       />
-                      <p className="text-xs font-semibold text-gray-700 dark:text-[#c3ccdc]">
+                      <p className="text-[11px] sm:text-xs sm:text-xs font-semibold text-gray-700 dark:text-[#c3ccdc]">
                         Scheduled due date &amp; automatic reminders
                       </p>
                     </div>
-                    <button
-                      onClick={() => setIsDueDateOpen(true)}
-                      className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0 dark:hover:bg-blue-400/15 dark:border-blue-400/25 dark:text-blue-300"
-                    >
-                      {dueDateRaw ? "Edit due date" : "Set due date"}
-                    </button>
+                    <div className="flex w-full sm:w-fit justify-end mb-2 sm:mb-0">
+                      {" "}
+                      <button
+                        onClick={() => setIsDueDateOpen(true)}
+                        className="text-[11px] sm:text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-3 sm:px-4 py-1 sm:py-1.5 transition-colors shrink-0 dark:hover:bg-blue-400/15 dark:border-blue-400/25 dark:text-blue-300"
+                      >
+                        {dueDateRaw ? "Edit due date" : "Set due date"}
+                      </button>
+                    </div>
                   </div>
 
                   {!dueDateRaw ? (
                     // Reminders are all relative to the due date, so there is
                     // nothing to schedule against until one exists. Saying that
                     // beats showing a row of options that could not fire.
-                    <p className="text-xs text-gray-500 leading-relaxed dark:text-[#9aa6bd]">
+                    <p className="text-[10px] sm:text-xs text-gray-500 leading-relaxed dark:text-[#9aa6bd]">
                       No due date set. Add one to schedule reminders before and
                       after payment falls due.
                     </p>
@@ -1143,7 +1156,7 @@ const InvoiceDetailPage = () => {
                           Scheduled reminders before due date
                         </p>
                         {remindersBefore.length === 0 ? (
-                          <p className="text-xs text-gray-400 dark:text-[#9aa6bd]">
+                          <p className="text-[10px] sm:text-xs text-gray-400 dark:text-[#9aa6bd]">
                             None scheduled before the due date.
                           </p>
                         ) : (
@@ -1151,7 +1164,7 @@ const InvoiceDetailPage = () => {
                             {remindersBefore.map((offset) => (
                               <span
                                 key={offset}
-                                className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 dark:border-white/15 dark:text-[#a9b4c7]"
+                                className="rounded-lg border border-gray-200 px-2 sm:px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium text-gray-600 dark:border-white/15 dark:text-[#a9b4c7]"
                               >
                                 {reminderLabel(offset)}
                               </span>
@@ -1165,7 +1178,7 @@ const InvoiceDetailPage = () => {
                           Scheduled reminders after due date
                         </p>
                         {remindersAfter.length === 0 ? (
-                          <p className="text-xs text-gray-400 dark:text-[#9aa6bd]">
+                          <p className="text-[10px] sm:text-xs text-gray-400 dark:text-[#9aa6bd]">
                             None scheduled once it falls due.
                           </p>
                         ) : (
@@ -1173,7 +1186,7 @@ const InvoiceDetailPage = () => {
                             {remindersAfter.map((offset) => (
                               <span
                                 key={offset}
-                                className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium ${
+                                className={`rounded-lg border px-2 sm:px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium ${
                                   offset === 0
                                     ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/25 dark:text-amber-300 dark:bg-amber-400/10"
                                     : "border-red-200 bg-red-50 text-red-600 dark:border-red-400/25 dark:text-red-300 dark:bg-red-400/10"
@@ -1189,13 +1202,13 @@ const InvoiceDetailPage = () => {
                   )}
 
                   {/* Send reminder quick action */}
-                  <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between dark:border-white/10">
-                    <p className="text-xs text-gray-500 dark:text-[#9aa6bd]">
+                  <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col sm:flex-row items-end sm:items-center gap-2 justify-between dark:border-white/10">
+                    <p className="text-[10px] sm:text-xs text-gray-500 dark:text-[#9aa6bd]">
                       Send an invoice reminder to the customer now
                     </p>
                     <button
                       onClick={handleSendReminder}
-                      className="text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed dark:hover:bg-blue-400/20 dark:text-blue-300 dark:bg-blue-400/10"
+                      className="text-[11px] sm:text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed dark:hover:bg-blue-400/20 dark:text-blue-300 dark:bg-blue-400/10"
                     >
                       Send reminder
                     </button>
@@ -1234,7 +1247,7 @@ const InvoiceDetailPage = () => {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-[#e8ecf4]">
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-[#e8ecf4]">
                     {isCreditArchived
                       ? "Credit archived"
                       : displayBillData && isRefunded
@@ -1244,7 +1257,7 @@ const InvoiceDetailPage = () => {
                           : "Manage payments"}
                   </p>
 
-                  <p className="text-xs text-gray-500 mt-0.5 dark:text-[#9aa6bd]">
+                  <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 dark:text-[#9aa6bd]">
                     {isCreditArchived ? (
                       <span className="text-gray-500 dark:text-[#9aa6bd]">
                         Archived on{" "}
@@ -1296,7 +1309,7 @@ const InvoiceDetailPage = () => {
                     <button
                       onClick={handleChargeCard}
                       disabled
-                      className="text-xs font-semibold border border-gray-300 text-gray-500 rounded-full px-3 py-1.5 opacity-50 cursor-not-allowed flex items-center gap-1.5 dark:border-white/20 dark:text-[#9aa6bd]"
+                      className="hidden sm:block text-[10px] sm:text-xs font-semibold border border-gray-300 text-gray-500 rounded-full px-3 sm:px-4 py-1 sm:py-1.5 opacity-50 cursor-not-allowed flex items-center gap-1.5 dark:border-white/20 dark:text-[#9aa6bd]"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -1329,7 +1342,7 @@ const InvoiceDetailPage = () => {
                             ? setIsCreditPaymentOpen(true)
                             : setIsPaymentModalOpen(true)
                         }
-                        className="text-xs font-semibold bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white rounded-full px-4 py-1.5 transition-colors dark:bg-[#244074]"
+                        className="text-[10px] sm:text-xs font-semibold bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white rounded-full  px-3 sm:px-4 py-1 sm:py-1.5 transition-colors dark:bg-[#244074]"
                       >
                         Record a payment
                       </button>
@@ -1338,7 +1351,7 @@ const InvoiceDetailPage = () => {
                 )}
               </div>
 
-              <div className="text-xs ml-13 mt-2 flex items-center justify-between">
+              <div className="text-[11px] sm:text-xs ml-13 mt-2 flex flex-col sm:flex-row gap-2 items-start sm:items-center  sm:justify-between">
                 <p className="text-gray-600 dark:text-[#a9b4c7]">
                   <span className="font-medium text-gray-700 dark:text-[#c3ccdc]">
                     Amount due:
@@ -1406,12 +1419,12 @@ const InvoiceDetailPage = () => {
               {/* Payments received — from the credit's payment history */}
               {creditPayments.length > 0 && (
                 <div className="ml-13 mt-5 border-t border-gray-100 pt-4 dark:border-white/10">
-                  <p className="text-sm font-semibold text-gray-800 mb-3 dark:text-[#e8ecf4]">
+                  <p className="text-[11px] sm:text-sm font-semibold text-gray-800 mb-3 dark:text-[#e8ecf4]">
                     Payments received:
                   </p>
                   <div className="space-y-3">
                     {creditPayments.map((p) => (
-                      <div key={p._id} className="text-xs">
+                      <div key={p._id} className="text-[11px] sm:text-xs">
                         <p className="text-gray-700 dark:text-[#c3ccdc]">
                           {formatPaymentDate(p.paymentDate)} - A payment for{" "}
                           <span className="font-bold">
@@ -1488,6 +1501,7 @@ const InvoiceDetailPage = () => {
             >
               {INVOICE_TABS.map((tab, i) => {
                 const selected = invoiceType === tab.key;
+                const Icon = tab.icon;
 
                 return (
                   <button
@@ -1502,13 +1516,25 @@ const InvoiceDetailPage = () => {
                     aria-controls={`invoice-type-panel-${tab.key}`}
                     tabIndex={selected ? 0 : -1}
                     onClick={() => setInvoiceType(tab.key)}
-                    className={`rounded-full px-5 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#242a38] ${
+                    className={`inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[12px] transition-all duration-300 ease-in-out sm:px-5 sm:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#242a38] ${
                       selected
                         ? "bg-white font-bold text-blue-950 shadow-sm"
                         : "font-semibold text-blue-800 hover:text-blue-950 dark:text-blue-200"
                     }`}
                   >
-                    {tab.label}
+                    <Icon size={16} className="shrink-0" />
+
+                    <span
+                      className={`grid transition-all duration-300 ease-in-out sm:grid ${
+                        selected
+                          ? "grid-cols-[1fr] opacity-100"
+                          : "grid-cols-[0fr] opacity-0 sm:grid-cols-[1fr] sm:opacity-100"
+                      }`}
+                    >
+                      <span className="overflow-hidden whitespace-nowrap">
+                        {tab.label}
+                      </span>
+                    </span>
                   </button>
                 );
               })}

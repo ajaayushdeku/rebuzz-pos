@@ -983,7 +983,7 @@ export default function InvoiceItemsSelector({
                       updateItem(item.id, "quantity", Number(e.target.value))
                     }
                     className={cn(
-                      "text-right bg-white dark:bg-white/5 h-8 text-[14px] sm:text-[12px] tracking-wider px-1.5 no-spinner tabular-nums",
+                      "text-right bg-white dark:bg-white/5 h-8 text-xs md:text-[14px] sm:text-[12px] tracking-wider px-1.5 no-spinner tabular-nums",
                       stockErrors[item.id] &&
                         "border-red-400 focus-visible:ring-red-400",
                     )}
@@ -1017,7 +1017,7 @@ export default function InvoiceItemsSelector({
                           : undefined
                       }
                       className={cn(
-                        "text-right h-8 bg-white dark:bg-white/5 md:text-[14px] sm:text-[12px] tracking-wider px-1.5 no-spinner tabular-nums",
+                        "text-right h-8 bg-white dark:bg-white/5 text-xs md:text-[14px] sm:text-[12px] tracking-wider px-1.5 no-spinner tabular-nums",
                         showDiscountedUnit &&
                           "text-gray-400 line-through dark:text-[#9aa6bd]",
                       )}
@@ -1160,7 +1160,7 @@ export default function InvoiceItemsSelector({
         <TableCell colSpan={8} className="p-0">
           <button
             onClick={addItem}
-            className="flex w-full items-center gap-2 text-blue-600 font-semibold text-sm hover:text-blue-700 transition-colors px-4 py-3 dark:hover:text-[#c3d6f4] dark:text-blue-300"
+            className="flex w-full items-center gap-2 text-blue-600 font-semibold text-xs sm:text-[13px] hover:text-blue-700 transition-colors px-4 py-3 dark:hover:text-[#c3d6f4] dark:text-blue-300"
           >
             <CirclePlus className="h-4 w-4" />
             Add an item

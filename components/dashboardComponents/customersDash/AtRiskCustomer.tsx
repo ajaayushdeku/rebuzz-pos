@@ -16,6 +16,7 @@ import {
 import { TriangleAlert } from "lucide-react";
 import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
 import { ChartCard } from "../chartCard";
+import { useRouter } from "next/navigation";
 
 type SpendingLevel = "High" | "Medium" | "Low";
 
@@ -52,6 +53,7 @@ const spendLevelStyles: Record<SpendingLevel, { cell: string; badge: string }> =
 export default function AtRiskCustomer({
   riskCustomers,
 }: AtRiskCustomersProps) {
+  const router = useRouter();
   const numCustomers = riskCustomers.length;
   const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
@@ -263,9 +265,9 @@ export default function AtRiskCustomer({
                         <p className="hidden md:block">View History</p>
                       </button>
                       <button
-                        disabled
+                        onClick={() => router.push("/offers")}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg 
-                  font-semibold text-gray-400 border border-gray-300 opacity-50 cursor-not-allowed"
+                  font-semibold text-gray-400 dark:text-white/80 dark:border-white/80 dark:bg-white/5 border border-gray-300 cursor-pointer disabled:cursor-not-allowed"
                       >
                         <Send size={14} />
                         <p className="hidden md:block"> Send Offer</p>
