@@ -103,7 +103,7 @@ export default function CreditDetailMeta({
             <div className="h-5 w-28 bg-gray-200 animate-pulse rounded dark:bg-white/10" />
           ) : (
             <div className="flex items-end gap-2">
-              <span className="text-base font-bold text-blue-600 dark:text-blue-300">
+              <span className="text-[14px] sm:text-base font-bold text-blue-600 dark:text-blue-300">
                 {customerName}
               </span>
               {/* {customerPhone && (
@@ -124,14 +124,14 @@ export default function CreditDetailMeta({
         </div>
       </div>
 
-      <div className="flex flex-row gap-6 font-sans">
+      <div className="flex w-full md:w-fit flex-wrap justify-end gap-x-6 gap-y-4 font-sans">
         {/* Hidden once settled: see `isSettled`. */}
         {!isSettled && (
-          <div>
+          <div className="min-w-0">
             <MetaLabel>Due date</MetaLabel>
             {dueDate ? (
               <div className="text-right relative">
-                <p className="text-xl font-semibold text-gray-800 dark:text-[#e8ecf4]">
+                <p className="text-[14px] sm:text-xl text-600 font-semibold text-gray-800 dark:text-[#e8ecf4]">
                   {formatDueDate(dueDate)}
                 </p>
                 {/* How long is left, and only while something is still owed — on
@@ -139,7 +139,7 @@ export default function CreditDetailMeta({
                   deadline. */}
                 {!cleared && daysUntilDue !== null && (
                   <p
-                    className={` absolute right-0 text-[11px] font-semibold mt-0.5 ${
+                    className={` absolute right-0 text-[10px] sm:text-[11px] font-semibold mt-0.5 ${
                       daysUntilDue < 0
                         ? "text-red-500 dark:text-red-300"
                         : daysUntilDue === 0
@@ -162,7 +162,7 @@ export default function CreditDetailMeta({
             ) : state === "archived" ? (
               // Nothing about an archived credit can change, so a button here
               // would open a form that cannot be saved.
-              <p className="text-base text-right font-semibold text-gray-300 dark:text-[#6b7588]">
+              <p className="text-[14px] sm:text-base text-right font-semibold text-gray-300 dark:text-[#6b7588]">
                 —
               </p>
             ) : (
@@ -170,7 +170,7 @@ export default function CreditDetailMeta({
               // the date, so it is also where they should be able to add one.
               <button
                 onClick={onSetDueDate}
-                className="text-base font-semibold text-blue-600 tracking-wide cursor-pointer hover:underline dark:text-blue-300"
+                className="text-[14px] sm:text-base font-semibold text-blue-600 tracking-wide cursor-pointer hover:underline dark:text-blue-300"
               >
                 Set due date
               </button>
@@ -178,26 +178,26 @@ export default function CreditDetailMeta({
           </div>
         )}
 
-        <div>
+        <div className="min-w-0">
           <MetaLabel>Credit total</MetaLabel>
-          <p className="text-xl text-right font-semibold text-gray-800 dark:text-[#e8ecf4]">
+          <p className="text-[14px] sm:text-xl text-right font-semibold text-gray-800 dark:text-[#e8ecf4]">
             {fmt(grandTotal)}
           </p>
         </div>
 
         {paidAmount > 0 && (
-          <div>
+          <div className="min-w-0">
             <MetaLabel>Paid so far</MetaLabel>
-            <p className="text-xl text-right font-semibold text-green-600 dark:text-emerald-300">
+            <p className="text-[14px] sm:text-xl text-right font-semibold text-green-600 dark:text-emerald-300">
               {fmt(paidAmount)}
             </p>
           </div>
         )}
 
-        <div>
+        <div className="min-w-0">
           <MetaLabel>Amount due</MetaLabel>
           <p
-            className={`text-xl text-right font-semibold ${
+            className={`text-[14px] sm:text-xl text-right font-semibold ${
               cleared
                 ? "text-green-600 dark:text-emerald-300"
                 : "text-red-600 dark:text-red-300"

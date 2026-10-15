@@ -377,7 +377,7 @@ export default function LoyaltyPointPage() {
                     <p className="text-lg font-semibold tabular-nums text-blue-800 dark:text-[#c3d6f4]">
                       {settings.loyaltyPointPercentage}%
                     </p>
-                    <p className="text-xs text-blue-600 dark:text-[#a8c4ee]">
+                    <p className="text-[11px] sm:text-xs text-blue-600 dark:text-[#a8c4ee]">
                       Earn rate
                     </p>
                   </div>
@@ -386,7 +386,7 @@ export default function LoyaltyPointPage() {
                     <p className="text-lg font-semibold tabular-nums text-blue-800 dark:text-[#c3d6f4]">
                       {settings.redeemLimit}%
                     </p>
-                    <p className="text-xs text-blue-600 dark:text-[#a8c4ee]">
+                    <p className="text-[11px] sm:text-xs text-blue-600 dark:text-[#a8c4ee]">
                       Redeem limit
                     </p>
                   </div>
@@ -395,7 +395,7 @@ export default function LoyaltyPointPage() {
                     <p className="text-lg font-semibold tabular-nums text-blue-800 dark:text-[#c3d6f4]">
                       {formatNumber(settings.basePoint, currency.locale)}
                     </p>
-                    <p className="text-xs text-blue-600 dark:text-[#a8c4ee]">
+                    <p className="text-[11px] sm:text-xs text-blue-600 dark:text-[#a8c4ee]">
                       Base point
                     </p>
                   </div>
@@ -516,7 +516,7 @@ export default function LoyaltyPointPage() {
                 <Button
                   onClick={openAddStatus}
                   disabled={tiersLoading || !!tiersError}
-                  className="inline-flex h-7 shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap  rounded-full dark:bg-white/5 border border-[#dadce0] bg-white px-1.5 sm:px-3 text-[11px] text-[#3c4043] transition-colors outline-none hover:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+                  className="flex shrink-0 items-center justify-center gap-1.5 rounded-full border p-2 sm:px-3 sm:py-1.5  font-semibold transition-colors cursor-pointer select-none whitespace-nowrap  dark:bg-white/5 border-[#dadce0] bg-white  text-[12px] text-[#3c4043] outline-none hover:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
                 >
                   <Plus className=" h-3 w-3" />
                   <span className="hidden sm:block">Add Tier</span>

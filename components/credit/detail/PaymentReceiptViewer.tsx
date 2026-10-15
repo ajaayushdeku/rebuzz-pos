@@ -118,7 +118,7 @@ export default function PaymentReceiptViewer({
           <span className="font-medium text-blue-600 dark:text-[#c3d6f4]">
             RECEIPT
           </span>
-          <span className="hidden lg:inline-block text-blue-500 dark:text-[#c3d6f4]">
+          <span className="hidden sm:inline-block text-blue-500 dark:text-[#c3d6f4]">
             Payment {context.index} of {context.total} on invoice #
             {credit.invoiceNo}
           </span>
@@ -131,7 +131,7 @@ export default function PaymentReceiptViewer({
               onClick={() => setPrinting(true)}
               className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white dark:bg-white/5 px-3.5 py-1.5 text-sm font-semibold text-gray-700  transition-all hover:border-blue-300 hover:bg-gray-50 cursor-pointer dark:hover:border-blue-400/50 dark:hover:bg-white/5 dark:border-blue-400/25 dark:text-[#c3ccdc]"
             >
-              <Printer size={16} />
+              <Printer className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
               {/* <span className="hidden lg:inline-block">Print</span> */}
             </button>
             <button
@@ -140,7 +140,7 @@ export default function PaymentReceiptViewer({
               disabled={isExporting}
               className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white dark:bg-white/5 px-3.5 py-1.5 text-sm font-semibold text-gray-700  transition-all hover:border-blue-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 cursor-printer dark:hover:border-blue-400/50 dark:hover:bg-white/5 dark:border-blue-400/25 dark:text-[#c3ccdc]"
             >
-              <Download size={16} />
+              <Download className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
               {/* <span className="hidden lg:inline-block">
                 {isExporting ? "Exporting..." : "Export as PDF"}
               </span> */}
@@ -150,7 +150,7 @@ export default function PaymentReceiptViewer({
           <button
             type="button"
             onClick={() => router.push(backHref)}
-            className="shrink-0 cursor-pointer rounded-2xl border-[3px] border-blue-200 px-3 py-1.5 bg-blue-50 items-center justify-center text-sm font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:text-blue-700 cursor-pointer dark:hover:border-blue-400/50 dark:hover:text-[#c3d6f4] dark:border-blue-400/25 dark:text-blue-300 dark:bg-blue-400/10"
+            className="shrink-0 cursor-pointer rounded-2xl border-[3px] border-blue-200 px-3 py-1.5 bg-blue-50 items-center justify-center text-[10px] sm:text-[12px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:text-blue-700 cursor-pointer dark:hover:border-blue-400/50 dark:hover:text-[#c3d6f4] dark:border-blue-400/25 dark:text-blue-300 dark:bg-blue-400/10"
           >
             Back to{" "}
             {credit.ticketName

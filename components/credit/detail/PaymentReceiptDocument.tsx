@@ -101,54 +101,74 @@ export default function PaymentReceiptDocument({
       {/* The card. `self-start` keeps it at the top of the page when the outer
           box is stretched to A4 height for the PDF, rather than floating in
           the middle of the sheet. */}
+      {/*
+       * `@container/doc` sits on the card, not the sheet, because the card is
+       * what the type has to fit inside — and the thresholds below are 440px
+       * and 380px rather than the `@max-xl` / `@max-sm` the invoice and credit
+       * sheets use.
+       *
+       * That difference is not cosmetic. Those sheets are 794px wide in every
+       * capture path, so a step at 576px never fires there. This card is capped
+       * at RECEIPT_CARD_WIDTH_PX = 520px even when the sheet around it is 794px,
+       * so a 576px step WOULD fire during capture and the downloaded receipt
+       * would come out in phone type. Every step here has to sit below 520.
+       *
+       * On a phone the viewer gives the card `w-full` under that same cap, so
+       * it lands at the canvas width — around 340px — and the steps apply.
+       */}
       <div
-        className="flex w-full flex-col self-start border rounded-md border-[2px] border-gray-300 bg-white"
+        className="@container/doc flex w-full flex-col self-start border rounded-md border-[2px] border-gray-300 bg-white"
         style={{ maxWidth: `${RECEIPT_CARD_WIDTH_PX}px` }}
       >
-        <div className="flex-1  pt-10 pb-7 text-center">
-          <h1 className="text-4xl font-bold tracking-[1px] text-gray-900">
+        <div className="flex-1 pt-10 pb-7 text-center @max-[440px]/doc:pt-7 @max-[440px]/doc:pb-5">
+          <h1 className="text-4xl font-bold tracking-[1px] text-gray-900 @max-[440px]/doc:text-2xl @max-[380px]/doc:text-xl">
             Payment Receipt
           </h1>
 
-          <p className="mt-4 text-lg font-bold text-gray-900">
+          <p className="mt-4 text-lg font-bold text-gray-900 @max-[440px]/doc:mt-3 @max-[440px]/doc:text-base">
             {/* Invoice #{credit.invoiceNo} */}
             {credit.ticketName} #{credit.invoiceNo}
           </p>
 
-          <p className="mt-1 text-base text-gray-500">for {customerName}</p>
-          <p className="mt-0.5 text-base text-gray-500">
+          <p className="mt-1 text-base text-gray-500 @max-[440px]/doc:text-[11px]">
+            for {customerName}
+          </p>
+          <p className="mt-0.5 text-base text-gray-500 @max-[440px]/doc:text-[11px]">
             paid on {formatDateLong(payment.paymentDate)}
           </p>
 
-          <p className="mt-7 text-base font-bold text-gray-900">
+          <p className="mt-7 text-base font-bold text-gray-900 @max-[440px]/doc:mt-5 @max-[440px]/doc:text-sm">
             {businessName}
           </p>
           {businessProfile?.address ? (
-            <p className="mt-0.5 text-base text-gray-500">
+            <p className="mt-0.5 text-base text-gray-500 @max-[440px]/doc:text-[11px]">
               {businessProfile.address}
             </p>
           ) : null}
 
           {/* A rule broken by a tick — the receipt's one piece of ornament, and
             the quickest way to read "this went through". */}
-          <div className="mt-9 flex items-center" aria-hidden>
+          <div
+            className="mt-9 flex items-center @max-[440px]/doc:mt-6"
+            aria-hidden
+          >
             <span className="h-px flex-1 bg-gray-300" />
-            <span className="mx-3 flex h-7 w-7 items-center justify-center rounded-full border border-green-300 bg-white">
-              <Check size={14} className="text-green-300" strokeWidth={3} />
+            <span className="mx-3 flex h-7 w-7 items-center justify-center rounded-full border border-green-400 bg-white">
+              <Check size={14} className="text-green-400" strokeWidth={3} />
             </span>
             <span className="h-px flex-1 bg-gray-300" />
           </div>
 
           {/* Amount — the reason the document exists, so it is the only thing
             fenced off by rules of its own. */}
-          <div className="mx-auto mt-9 max-w-sm border-y border-gray-300 px-2 w-full py-5">
-            <p className="text-xl text-gray-700 tracking-wide">
+          <div className="mx-auto mt-9 max-w-sm border-y border-gray-300 px-2 w-full py-5 @max-[440px]/doc:mt-6 @max-[440px]/doc:py-4">
+            <p className="text-xl  text-gray-700 tracking-wide @max-[440px]/doc:text-base">
               Payment Amount:{" "}
               <span className="font-bold text-gray-900">{fmt(amount)}</span>
             </p>
           </div>
 
-          <p className="mt-4 text-sm text-gray-700 tracking-wide">
+          <p className="mt-4 text-sm text-gray-700 tracking-wide @max-[440px]/doc:text-xs">
             <span className="font-semibold uppercase tracking-[1px]">
               Payment method:
             </span>{" "}
@@ -184,15 +204,18 @@ export default function PaymentReceiptDocument({
           </div>
         ) : null} */}
 
-          <div className="text-center mt-6 text-xs text-gray-500 tracking-wider">
+          <div className="text-center mt-6 text-xs text-gray-500 tracking-wider @max-[440px]/doc:mt-5 @max-[440px]/doc:text-[9px]">
             <p>All rights reserved : Rebuzz POS by</p>
             <p className="mt-1 font-medium">Brand Builder Pvt Ltd</p>
           </div>
         </div>
 
         {/* Footer band */}
-        <div className="w-full flex items-center justify-center border-t border-[2px] border-gray-300 font-semibold  bg-gray-200 px-8 py-3 text-center">
-          <p className="text-[13px]  w-[80%] leading-relaxed text-gray-500">
+        <div className="w-full flex items-center justify-center border-t border-[2px] border-gray-300 font-semibold bg-gray-200 px-8 py-3 text-center @max-[440px]/doc:px-4">
+          {/* The 80% column is what keeps the sentence off the band's edges on
+              a 520px card. On a phone the band is already narrow, so the inset
+              only costs it lines. */}
+          <p className="text-[13px] w-[80%] leading-relaxed text-gray-500 @max-[440px]/doc:w-full @max-[440px]/doc:text-[10px]">
             Thanks for your business. If this receipt was sent in error, please
             contact{" "}
             {businerOwner?.email ? (

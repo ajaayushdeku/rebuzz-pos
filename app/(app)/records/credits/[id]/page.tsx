@@ -315,6 +315,8 @@ export default function CreditDetailPage() {
       <CreditDetailTopBar
         invoiceName={credit.ticketName ?? ""}
         invoiceNo={credit.invoiceNo}
+        invoiceStatus={credit.status}
+        invoiceDueDate={credit?.dueDate ?? undefined}
         customerName={customerName}
         state={state}
         createdAt={credit.creationDate || credit.createdAt}

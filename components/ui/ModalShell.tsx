@@ -8,7 +8,7 @@ import { useLockAppScroll } from "@/hooks/useLockAppScroll";
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400 dark:text-[#9aa6bd]">
+    <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400 dark:text-[#9aa6bd]">
       {children}
     </span>
   );
@@ -150,11 +150,11 @@ export default function ModalShell({
                 </div>
               )}
               <div className="min-w-0">
-                <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
+                <h3 className="flex items-center gap-1.5 text-[13px] sm:text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
                   {title}
                 </h3>
                 {subtitle && (
-                  <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
+                  <p className="mt-0.5 text-[11px] sm:text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
                     {subtitle}
                   </p>
                 )}
@@ -214,32 +214,33 @@ export function DocumentRow({
   const selectable = typeof onSelect === "function";
 
   const body = (
-    <>
-      <div
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition ${
-          selected
-            ? "bg-blue-100 dark:bg-blue-400/20"
-            : "bg-gray-100 dark:bg-white/10"
-        }`}
-      >
-        <Icon
-          size={16}
-          strokeWidth={1.8}
-          className={
+    <div className="flex flex-col  w-full sm:flex-row items-start sm:items-center sm:justify-between gap-2 sm:gap-3">
+      <div className="flex flex-row items-center gap-3">
+        <div
+          className={`flex h-8 sm:h-9 w-8 sm:w-9 shrink-0 items-center justify-center rounded-lg transition ${
             selected
-              ? "text-blue-600 dark:text-[#a8c4ee]"
-              : "text-gray-500 dark:text-[#9aa6bd]"
-          }
-        />
-      </div>
-
-      <div className="min-w-0 flex-1 text-left">
-        <p className="text-[13px] font-medium leading-tight text-gray-900 dark:text-[#e8ecf4]">
-          {label}
-        </p>
-        <p className="mt-0.5 text-[11px] text-gray-400 dark:text-[#9aa6bd]">
-          {description}
-        </p>
+              ? "bg-blue-100 dark:bg-blue-400/20"
+              : "bg-gray-100 dark:bg-white/10"
+          }`}
+        >
+          <Icon
+            strokeWidth={1.8}
+            className={`h-3.5 sm:h-4 w-3.5 sm:w-4
+              ${
+                selected
+                  ? "text-blue-600 dark:text-[#a8c4ee]"
+                  : "text-gray-500 dark:text-[#9aa6bd]"
+              }`}
+          />
+        </div>
+        <div className="min-w-0 flex-1 text-left">
+          <p className="text-[12px] sm:text-[13px] font-medium leading-tight text-gray-900 dark:text-[#e8ecf4]">
+            {label}
+          </p>
+          <p className="mt-0.5 text-[10px] sm:text-[11px] text-gray-400 dark:text-[#9aa6bd]">
+            {description}
+          </p>
+        </div>
       </div>
 
       {selectable ? (
@@ -253,9 +254,12 @@ export function DocumentRow({
           {selected && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
         </span>
       ) : (
-        trailing
+        <div className="flex w-full sm:w-fit bg items-end justify-end">
+          {" "}
+          {trailing}
+        </div>
       )}
-    </>
+    </div>
   );
 
   const base =

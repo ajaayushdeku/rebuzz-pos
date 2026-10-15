@@ -15,6 +15,7 @@ import CreditInvoiceDocument, {
   type CreditDocumentCustomer,
   type CreditDocumentType,
 } from "./CreditInvoiceDocument";
+import { FileCheck, FileText, ReceiptText } from "lucide-react";
 
 /**
  * The three credit documents, behind a tab bar.
@@ -23,6 +24,13 @@ import CreditInvoiceDocument, {
  * unmounted — because the PDF and print paths rasterise a painted node, and a
  * node that has never rendered cannot be captured.
  */
+
+const CREDIT_DOC_ICONS = {
+  proforma: FileText,
+  invoice: ReceiptText,
+  tax: FileCheck,
+} as const;
+
 export default function CreditInvoicePreviews({
   credit,
   items,
@@ -81,6 +89,7 @@ export default function CreditInvoicePreviews({
         >
           {CREDIT_DOCUMENT_TYPES.map((type, i) => {
             const selected = documentType === type;
+            const Icon = CREDIT_DOC_ICONS[type];
 
             return (
               <button
@@ -95,13 +104,25 @@ export default function CreditInvoicePreviews({
                 aria-controls={`credit-doc-panel-${type}`}
                 tabIndex={selected ? 0 : -1}
                 onClick={() => setDocumentType(type)}
-                className={`rounded-full px-5 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#242a38] ${
+                className={`inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[12px] transition-all duration-300 ease-in-out sm:px-5 sm:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#242a38] ${
                   selected
                     ? "bg-white font-bold text-blue-950 shadow-sm"
                     : "font-semibold text-blue-800 hover:text-blue-950 dark:text-blue-200"
                 }`}
               >
-                {CREDIT_DOC_LABELS[type]}
+                <Icon size={16} className="shrink-0" />
+
+                <span
+                  className={`grid transition-all duration-300 ease-in-out sm:grid ${
+                    selected
+                      ? "grid-cols-[1fr] opacity-100"
+                      : "grid-cols-[0fr] opacity-0 sm:grid-cols-[1fr] sm:opacity-100"
+                  }`}
+                >
+                  <span className="overflow-hidden whitespace-nowrap">
+                    {CREDIT_DOC_LABELS[type]}
+                  </span>
+                </span>
               </button>
             );
           })}

@@ -348,308 +348,357 @@ export default function CreditInvoiceDocument({
       ref={documentRef}
       // style={{ minHeight: minHeightPx }}
       // className="bg-white w-full px-10 py-10 text-black border-[3px] rounded-md border-gray-200 font-sans"
-
-      className="bg-white w-full px-10 py-10 text-black font-sans"
+      /*
+       * `@container/doc` and `@max-*\u002fdoc:`, the same as the invoice sheet
+       * and for the same reason: this markup is also the PDF and the emailed
+       * copy, rasterised off-screen at a fixed 794px by `html-to-image`, which
+       * reads `getComputedStyle` off the live node. A `sm:` rule here would
+       * resolve against the phone's ~390px viewport *during capture* and ship a
+       * downloaded credit note in phone type. A container query resolves
+       * against this element, which every capture path renders at 794px.
+       *
+       * The layout is unchanged at every width — flex rows and percentage
+       * table columns already reflow. Only type and spacing come down.
+       */
+      className="@container/doc bg-white w-full text-black font-sans"
     >
-      {/* ── Header ──
+      {/* The page margin lives one level in, and has to.
+       *
+       * A container query is evaluated against the nearest ANCESTOR container
+       * — never the element that declares `container-type` itself. These four
+       * steps were on the root beside `@container/doc`, where they matched
+       * nothing: the type inside the sheet scaled because it is a descendant,
+       * while the margin did not, which is the bug this fixes.
+       *
+       * Viewport breakpoints are not the alternative. `sm:px-10` would read the
+       * phone's ~390px viewport during the off-screen capture and ship a PDF
+       * with a 14px page margin. */}
+      <div className="px-10 py-10 @max-xl/doc:px-5 @max-xl/doc:py-6 @max-sm/doc:px-4 @max-sm/doc:py-5">
+        {/* ── Header ──
           data-pdf-block marks a unit the PDF exporter must not cut through;
           page breaks snap to the boundary between two of them. */}
-      <div data-pdf-block className="text-center mb-10">
-        <h1 className="text-4xl font-bold tracking-wider">{TITLES[type]}</h1>
-        {/* <p className="mt-2 text-sm font-semibold uppercase tracking-[0.2em] text-violet-700">
+        <div data-pdf-block className="text-center mb-10 @max-xl/doc:mb-6">
+          <h1 className="text-4xl font-bold tracking-wider @max-xl/doc:text-2xl @max-sm/doc:text-xl">
+            {TITLES[type]}
+          </h1>
+          {/* <p className="mt-2 text-sm font-semibold uppercase tracking-[0.2em] text-violet-700">
           {CREDIT_STATE_LABEL[state]}
         </p> */}
-      </div>
+        </div>
 
-      {/* ── Business info ──
+        {/* ── Business info ──
           Routed through next/image even for the remote logo: the optimiser
           serves it from this origin, so html-to-image can read it into the
           canvas. A direct cross-origin <img> would taint it. */}
-      <div data-pdf-block className="flex justify-between items-start mb-10">
-        <Image
-          src={businessProfile?.logo || businessLogo}
-          alt={`${businessProfile?.businessName || "Business"} logo`}
-          width={150}
-          height={150}
-          quality={100}
-          priority
-          className="object-contain max-h-[150px] w-auto rounded-lg"
-        />
+        <div
+          data-pdf-block
+          className="flex justify-between items-start gap-4 mb-10 @max-xl/doc:mb-6"
+        >
+          <Image
+            src={businessProfile?.logo || businessLogo}
+            alt={`${businessProfile?.businessName || "Business"} logo`}
+            width={150}
+            height={150}
+            quality={100}
+            priority
+            className="object-contain max-h-[150px] w-auto rounded-lg @max-xl/doc:max-h-[88px] @max-sm/doc:max-h-[60px]"
+          />
 
-        <div className="text-right tracking-wider">
-          <h2 className="text-2xl font-bold">
-            {businessProfile?.businessName || "My Business"}
-          </h2>
-          <p className="text-base mt-1">
-            {businessProfile?.address || "Nepal"}
-          </p>
-          {showPan ? (
-            <p className="text-sm mt-1 text-black-600">
-              PAN: {businessProfile?.panNumber || "609699393"}
+          <div className="min-w-0 text-right tracking-wider">
+            <h2 className="text-2xl font-bold @max-xl/doc:text-lg @max-sm/doc:text-base">
+              {businessProfile?.businessName || "My Business"}
+            </h2>
+            <p className="text-base mt-1 @max-xl/doc:text-sm @max-sm/doc:text-[11px]">
+              {businessProfile?.address || "Nepal"}
             </p>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="border-b border-dashed border-gray-400 mb-6" />
-
-      {/* ── Client info ── */}
-      <div data-pdf-block className="mb-6">
-        <h3 className="font-bold text-lg mb-1 tracking-wider">Client Info</h3>
-
-        <div className="space-y-1 text-sm tracking-wider">
-          <p>
-            <span className="font-medium">Name:</span> {customerName}
-          </p>
-          <p>
-            <span className="font-medium">Email:</span>{" "}
-            {credit.user?.email || "N/A"}
-          </p>
-          {credit.user?.phone && (
-            <p>
-              <span className="font-medium">Phone:</span> {credit.user.phone}
-            </p>
-          )}
-          <p>
-            <span className="font-medium">Tax ID:</span>{" "}
-            {customerProfile?.customerPan || "N/A"}
-          </p>
-        </div>
-      </div>
-
-      {/* ── Meta ── */}
-      <div
-        data-pdf-block
-        className="flex justify-between items-center text-sm mb-3 tracking-wider"
-      >
-        <div>
-          <p className="font-medium underline">
-            {billData?.invoiceName || credit?.ticketName || customerName}
-          </p>
-        </div>
-
-        {billData ? (
-          <>
-            <p>Invoice No: {billData.invoiceNo || credit.invoiceNo}</p>
-            <p className="mt-1">Bill No: {billData.billNo || "N/A"}</p>
-          </>
-        ) : (
-          <div className="text-right text-gray-600">
-            {/* <p>Invoice No: {credit.invoiceNo}</p> */}
-            <p className="mt-1">Date: {formattedDate}</p>
+            {showPan ? (
+              <p className="text-sm mt-1 text-black-600 @max-xl/doc:text-[11px]">
+                PAN: {businessProfile?.panNumber || "609699393"}
+              </p>
+            ) : null}
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* ── Items ── */}
-      <div className="w-full overflow-hidden">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr data-pdf-block className=" border-b border-gray">
-              <th className="text-left text-black font-bold text-sm tracking-wider py-3 pl-2 w-[40%]">
-                Name
-              </th>
-              <th className="text-center text-black font-bold text-sm py-3 tracking-wider w-[20%]">
-                Quantity
-              </th>
-              <th className="text-center text-black font-bold text-sm py-3 tracking-wider w-[20%]">
-                Rate ( {currency.symbol} )
-              </th>
-              <th className="text-right text-black font-bold text-sm py-3 tracking-wider w-[20%] pr-2">
-                Amount ( {currency.symbol} )
-              </th>
-            </tr>
-          </thead>
+        <div className="border-b border-dashed border-gray-400 mb-6 @max-xl/doc:mb-4" />
 
-          <tbody>
-            {items.length === 0 && (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="py-6 text-center text-sm text-gray-400 tracking-wider"
-                >
-                  This credit has no line items recorded.
-                </td>
-              </tr>
+        {/* ── Client info ── */}
+        <div data-pdf-block className="mb-6 @max-xl/doc:mb-4">
+          <h3 className="font-bold text-lg mb-1 tracking-wider @max-xl/doc:text-xs">
+            Client Info
+          </h3>
+
+          <div className="space-y-1 text-sm tracking-wider @max-xl/doc:text-[10px]">
+            <p>
+              <span className="font-medium">Name:</span> {customerName}
+            </p>
+            <p>
+              <span className="font-medium">Email:</span>{" "}
+              {credit.user?.email || "N/A"}
+            </p>
+            {credit.user?.phone && (
+              <p>
+                <span className="font-medium">Phone:</span> {credit.user.phone}
+              </p>
             )}
+            <p>
+              <span className="font-medium">Tax ID:</span>{" "}
+              {customerProfile?.customerPan || "N/A"}
+            </p>
+          </div>
+        </div>
 
-            {items.map((item, index) => (
-              <tr data-pdf-block key={`${item._id}-${index}`}>
-                <td className="py-2 text-sm text-black tracking-wider pl-2">
-                  {item.productName}
-                  {item.note && (
-                    <span className="block text-[12px] text-gray-500">
-                      {item.note}
-                    </span>
-                  )}
-                  {/* {item.discount > 0 && (
+        {/* ── Meta ── */}
+        <div
+          data-pdf-block
+          className="flex justify-between items-center gap-3 text-sm mb-3 tracking-wider @max-xl/doc:text-[10px]"
+        >
+          <div>
+            <p className="font-medium underline">
+              {billData?.invoiceName || credit?.ticketName || customerName}
+            </p>
+          </div>
+
+          {billData ? (
+            <>
+              <p>Invoice No: {billData.invoiceNo || credit.invoiceNo}</p>
+              <p className="mt-1">Bill No: {billData.billNo || "N/A"}</p>
+            </>
+          ) : (
+            <div className="text-right text-gray-600">
+              {/* <p>Invoice No: {credit.invoiceNo}</p> */}
+              <p className="mt-1">Date: {formattedDate}</p>
+            </div>
+          )}
+        </div>
+
+        {/* ── Items ── */}
+        <div className="w-full overflow-hidden">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr
+                data-pdf-block
+                className=" border border-b-gray-200 bg-gray-300/20"
+              >
+                <th className="text-left text-black font-bold text-sm tracking-wider py-3 pl-2 w-[40%] @max-xl/doc:py-2 @max-xl/doc:pl-0 @max-xl/doc:text-[10px]">
+                  Name
+                </th>
+                <th className="text-center text-black font-bold text-sm py-3 tracking-wider w-[20%] @max-xl/doc:py-2 @max-xl/doc:text-[10px]">
+                  Quantity
+                </th>
+                <th className="text-center text-black font-bold text-sm py-3 tracking-wider w-[20%] @max-xl/doc:py-2 @max-xl/doc:text-[10px]">
+                  Rate ({currency.symbol})
+                </th>
+                <th className="text-right text-black font-bold text-sm py-3 tracking-wider w-[20%] pr-2 @max-xl/doc:py-2 @max-xl/doc:pr-0 @max-xl/doc:text-[10px]">
+                  Amount ({currency.symbol})
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {items.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="py-6 text-center text-sm text-gray-400 tracking-wider @max-xl/doc:py-4 @max-xl/doc:text-xs"
+                  >
+                    This credit has no line items recorded.
+                  </td>
+                </tr>
+              )}
+
+              {items.map((item, index) => (
+                <tr data-pdf-block key={`${item._id}-${index}`}>
+                  <td className="py-2 text-sm text-black tracking-wider pl-2 @max-xl/doc:py-1.5 @max-xl/doc:pl-0  @max-xl/doc:text-[11px]">
+                    {item.productName}
+                    {item.note && (
+                      <span className="block text-[12px] text-gray-500 @max-xl/doc:text-[11px]">
+                        {item.note}
+                      </span>
+                    )}
+                    {/* {item.discount > 0 && (
                     <span className="block text-[12px] text-red-500 tracking-wider">
                       − {fmt(item.discount)} OFF
                     </span>
                   )} */}
-                  {item.discounts.length !== 0 && (
-                    <span className="block text-[12px] text-red-500/100 racking-wider">
-                      {item.discounts.map((disc, idx) => (
-                        <span key={idx} className="flex flex-col">
-                          - {disc?.name}:{" "}
-                          {disc?.type === "fixed"
-                            ? formatCurrencySymbol(
-                                Number(disc?.rate),
-                                currency.symbol,
-                                currency.locale,
-                              )
-                            : `${disc?.rate}%`}{" "}
-                          OFF{" "}
-                        </span>
-                      ))}
-                    </span>
-                  )}
-                  {/* {!item.isTaxable && (
+                    {item.discounts.length !== 0 && (
+                      <span className="block text-[12px] text-red-500/100 racking-wider @max-xl/doc:text-[9px] @max-xl/doc:flex-wrap @max-xl/doc:w-8">
+                        {item.discounts.map((disc, idx) => (
+                          <span key={idx} className="flex flex-col">
+                            - {disc?.name}:{" "}
+                            {disc?.type === "fixed"
+                              ? formatCurrencySymbol(
+                                  Number(disc?.rate),
+                                  currency.symbol,
+                                  currency.locale,
+                                )
+                              : `${disc?.rate}%`}{" "}
+                            OFF{" "}
+                          </span>
+                        ))}
+                      </span>
+                    )}
+                    {/* {!item.isTaxable && (
                     <span className="block text-[11px] text-gray-400 tracking-wider">
                       Non-taxable
                     </span>
                   )} */}
-                </td>
-                <td className="py-2 text-center text-sm text-black tracking-wider">
-                  x {item.quantity}
-                </td>
-                <td className="py-2 text-center text-sm text-black tracking-wider">
-                  {formatAmount(Number(item.unitPrice), currency.locale)}
-                </td>
-                <td className="py-2 text-right text-sm text-black tracking-wider pr-2">
-                  {formatAmount(
-                    item.quantity * item.unitPrice,
-                    currency.locale,
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="border-b border-dotted border-gray-300 mt-3 mb-3" />
-
-      {/* ── Totals ── */}
-      <div data-pdf-block className="space-y-3 text-sm px-2">
-        <div className="flex justify-between">
-          <p className="text-gray-700 tracking-wider">Subtotal</p>
-          <p className="font-medium tracking-wider">
-            {fmt(Number(credit.total ?? 0))}
-          </p>
+                  </td>
+                  <td className="py-2 text-center text-sm text-black tracking-wider tabular-nums @max-xl/doc:py-1.5 @max-xl/doc:text-[11px]">
+                    x {item.quantity}
+                  </td>
+                  <td className="py-2 text-center text-sm text-black tracking-wider tabular-nums @max-xl/doc:py-1.5 @max-xl/doc:text-[11px]">
+                    {formatAmount(Number(item.unitPrice), currency.locale)}
+                  </td>
+                  <td className="py-2 text-right text-sm text-black tracking-wider pr-2 tabular-nums @max-xl/doc:py-1.5 @max-xl/doc:pr-0 @max-xl/doc:text-[11px]">
+                    {formatAmount(
+                      item.quantity * item.unitPrice,
+                      currency.locale,
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
-        <div className="flex justify-between">
-          <p className="text-gray-700 tracking-wider">Discount</p>
-          <p className="font-medium tracking-wider">
-            − {fmt(credit.discount ?? 0)}
-          </p>
-        </div>
+        <div className="border-b border-dotted border-gray-300 mt-3 mb-3" />
 
-        {isTaxInvoice && (
+        {/* ── Totals ── */}
+        <div
+          data-pdf-block
+          className="space-y-3 text-sm px-2 tabular-nums @max-xl/doc:space-y-2 @max-xl/doc:px-0 @max-xl/doc:text-[11px]"
+        >
           <div className="flex justify-between">
-            <p className="text-gray-700 tracking-wider">Tax</p>
-            <p className="font-medium tracking-wider">+ {fmt(taxAmount)}</p>
+            <p className="text-gray-700 tracking-wider">Subtotal</p>
+            <p className="font-medium tracking-wider">
+              {fmt(Number(credit.total ?? 0))}
+            </p>
           </div>
-        )}
 
-        <div className="flex justify-between pt-2 border-t border-dotted border-gray-300">
-          <p className="font-bold  tracking-wider">Total Payable</p>
-          <p className="font-bold  tracking-wider">
-            {fmt(Number(credit.grandTotal ?? 0))}
-          </p>
+          <div className="flex justify-between">
+            <p className="text-gray-700 tracking-wider">Discount</p>
+            <p className="font-medium tracking-wider">
+              − {fmt(credit.discount ?? 0)}
+            </p>
+          </div>
+
+          {isTaxInvoice && (
+            <div className="flex justify-between">
+              <p className="text-gray-700 tracking-wider">Tax</p>
+              <p className="font-medium tracking-wider">+ {fmt(taxAmount)}</p>
+            </div>
+          )}
+
+          <div className="flex justify-between gap-3 pt-2 border-t border-dotted border-gray-300">
+            <p className="font-bold tracking-wider">Total Payable</p>
+            <p className="shrink-0 whitespace-nowrap font-bold tracking-wider">
+              {fmt(Number(credit.grandTotal ?? 0))}
+            </p>
+          </div>
         </div>
-      </div>
 
-      {/* ── Payments received ── */}
-      <div data-pdf-block className="mt-2 text-sm px-2">
-        {paymentList.length > 0 ? (
-          <div className="space-y-1.5">
-            {paymentList.map((p) => (
-              <div
-                key={p._id}
-                className="flex justify-between my-1.5 text-gray-700 tracking-wider"
-              >
+        {/* ── Payments received ── */}
+        <div
+          data-pdf-block
+          className="mt-2 text-sm px-2 tabular-nums @max-xl/doc:px-0 @max-xl/doc:text-[11px]"
+        >
+          {paymentList.length > 0 ? (
+            <div className="space-y-1.5">
+              {paymentList.map((p) => (
+                <div
+                  key={p._id}
+                  className="flex justify-between gap-3 my-1.5 text-gray-700 tracking-wider"
+                >
+                  {/* The longest run of text on the sheet, and it was free to
+                    grow into the figure beside it. */}
+                  <span className="min-w-0 @max-xl/doc:text-[10px]">
+                    Payment on {formatPaymentDate(p.paymentDate)} using a{" "}
+                    {paymentLabel(p.paymentMethod)}:
+                  </span>
+                  <span className="shrink-0 whitespace-nowrap font-medium">
+                    − {fmt(p.paymentAmount ?? 0)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="my-1.5 text-gray-500 tracking-wider">
+              No payments received against this credit yet.
+            </p>
+          )}
+
+          <div className="flex justify-between gap-3 pt-3 mt-3 border-t border-dashed border-gray-400 tracking-wider">
+            <p className="font-bold">
+              Amount Due ({currency.symbol || "NPR"}):
+            </p>
+            <p className="shrink-0 whitespace-nowrap font-bold">
+              {fmt(amountDue)}
+            </p>
+          </div>
+        </div>
+
+        {/* ── Footer ── */}
+        <div className="border-b border-dashed border-gray-400 my-6 @max-xl/doc:my-4" />
+
+        <div
+          data-pdf-block
+          className="bg-gray-50 py-4 px-2 rounded-lg text-sm @max-xl/doc:text-[11px]"
+        >
+          <div className="flex justify-between items-start gap-3 text-sm text-black-600 @max-xl/doc:text-[10px]">
+            <div className="min-w-0 flex flex-col gap-2 tracking-wider @max-xl/doc:gap-1.5">
+              <p>Cashier: {billData?.generatedBy || "N/A"}</p>
+              {billData && <p>Counter: POS12</p>}
+              {/* <p>Status: {CREDIT_STATE_LABEL[state]}</p> */}
+
+              {isRefunded && (
+                <p className="text-red-500 font-medium">Cancelled Bill</p>
+              )}
+            </div>
+
+            <div className="min-w-0 flex flex-col items-end gap-2 tracking-wider">
+              {/* Shown whenever the credit has been paid at all — instalments
+                carry a method even before a POS bill exists. */}
+              {(billData || paymentList.length > 0) && (
+                <p>
+                  Payment Mode:{" "}
+                  {paymentModeLabel(paymentList, billData?.paymentMethod)}
+                </p>
+              )}
+
+              <p>Date: {formattedDate}</p>
+
+              {isRefunded && (
+                <p className="text-red-500 font-medium">
+                  Date: {formattedCancelledDate}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {billData && (
+            <div className="flex justify-between items-start text-sm text-black-600 mt-4 gap-2 @max-xl/doc:text-[10px] @max-xl/doc:mt-3">
+              <div className="flex flex-col justify-between gap-2 tracking-wider">
+                <p>Current Point:</p>
+                <p>Total Points:</p>
+              </div>
+
+              <div className="flex flex-col gap-2 items-end tracking-wider">
                 <span>
-                  Payment on {formatPaymentDate(p.paymentDate)} using a{" "}
-                  {paymentLabel(p.paymentMethod)}:
+                  {formatAmount(billData.currentPoint ?? 0, currency.locale) ||
+                    "0"}
                 </span>
-                <span className="font-medium">
-                  − {fmt(p.paymentAmount ?? 0)}
+                <span>
+                  {formatAmount(billData.totalPoints ?? 0, currency.locale) ||
+                    "0"}
                 </span>
               </div>
-            ))}
-          </div>
-        ) : (
-          <p className="my-1.5 text-gray-500 tracking-wider">
-            No payments received against this credit yet.
-          </p>
-        )}
-
-        <div className="flex justify-between pt-3 mt-3 border-t border-dashed border-gray-400 tracking-wider">
-          <p className="font-bold">Amount Due ({currency.symbol || "NPR"}):</p>
-          <p className="font-bold">{fmt(amountDue)}</p>
-        </div>
-      </div>
-
-      {/* ── Footer ── */}
-      <div className="border-b border-dashed border-gray-400 my-6" />
-
-      <div data-pdf-block className="bg-gray-50 py-4 px-2 rounded-lg text-sm">
-        <div className="flex justify-between items-start text-sm text-black-600">
-          <div className="flex flex-col gap-2 tracking-wider">
-            <p>Cashier: {billData?.generatedBy || "N/A"}</p>
-            {billData && <p>Counter: POS12</p>}
-            {/* <p>Status: {CREDIT_STATE_LABEL[state]}</p> */}
-
-            {isRefunded && (
-              <p className="text-red-500 font-medium">Cancelled Bill</p>
-            )}
-          </div>
-
-          <div className="flex flex-col items-end gap-2 tracking-wider">
-            {/* Shown whenever the credit has been paid at all — instalments
-                carry a method even before a POS bill exists. */}
-            {(billData || paymentList.length > 0) && (
-              <p>
-                Payment Mode:{" "}
-                {paymentModeLabel(paymentList, billData?.paymentMethod)}
-              </p>
-            )}
-
-            <p>Date: {formattedDate}</p>
-
-            {isRefunded && (
-              <p className="text-red-500 font-medium">
-                Date: {formattedCancelledDate}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {billData && (
-          <div className="flex justify-between items-start text-sm text-black-600 mt-4 gap-2">
-            <div className="flex flex-col justify-between gap-2 tracking-wider">
-              <p>Current Point:</p>
-              <p>Total Points:</p>
             </div>
+          )}
 
-            <div className="flex flex-col gap-2 items-end tracking-wider">
-              <span>
-                {formatAmount(billData.currentPoint ?? 0, currency.locale) ||
-                  "0"}
-              </span>
-              <span>
-                {formatAmount(billData.totalPoints ?? 0, currency.locale) ||
-                  "0"}
-              </span>
-            </div>
+          <div className="text-center mt-10 text-xs text-gray-500 tracking-wider @max-xl/doc:mt-6 @max-xl/doc:text-[9px]">
+            <p>All rights reserved : Rebuzz POS by</p>
+            <p className="mt-1 font-medium">Brand Builder Pvt Ltd</p>
           </div>
-        )}
-
-        <div className="text-center mt-10 text-xs text-gray-500 tracking-wider">
-          <p>All rights reserved : Rebuzz POS by</p>
-          <p className="mt-1 font-medium">Brand Builder Pvt Ltd</p>
         </div>
       </div>
     </div>

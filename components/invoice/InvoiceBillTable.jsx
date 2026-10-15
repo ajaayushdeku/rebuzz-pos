@@ -15,18 +15,18 @@ export default function InvoiceBillTable({ invoices }) {
     <div className="w-full overflow-hidden">
       <Table className="w-full border-collapse">
         <TableHeader>
-          <TableRow className=" rounded-xl">
-            <TableHead className="text-black font-bold text-sm tracking-wider py-3  w-[40%]">
+          <TableRow className=" rounded-xl border border-b-gray-200 bg-gray-300/20">
+            <TableHead className="text-black font-bold text-sm tracking-wider py-3 w-[40%] @max-xl/doc:py-2 @max-xl/doc:text-[10px]">
               Name
             </TableHead>
-            <TableHead className="text-black font-bold text-sm py-3 text-center tracking-wider w-[20%]">
+            <TableHead className="text-black font-bold text-sm py-3 text-center tracking-wider w-[20%] @max-xl/doc:py-2 @max-xl/doc:text-[10px]">
               Quantity
             </TableHead>
-            <TableHead className="text-black font-bold text-sm py-3 text-center tracking-wider w-[20%]">
-              Rate ( {currency.symbol} )
+            <TableHead className="text-black font-bold text-sm py-3 text-center tracking-wider w-[20%] @max-xl/doc:py-2 @max-xl/doc:text-[10px]">
+              Rate ({currency.symbol})
             </TableHead>
-            <TableHead className="text-black font-bold text-sm py-3 text-right tracking-wider  w-[20%]">
-              Amount ( {currency.symbol} )
+            <TableHead className="text-black font-bold text-sm py-3 text-right tracking-wider w-[20%] @max-xl/doc:py-2 @max-xl/doc:text-[10px]">
+              Amount ({currency.symbol})
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -38,7 +38,7 @@ export default function InvoiceBillTable({ invoices }) {
                 key={`${group._id}-${index}`}
                 className="border-none hover:bg-transparent"
               >
-                <TableCell className="py-2  text-sm text-black tracking-wider ">
+                <TableCell className="py-2 text-sm text-black tracking-wider @max-xl/doc:py-1.5 @max-xl/doc:text-[11px]">
                   {product.productName}{" "}
                   {product.variantItems?.name && (
                     <span className="text-gray-600 racking-wider">
@@ -47,7 +47,7 @@ export default function InvoiceBillTable({ invoices }) {
                     </span>
                   )}
                   {product.discounts.length !== 0 && (
-                    <span className="block text-[12px] text-red-500/100 racking-wider">
+                    <span className="block text-[12px] flex text-red-500/100 tracking-wider @max-xl/doc:text-[9px] @max-xl/doc:flex-wrap @max-xl/doc:w-8">
                       {product.discounts.map((disc, idx) => (
                         <span key={idx} className="flex flex-col">
                           - {disc.name}:{" "}
@@ -64,13 +64,13 @@ export default function InvoiceBillTable({ invoices }) {
                     </span>
                   )}
                 </TableCell>
-                <TableCell className="py-2 text-center text-sm text-black racking-wider">
+                <TableCell className="py-2 text-center text-sm text-black tracking-wider tabular-nums @max-xl/doc:py-1.5 @max-xl/doc:text-[11px]">
                   x {product.quantity}
                 </TableCell>
-                <TableCell className="py-2 text-center text-sm text-black racking-wider">
+                <TableCell className="py-2 text-center text-sm text-black tracking-wider tabular-nums @max-xl/doc:py-1.5 @max-xl/doc:text-[11px]">
                   {formatAmount(Number(product.unitPrice), currency.locale)}
                 </TableCell>
-                <TableCell className="py-2  text-right text-sm text-black  racking-wider">
+                <TableCell className="py-2 text-right text-sm text-black tracking-wider tabular-nums @max-xl/doc:py-1.5 @max-xl/doc:text-[11px]">
                   {formatAmount(
                     product.quantity * product.unitPrice,
                     currency.locale,

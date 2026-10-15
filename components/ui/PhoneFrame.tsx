@@ -20,8 +20,14 @@ export default function PhoneFrame({
 }: {
   /** True for the phone; false for the plain document sheet. */
   active: boolean;
-  /** Outer width in px, borders included. */
-  width: number;
+  /**
+   * Outer width, borders included — px as a number, or any CSS width.
+   *
+   * A string is for the case where the frame has stopped being a frame: on a
+   * phone the caller turns the bezel off and asks for "100%", so the document
+   * inside gets the screen instead of a fixed sheet to scroll sideways.
+   */
+  width: number | string;
   children: ReactNode;
   className?: string;
 }) {

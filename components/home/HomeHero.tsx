@@ -105,7 +105,7 @@ export default function HomeHero({ token }: { token?: string }) {
               className="h-12 rounded-xl bg-[#244074] px-7 text-base font-semibold text-white shadow-lg shadow-[#244074]/20 transition-all hover:bg-[#1b3159] hover:shadow-[#244074]/30"
             >
               <Link
-                href={token ? "/sales-revenue" : "/signup"}
+                href={token ? "/dashboard/sales-revenue" : "/signup"}
                 className="flex items-center justify-center gap-2"
               >
                 {token ? "Manage Sales" : "Start for free"}

@@ -243,11 +243,11 @@ export default function PaymentReceiptModal({
                   <p className="text-[13px] font-semibold text-gray-800 dark:text-[#e8ecf4]">
                     Payment {context.index} of {context.total}
                   </p>
-                  <p className="text-[15px] font-bold text-gray-900 dark:text-[#e8ecf4]">
+                  <p className="text-[14px] sm:text-[15px] font-bold text-gray-900 dark:text-[#e8ecf4]">
                     {fmt(payment.paymentAmount ?? 0)}
                   </p>
                 </div>
-                <p className="mt-1 text-[12px] text-gray-500 dark:text-[#9aa6bd]">
+                <p className="mt-1 text-[11px] sm:text-[12px] text-gray-500 dark:text-[#9aa6bd]">
                   {formatDateLong(payment.paymentDate)} ·{" "}
                   {normalizePaymentMethod(payment.paymentMethod)} ·{" "}
                   {(payment.dueAmount ?? 0) <= 0
@@ -303,7 +303,7 @@ export default function PaymentReceiptModal({
                         type="button"
                         onClick={openPreview}
                         className="flex h-8 items-center gap-1.5 rounded-lg bg-blue-600 dark:bg-[#1C2A43] dark:text-[#7BA2E3] border dark:border-[#2D5284]
-                    dark:hover:bg-[#2D5284] dark:hover:text-white cursor-pointer px-3 text-[12px] font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    dark:hover:bg-[#2D5284] dark:hover:text-white cursor-pointer px-3 text-[11px] sm:text-[12px] font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                       >
                         <ExternalLink size={13} />
                         Preview
@@ -322,7 +322,7 @@ export default function PaymentReceiptModal({
                     size={14}
                     className="shrink-0 text-gray-400 dark:text-[#9aa6bd]"
                   />
-                  <p className="truncate text-[13px] font-medium text-gray-800 dark:text-[#e8ecf4]">
+                  <p className="truncate text-[11px] sm:text-[13px] font-medium text-gray-800 dark:text-[#e8ecf4]">
                     {recipient}
                   </p>
                 </div>
@@ -332,7 +332,7 @@ export default function PaymentReceiptModal({
                     size={14}
                     className="mt-0.5 shrink-0 text-red-500 dark:text-red-300"
                   />
-                  <p className="text-[12px] leading-relaxed text-red-600 dark:text-red-300">
+                  <p className="text-[11px] sm:text-[12px] leading-relaxed text-red-600 dark:text-red-300">
                     This customer has no email on file. Copy, download and
                     preview still work; add an email to the customer profile to
                     send.

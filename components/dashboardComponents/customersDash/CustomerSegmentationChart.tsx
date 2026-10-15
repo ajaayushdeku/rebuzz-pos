@@ -171,7 +171,7 @@ export default function CustomerSegmentationChart({
                 </span>
                 <span className="flex flex-row items-center">
                   {" "}
-                  <span className="shrink-0 -[13px] font-medium tabular-nums text-[#3c4043] pr-0.5 dark:text-[#e8ecf4]">
+                  <span className="shrink-0 text-[13px] font-medium tabular-nums text-[#3c4043] pr-0.5 dark:text-[#e8ecf4]">
                     {entry.value.toLocaleString()}
                   </span>
                   <span className="w-10 shrink-0 text-right text-[11px] tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">

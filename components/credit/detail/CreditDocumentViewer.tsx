@@ -18,6 +18,7 @@ import type {
 } from "@/services/apiCredit.client";
 import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 import PhoneFrame from "@/components/ui/PhoneFrame";
+import { useNarrowScreen } from "@/hooks/useNarrowScreen";
 import CreditInvoiceDocument, {
   creditFileStem,
   type CreditDocumentBusiness,
@@ -63,6 +64,7 @@ export default function CreditDocumentViewer({
 }) {
   const router = useRouter();
   const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
+  const isNarrowScreen = useNarrowScreen();
   const [isExporting, setIsExporting] = useState(false);
   const [printing, setPrinting] = useState(false);
 
@@ -145,16 +147,16 @@ export default function CreditDocumentViewer({
 
       {/* Preview header */}
       <div className="relative bg-blue-100 border-b border-gray-200 px-5 py-3 flex items-center justify-between gap-2 print:hidden dark:border-white/15 dark:bg-[#0F1420]">
-        <div className="flex flex-col items-start gap-1 text-[11px] text-blue-400">
+        <div className="flex flex-col items-start gap-1 text-[9px] sm:text-[11px] text-blue-400">
           <span className="font-medium text-blue-500 dark:text-[#c3d6f4]">
             PREVIEW MODE
           </span>
-          <span className="hidden lg:inline-block dark:text-[#c3d6f4]">
+          <span className="hidden sm:inline-block dark:text-[#c3d6f4]">
             You are previewing how your customer will see this credit.
           </span>
         </div>
 
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center bg-white dark:bg-white/10 border border-blue-200 rounded-xl p-1 gap-1 shrink-0 dark:border-blue-400/25">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden sm:flex items-center bg-white dark:bg-white/10 border border-blue-200 rounded-xl p-1 gap-1 shrink-0 dark:border-blue-400/25">
           {PREVIEW_MODES.map(({ label, value, icon: Icon }) => (
             <button
               key={value}
@@ -184,7 +186,7 @@ export default function CreditDocumentViewer({
               onClick={() => setPrinting(true)}
               className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white dark:bg-white/5 px-3.5 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:border-blue-300 hover:bg-blue-50 cursor-pointer dark:hover:border-blue-400/50 dark:hover:bg-blue-400/15 dark:border-blue-400/25 dark:text-[#c3ccdc]"
             >
-              <Printer size={16} />
+              <Printer className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
               <span className="hidden lg:inline-block">Print</span>
             </button>
             <button
@@ -193,7 +195,7 @@ export default function CreditDocumentViewer({
               disabled={isExporting}
               className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white dark:bg-white/5 px-3.5 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:border-blue-300 hover:bg-blue-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 dark:hover:border-blue-400/50 dark:hover:bg-blue-400/15 dark:border-blue-400/25 dark:text-[#c3ccdc]"
             >
-              <Download size={16} />
+              <Download className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
               <span className="hidden lg:inline-block">
                 {isExporting ? "Exporting..." : "Export as PDF"}
               </span>
@@ -203,23 +205,65 @@ export default function CreditDocumentViewer({
           <button
             type="button"
             onClick={() => router.push(`/records/credits/${credit._id}`)}
-            className="shrink-0 cursor-pointer rounded-2xl border-[3px] border-blue-200 px-3 py-1.5 bg-blue-50 items-center justify-center text-[13px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:text-blue-700 dark:hover:border-blue-400/50 dark:hover:text-[#c3d6f4] dark:border-blue-400/25 dark:text-blue-300 dark:bg-blue-400/10"
+            className="shrink-0 cursor-pointer rounded-2xl border-[3px] border-blue-200 px-3 py-1.5 bg-blue-50 items-center justify-center text-[10px] sm:text-[12px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:text-blue-700 cursor-pointer dark:hover:border-blue-400/50 dark:hover:text-[#c3d6f4] dark:border-blue-400/25 dark:text-blue-300 dark:bg-blue-400/10"
           >
             Back to{" "}
-            {`${shortName(credit.ticketName)} · ${credit.invoiceNo && `#${credit.invoiceNo}`}` ||
+            {`${shortName(credit.ticketName) || "Invoice"} · ${credit.invoiceNo && `#${credit.invoiceNo}`}` ||
               `Invoice #${credit.invoiceNo}`}
           </button>
         </div>
       </div>
 
+      <div className="sm:hidden flex w-full items-center justify-center pt-3 bg-[#EFF6FF] dark:bg-[#0F1420] ">
+        {" "}
+        <div className="flex items-center bg-white dark:bg-white/10 border border-blue-200 rounded-xl p-1 gap-1 shrink-0 dark:border-blue-400/25">
+          {PREVIEW_MODES.map(({ label, value, icon: Icon }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setPreviewMode(value)}
+              aria-pressed={previewMode === value}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                previewMode === value
+                  ? " bg-blue-600/80  font-bold text-white shadow-sm dark:bg-blue-400/20 dark:text-[#c3d6f4]"
+                  : "font-semibold text-blue-600/80 hover:text-blue-950 cursor-pointer dark:text-[#c3d6f4] dark:hover:text-white"
+              }`}
+            >
+              <Icon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
+              <span className="hidden font-bold text-[13px] lg:inline-block">
+                {label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Canvas */}
       <div
-        className="bg-blue-50 py-6 flex flex-col items-center justify-center transition-all duration-300 ease-in-out overflow-x-auto dark:bg-[#0F1420]"
-        style={{ minHeight: isMobile ? "600px" : "800px" }}
+        className="bg-blue-50 py-3 sm:py-6 flex flex-col items-center justify-center transition-all duration-300 ease-in-out overflow-x-auto dark:bg-[#0F1420]"
+        style={{
+          // 800px of empty blue above the document is most of a phone screen.
+          minHeight: isNarrowScreen ? "420px" : isMobile ? "600px" : "800px",
+        }}
       >
+        {/* No frame and no fixed width below `sm`.
+         *
+         * The width here is what the document's own container queries measure,
+         * so pinning it to 794px on a phone was the whole reason the preview
+         * was not responsive: the sheet scales by its container, and the
+         * container was being told it had 794px whatever the screen. Fluid, it
+         * lands at the canvas width and the sheet's `@max-xl/doc:` steps fire.
+         *
+         * The bezel goes too — a 375px handset drawn inside the screen of a
+         * handset is a phone in a phone, and 6px of border plus a fake status
+         * bar is screen width spent on a joke.
+         *
+         * None of this touches the export or the print body: those render
+         * their own copies at `PDF_RENDER_WIDTH_PX`, which is where the 794
+         * actually matters. */}
         <PhoneFrame
-          active={isMobile}
-          width={isMobile ? 375 : PDF_RENDER_WIDTH_PX}
+          active={isMobile && !isNarrowScreen}
+          width={isNarrowScreen ? "100%" : isMobile ? 375 : PDF_RENDER_WIDTH_PX}
         >
           <CreditInvoiceDocument
             {...documentProps}

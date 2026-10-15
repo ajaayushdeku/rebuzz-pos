@@ -151,37 +151,41 @@ export default function CreditTimeline({
     <div className="space-y-2">
       {/* ── Step 1: the credit was raised ── */}
       <div className="bg-white dark:bg-[#161d2e] border border-gray-200 rounded-2xl p-5 mb-0 dark:border-white/15">
-        <div className="flex items-center gap-4">
+        <div className="flex  items-start gap-4">
           <StepIcon tone="blue">
             <FileText size={16} />
           </StepIcon>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900 dark:text-[#e8ecf4]">
-              Credited
-            </p>
-            <p className="text-xs text-gray-500 mt-0.5 dark:text-[#9aa6bd]">
-              <span className="font-medium text-gray-700 dark:text-[#c3ccdc]">
-                Moved to credit:
-              </span>{" "}
-              on {formatDateLong(credit.creationDate || credit.createdAt)}
-              {formatTimeShort(credit.creationDate || credit.createdAt) &&
-                ` at ${formatTimeShort(credit.creationDate || credit.createdAt)}`}{" "}
-              GMT+5:45
-            </p>
+          <div className="flex flex-col w-full  justify-between gap-1">
+            <div className="flex flex-row items-start gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900 dark:text-[#e8ecf4]">
+                  Credited
+                </p>
+                <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 dark:text-[#9aa6bd]">
+                  <span className="font-medium text-gray-700 dark:text-[#c3ccdc]">
+                    Moved to credit:
+                  </span>{" "}
+                  on {formatDateLong(credit.creationDate || credit.createdAt)}
+                  {formatTimeShort(credit.creationDate || credit.createdAt) &&
+                    ` at ${formatTimeShort(credit.creationDate || credit.createdAt)}`}{" "}
+                  GMT+5:45
+                </p>
+              </div>
+              {editable && !isCleared && (
+                <button
+                  onClick={onEditInvoice}
+                  className="text-[11px] sm:text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-3 sm:px-4 py-1 sm:py-1.5 transition-colors shrink-0 dark:hover:bg-blue-400/15 dark:border-blue-400/25 dark:text-blue-300"
+                >
+                  Edit invoice
+                </button>
+              )}
+            </div>
             {invoice?.ticketName && (
-              <p className="text-xs text-gray-400 mt-0.5 dark:text-[#9aa6bd]">
+              <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 dark:text-[#9aa6bd]">
                 From invoice {invoice.ticketName} #{credit.invoiceNo}
               </p>
             )}
           </div>
-          {editable && !isCleared && (
-            <button
-              onClick={onEditInvoice}
-              className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0 dark:hover:bg-blue-400/15 dark:border-blue-400/25 dark:text-blue-300"
-            >
-              Edit invoice
-            </button>
-          )}
         </div>
       </div>
 
@@ -198,7 +202,7 @@ export default function CreditTimeline({
             <p className="text-sm font-semibold text-gray-900 dark:text-[#e8ecf4]">
               Send
             </p>
-            <p className="text-xs text-gray-500 mt-0.5 dark:text-[#9aa6bd]">
+            <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 dark:text-[#9aa6bd]">
               <span className="font-medium text-gray-700 dark:text-[#c3ccdc]">
                 Last sent:
               </span>{" "}
@@ -215,7 +219,7 @@ export default function CreditTimeline({
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={onSendInvoice}
-              className="text-xs font-semibold bg-blue-600 hover:bg-blue-700 dark:bg-[#244074] dark:hover:bg-blue-500 text-white rounded-full px-4 py-1.5 transition-colors"
+              className="text-[11px] sm:text-xs font-semibold bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white rounded-full px-3 sm:px-4 py-1 sm:py-1.5 transition-colors dark:bg-[#244074]"
             >
               {lastSentAt ? "Send again" : "Send Invoice"}
             </button>
@@ -224,30 +228,32 @@ export default function CreditTimeline({
 
         {/* Reminders — hidden once settled: see `isSettled`. */}
         {!isSettled && (
-          <div className="mt-4 ml-13 border border-gray-100 rounded-xl p-4 dark:border-white/10">
-            <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="mt-4 sm:ml-13 border border-gray-100 rounded-xl p-4 dark:border-white/10">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-2 sm:gap-3 mb-3">
               <div className="flex items-center gap-2">
                 <Bell size={13} className="text-gray-500 dark:text-[#9aa6bd]" />
-                <p className="text-xs font-semibold text-gray-700 dark:text-[#c3ccdc]">
-                  Due date &amp; automatic reminders
+                <p className="text-[11px] sm:text-sm sm:text-xs font-semibold text-gray-700 dark:text-[#c3ccdc]">
+                  Schedule due date &amp; automatic reminders
                 </p>
               </div>
               {/* An archived credit is a record, so its schedule is frozen with
                 everything else that could change it. */}
               {!isArchived && (
-                <button
-                  onClick={onSetDueDate}
-                  className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0 dark:hover:bg-blue-400/15 dark:border-blue-400/25 dark:text-blue-300"
-                >
-                  {dueDate ? "Edit due date" : "Set due date"}
-                </button>
+                <div className="flex w-full sm:w-fit justify-end mb-2 sm:mb-0">
+                  <button
+                    onClick={onSetDueDate}
+                    className="text-[11px] sm:text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-3 sm:px-4 py-1 sm:py-1.5 transition-colors shrink-0 dark:hover:bg-blue-400/15 dark:border-blue-400/25 dark:text-blue-300"
+                  >
+                    {dueDate ? "Edit due date" : "Set due date"}
+                  </button>
+                </div>
               )}
             </div>
 
             {!dueDate ? (
               // Reminders are all relative to the due date, so there is nothing
               // to schedule against until one exists.
-              <p className="text-xs text-gray-500 leading-relaxed dark:text-[#9aa6bd]">
+              <p className="text-[10px] sm:text-xs text-gray-500 leading-relaxed dark:text-[#9aa6bd]">
                 No due date set. Add one to schedule reminders before and after
                 payment falls due.
               </p>
@@ -292,7 +298,7 @@ export default function CreditTimeline({
                     Scheduled reminders before due date
                   </p>
                   {remindersBefore.length === 0 ? (
-                    <p className="text-xs text-gray-400 dark:text-[#9aa6bd]">
+                    <p className="text-[10px] sm:text-xs text-gray-400 dark:text-[#9aa6bd]">
                       None scheduled before the due date.
                     </p>
                   ) : (
@@ -300,7 +306,7 @@ export default function CreditTimeline({
                       {remindersBefore.map((offset) => (
                         <span
                           key={offset}
-                          className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 dark:border-white/15 dark:text-[#a9b4c7]"
+                          className="rounded-lg border border-gray-200 px-2 sm:px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium text-gray-600 dark:border-white/15 dark:text-[#a9b4c7]"
                         >
                           {reminderLabel(offset)}
                         </span>
@@ -314,7 +320,7 @@ export default function CreditTimeline({
                     Scheduled reminders after due date
                   </p>
                   {remindersAfter.length === 0 ? (
-                    <p className="text-xs text-gray-400 dark:text-[#9aa6bd]">
+                    <p className="text-[10px] sm:text-xs text-gray-400 dark:text-[#9aa6bd]">
                       None scheduled once it falls due.
                     </p>
                   ) : (
@@ -322,7 +328,7 @@ export default function CreditTimeline({
                       {remindersAfter.map((offset) => (
                         <span
                           key={offset}
-                          className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium ${
+                          className={`rounded-lg border px-2 sm:px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium ${
                             offset === 0
                               ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/25 dark:text-amber-300 dark:bg-amber-400/10"
                               : "border-red-200 bg-red-50 text-red-600 dark:border-red-400/25 dark:text-red-300 dark:bg-red-400/10"
@@ -339,8 +345,8 @@ export default function CreditTimeline({
 
             {/* A due reminder is the one action a credit has that a paid invoice
               does not, so it is a first-class button rather than a link. */}
-            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between dark:border-white/10">
-              <p className="text-xs text-gray-500 dark:text-[#9aa6bd]">
+            <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col sm:flex-row items-end sm:items-center gap-2 justify-between dark:border-white/10">
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-[#9aa6bd]">
                 {isCleared
                   ? "This credit is settled — nothing is owed."
                   : "Send a due reminder to the customer now"}
@@ -348,7 +354,7 @@ export default function CreditTimeline({
               <button
                 onClick={onSendReminder}
                 disabled={isArchived}
-                className="text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed dark:hover:bg-blue-400/20 dark:text-blue-300 dark:bg-blue-400/10"
+                className="text-[11px] sm:text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed dark:hover:bg-blue-400/20 dark:text-blue-300 dark:bg-blue-400/10"
               >
                 Send reminder
               </button>
@@ -363,7 +369,7 @@ export default function CreditTimeline({
       <div
         className={`bg-white dark:bg-[#161d2e] border rounded-2xl p-5 ${
           isCleared
-            ? "border-green-100 bg-green-50/30 dark:border-emerald-400/20"
+            ? "border-green-200 bg-green-50/30 dark:border-emerald-400/20"
             : "border-gray-200 dark:border-white/15"
         }`}
       >
@@ -373,7 +379,7 @@ export default function CreditTimeline({
           </StepIcon>
 
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900 dark:text-[#e8ecf4]">
+            <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-[#e8ecf4]">
               {isArchived
                 ? "Credit archived"
                 : isCleared
@@ -381,7 +387,7 @@ export default function CreditTimeline({
                   : "Manage payments"}
             </p>
 
-            <p className="text-xs text-gray-500 mt-0.5 dark:text-[#9aa6bd]">
+            <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 dark:text-[#9aa6bd]">
               {isArchived ? (
                 <span className="text-gray-500 dark:text-[#9aa6bd]">
                   Archived on {formatDateLong(credit.updatedAt)}
@@ -397,7 +403,7 @@ export default function CreditTimeline({
                 <span className="flex flex-row flex-wrap gap-1">
                   {paid > 0 && (
                     <>
-                      <span className="text-violet-600 font-semibold dark:text-violet-300">
+                      <span className="text-emerald-600 font-semibold dark:text-emerald-300">
                         {fmt(paid)}
                       </span>
                       <span>paid so far ·</span>
@@ -416,7 +422,7 @@ export default function CreditTimeline({
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={onRecordPayment}
-                className="text-xs font-semibold bg-blue-600 hover:bg-blue-700 dark:bg-[#244074] dark:hover:bg-blue-500 text-white rounded-full px-4 py-1.5 transition-colors"
+                className="text-[10px] sm:text-xs font-semibold bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white rounded-full  px-3 sm:px-4 py-1 sm:py-1.5 transition-colors dark:bg-[#244074]"
               >
                 Record a payment
               </button>
@@ -424,7 +430,7 @@ export default function CreditTimeline({
           )}
         </div>
 
-        <div className="text-xs ml-13 mt-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="text-[11px] sm:text-xs sm:ml-13 mt-2 flex flex-col sm:flex-row gap-2 items-start sm:items-center  sm:justify-between">
           <p className="text-gray-600 dark:text-[#a9b4c7]">
             <span className="font-medium text-gray-700 dark:text-[#c3ccdc]">
               Amount due:
@@ -470,13 +476,13 @@ export default function CreditTimeline({
 
         {/* Payments received */}
         {ordered.length > 0 && (
-          <div className="ml-13 mt-5 border-t border-gray-100 pt-4 dark:border-white/10">
-            <p className="text-sm font-semibold text-gray-800 mb-3 dark:text-[#e8ecf4]">
+          <div className="sm:ml-13 mt-5 border-t border-gray-100 pt-4 dark:border-white/10">
+            <p className="text-[11px] sm:text-sm font-semibold text-gray-800 mb-3 dark:text-[#e8ecf4]">
               Payments received:
             </p>
             <div className="space-y-3">
               {ordered.map((p) => (
-                <div key={p._id} className="text-xs">
+                <div key={p._id} className="text-[11px] sm:text-xs">
                   <p className="text-gray-700 dark:text-[#c3ccdc]">
                     {formatPaymentDate(p.paymentDate)} - A payment for{" "}
                     <span className="font-bold">
@@ -484,7 +490,7 @@ export default function CreditTimeline({
                     </span>{" "}
                     was made using a {p.paymentMethod || "cash"}.
                   </p>
-                  <div className="flex items-center gap-1.5 mt-1 text-blue-600 font-semibold dark:text-blue-300">
+                  <div className="flex items-center gap-1.5 mt-1 text-[10px] sm:text-xs text-blue-600 font-semibold dark:text-blue-300">
                     <button
                       onClick={() => onSendReceipt(p)}
                       className="hover:underline"
@@ -527,7 +533,7 @@ export default function CreditTimeline({
         )}
 
         {ordered.length === 0 && !isArchived && (
-          <p className="ml-13 mt-5 border-t border-gray-100 pt-4 text-xs text-gray-400 dark:border-white/10 dark:text-[#9aa6bd]">
+          <p className="ml-13 mt-5 border-t border-gray-100 pt-4 text-[11px] sm:text-xs text-gray-400 dark:border-white/10 dark:text-[#9aa6bd]">
             No payments recorded against this credit yet.
           </p>
         )}

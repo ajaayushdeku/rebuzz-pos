@@ -131,9 +131,9 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
           <button
             type="button"
             onClick={() => setCreateModalOpen(true)}
-            className="inline-flex md:hidden  shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-md sm:rounded-full border border-[#dadce0] bg-white px-2 sm:px-3 py-1.5 text-[11px] text-[#3c4043] outline-none transition-colors hover:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+            className="flex shrink-0 items-center justify-center gap-1.5 rounded-full border p-2 sm:px-3 sm:py-1.5  font-semibold transition-colors cursor-pointer select-none whitespace-nowrap  dark:bg-white/5 border-[#dadce0] bg-white  text-[12px] text-[#3c4043] outline-none hover:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
           >
-            <UserPlus size={13} />
+            <UserPlus className=" h-3 w-3" />
             <span className="hidden sm:block">Add New Customer</span>
           </button>
         </>

@@ -298,7 +298,7 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
               }}
               ticks={yTicks}
               domain={[0, yMax]}
-              width={isSmallScreen ? 40 : 80}
+              width={isSmallScreen ? 40 : 70}
               allowDecimals={false}
               label={!isSmallScreen ? yAxisTitle("Customers") : undefined}
             />
