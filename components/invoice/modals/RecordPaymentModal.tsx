@@ -56,7 +56,7 @@ function SummaryRow({
 /** Small uppercase section heading used across the modal. */
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400 dark:text-[#9aa6bd]">
+    <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-600  dark:text-[#9aa6bd]">
       {children}
     </span>
   );
@@ -353,10 +353,10 @@ export default function RecordPaymentModal({
               />
             </div>
             <div className="min-w-0">
-              <h2 className="text-[15px] font-semibold leading-tight text-gray-900 dark:text-[#e8ecf4]">
+              <h3 className="flex items-center gap-1.5 text-[13px] sm:text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
                 Record payment
-              </h2>
-              <p className="mt-0.5 truncate text-[12px] text-gray-400 flex flex-row items-center dark:text-[#9aa6bd] ">
+              </h3>
+              <p className="mt-0.5 text-[11px] sm:text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
                 {" "}
                 {invoice?.invoice != null && (
                   <p className="tabular-nums">Invoice #{invoice.invoice}</p>
@@ -510,7 +510,7 @@ export default function RecordPaymentModal({
                     className={`w-full rounded-xl border bg-white dark:bg-white/5 px-3.5 py-2.5 pr-10 text-[13px] tabular-nums outline-none transition focus:ring-2 focus:ring-blue-500/40 ${
                       discountError
                         ? "border-red-300 focus:border-red-400 dark:focus:border-red-400/60 dark:border-red-400/40"
-                        : "border-gray-200 focus:border-blue-500 dark:border-white/15"
+                        : "border-gray-300 focus:border-blue-500 dark:border-white/15"
                     }`}
                   />
                   <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[13px] text-gray-400 dark:text-[#9aa6bd]">
@@ -535,13 +535,13 @@ export default function RecordPaymentModal({
 
               {/* Loyalty */}
               {customerProfile && (
-                <div className="rounded-xl border border-gray-200 px-4 py-3.5 dark:border-white/15">
+                <div className="rounded-xl border border-gray-300 px-4 py-3.5 dark:border-white/15">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                       <p className="text-[13px] font-medium text-gray-900 dark:text-[#e8ecf4]">
                         Redeem loyalty points
                       </p>
-                      <p className="mt-0.5 text-[11px] text-gray-400 tabular-nums dark:text-[#9aa6bd]">
+                      <p className="mt-0.5 text-[11px] text-gray-500 tabular-nums dark:text-[#9aa6bd]">
                         {(customerProfile.loyaltyPoint ?? 0).toFixed(2)} pts
                         available
                       </p>
@@ -587,7 +587,7 @@ export default function RecordPaymentModal({
                   {redeemEnabled && (
                     <div className="mt-3 space-y-1.5 border-t border-gray-100 pt-3 dark:border-white/10">
                       <div className="flex items-center justify-between">
-                        <label className="text-[11px] text-gray-400 dark:text-[#9aa6bd]">
+                        <label className="text-[11px] text-gray-500 dark:text-[#9aa6bd]">
                           Points to redeem
                         </label>
                         <button
@@ -642,7 +642,7 @@ export default function RecordPaymentModal({
             type="button"
             onClick={handleRecordPayment}
             disabled={disabled}
-            className="w-full bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-sm"
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-[13px] sm:text-sm"
           >
             {isRecordingPayment ? (
               <>

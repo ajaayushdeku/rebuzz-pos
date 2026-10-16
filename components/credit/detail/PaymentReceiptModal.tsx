@@ -56,7 +56,7 @@ function RowIconButton({
       aria-label={label}
       onClick={onClick}
       disabled={disabled}
-      className={`flex  h-7 sm:h-8 w-7 sm:w-8 shrink-0 items-center justify-center rounded-md sm:rounded-lg border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 ${
         active
           ? "border-blue-200 bg-blue-50 text-blue-600 dark:border-blue-400/25 dark:text-blue-300 dark:bg-blue-400/10"
           : "border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 dark:hover:border-white/25 dark:hover:text-[#e8ecf4] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#9aa6bd]"
@@ -209,7 +209,7 @@ export default function PaymentReceiptModal({
               type="button"
               onClick={sendEmail}
               disabled={!recipient || busy}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[13px] font-semibold text-white transition hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[12px] sm:text-[13px] font-semibold text-white transition hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {emailing ? (
                 <>
@@ -278,9 +278,12 @@ export default function PaymentReceiptModal({
                         active={copied}
                       >
                         {copied ? (
-                          <Check className="h-3 sm:h-3.5 w-3 sm:w-3.5 text-emerald-600 dark:text-emerald-300" />
+                          <Check
+                            size={14}
+                            className=" text-emerald-600 dark:text-emerald-300"
+                          />
                         ) : (
-                          <Copy className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
+                          <Copy size={14} />
                         )}
                       </RowIconButton>
 
@@ -292,17 +295,17 @@ export default function PaymentReceiptModal({
                         {downloading ? (
                           <Loader2 size={14} className="animate-spin" />
                         ) : (
-                          <Download className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
+                          <Download size={14} />
                         )}
                       </RowIconButton>
 
                       <button
                         type="button"
                         onClick={openPreview}
-                        className="flex h-7 sm:h-8 items-center gap-1.5 rounded-md sm:rounded-lg bg-blue-600 dark:bg-[#1C2A43] dark:text-[#7BA2E3] border dark:border-[#2D5284]
+                        className="flex h-8 items-center gap-1.5 rounded-lg bg-blue-600 dark:bg-[#1C2A43] dark:text-[#7BA2E3] border dark:border-[#2D5284]
                     dark:hover:bg-[#2D5284] dark:hover:text-white cursor-pointer px-3 text-[11px] sm:text-[12px] font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                       >
-                        <ExternalLink size={13} />
+                        <ExternalLink size={14} />
                         Preview
                       </button>
                     </div>
@@ -338,7 +341,7 @@ export default function PaymentReceiptModal({
               )}
             </div>
 
-            <p className="text-[10px] sm:text-[11px] leading-relaxed text-gray-400 dark:text-[#9aa6bd]">
+            <p className="text-[10px] sm:text-[11px] leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
               The link shows this payment alone — its amount, method and the
               balance left afterwards.
             </p>

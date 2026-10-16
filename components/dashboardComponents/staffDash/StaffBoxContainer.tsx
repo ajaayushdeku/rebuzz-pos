@@ -77,7 +77,7 @@ export default function StaffBoxContainer({
           />
         </div>
 
-        <div className=" h-6 w-px shrink-0 bg-[#dadce0] dark:bg-white/90" />
+        <div className=" h-6 w-px shrink-0 bg-[#dadce0] dark:bg-white/20" />
 
         {/* Role filter */}
         <div className="relative flex  items-center  gap-2">

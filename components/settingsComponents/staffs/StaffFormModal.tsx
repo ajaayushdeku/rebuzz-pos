@@ -1,8 +1,12 @@
 "use client";
 
 import { Loader2, UserCog } from "lucide-react";
-import ModalShell from "@/components/ui/ModalShell";
-import SelectMenu from "@/components/ui/SelectMenu";
+import ModalShell, {
+  modalInput,
+  SectionLabel,
+} from "@/components/ui/ModalShell";
+// import SelectMenu from "@/components/ui/SelectMenu";
+import FilterSelect from "@/components/ui/FilterSelect";
 
 export interface StaffFormData {
   name: string;
@@ -14,11 +18,6 @@ export interface StaffFormData {
 export type StaffFormErrors = Partial<Record<keyof StaffFormData, string>>;
 
 const errorClass = "border-red-300 focus:ring-red-400 dark:border-red-400/50";
-
-// Matches SelectMenu's trigger (rounded-xl, py-2.5, 13px) so the text fields
-// and the role dropdown share a height and radius.
-const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
 
 const ROLE_OPTIONS = [
   { value: "basic", label: "Basic" },
@@ -136,15 +135,13 @@ export default function StaffFormModal({
           <div className="space-y-3">
             {FIELDS.map(({ key, label, type, placeholder }) => (
               <div key={key}>
-                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
-                  {label}
-                </label>
+                <SectionLabel>{label}</SectionLabel>
                 <input
                   type={type}
                   value={form[key]}
                   onChange={(e) => onChange(key, e.target.value)}
                   placeholder={placeholder}
-                  className={`${inputClass} ${errors[key] ? errorClass : ""}`}
+                  className={`${modalInput} ${errors[key] ? errorClass : ""}`}
                 />
                 {errors[key] && (
                   <p className="text-xs text-red-500 mt-1">{errors[key]}</p>
@@ -157,24 +154,30 @@ export default function StaffFormModal({
         {/* ── Role ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
-              Role
-            </h3>
+            <SectionLabel>Role</SectionLabel>
             <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
               Controls what this staff member can access
             </p>
           </div>
 
-          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
-            Staff Role
-          </label>
-          <SelectMenu
+          <SectionLabel> Staff Role</SectionLabel>
+
+          {/* <SelectMenu
             value={form.role}
             options={ROLE_OPTIONS}
             onChange={(role) => onChange("role", role)}
             placeholder="Select a role"
             className="w-full"
             aria-label="Staff role"
+          /> */}
+          <FilterSelect
+            value={form.role}
+            options={ROLE_OPTIONS}
+            onChange={(role) => onChange("role", role)}
+            placeholder="Select a role"
+            className="w-full"
+            buttonClassName="px-3 py-2.5 text-[13px] rounded-lg"
+            menuClassName="min-w-full"
           />
           {errors.role && (
             <p className="text-xs text-red-500 mt-1">{errors.role}</p>

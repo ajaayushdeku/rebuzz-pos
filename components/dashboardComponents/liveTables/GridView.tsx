@@ -185,7 +185,7 @@ function TableCard({
                       setMenuOpen(false);
                       onChangeTable(table);
                     }}
-                    className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-blue-600 transition-colors dark:text-[#7ba2e3]"
+                    className="w-full flex items-center gap-2.5 px-3 sm:px-4 py-1.5 sm:py-2 text-[12px] sm:text-sm text-blue-600 transition-colors dark:text-[#7ba2e3]"
                   >
                     <ArrowRightLeft size={14} className="text-blue-400" />
                     Change Table
@@ -198,7 +198,7 @@ function TableCard({
                         setMenuOpen(false);
                         onEdit(table);
                       }}
-                      className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors dark:text-[#c3ccdc] dark:hover:bg-white/10"
+                      className="w-full flex items-center gap-2.5 px-3 sm:px-4 py-1.5 sm:py-2 text-[12px] sm:text-sm text-gray-700 hover:bg-gray-50 transition-colors dark:text-[#c3ccdc] dark:hover:bg-white/10"
                     >
                       <Pencil
                         size={14}
@@ -212,7 +212,7 @@ function TableCard({
                         setMenuOpen(false);
                         onDelete(table);
                       }}
-                      className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors dark:text-red-400"
+                      className="w-full flex items-center gap-2.5 px-3 sm:px-4 py-1.5 sm:py-2 text-[12px] sm:text-sm text-red-600 hover:bg-red-50 transition-colors dark:text-red-400"
                     >
                       <Trash2 size={14} className="text-red-400" />
                       Delete
@@ -226,7 +226,7 @@ function TableCard({
       </div>
 
       {/* Table Name */}
-      <h3 className="mb-3 text-lg font-semibold leading-none tracking-tight text-[#3c4043] sm:mb-5 sm:text-xl dark:text-[#e8ecf4]">
+      <h3 className="mb-3 text-md sm:text-lg font-semibold leading-none tracking-tight text-[#3c4043] sm:mb-5 sm:text-xl dark:text-[#e8ecf4]">
         {table.name || `Table ${table.id}`}
       </h3>
 

@@ -144,21 +144,18 @@ export default function SetTargetsModal({
               month list. One line rather than a card — the modal was running
               tall and this block was the cheapest height to give back. */}
           <div className="flex items-center justify-between gap-3 rounded-lg border border-blue-100 bg-blue-50/60 px-3 py-4 dark:border-blue-400/20 dark:bg-blue-400/10">
-            <span className="min-w-0">
-              <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-500 dark:text-[#a9b4c7]">
-                <Target
-                  size={13}
-                  className="text-blue-600 dark:text-[#a8c4ee]"
-                />
+            <span className="min-w-0 ">
+              <span className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-500 dark:text-[#a9b4c7]">
+                <Target size={13} className=" dark:text-[#a8c4ee]" />
                 Total annual target
               </span>
               {/* How much of the year is actually planned — the total alone
                   looks the same whether one month is set or twelve. */}
-              <span className="mt-0.5 block text-[11px] text-gray-400 dark:text-[#7b869b]">
+              <span className="mt-0.5 block text-[10px] sm:text-[11px] text-gray-400 dark:text-[#7b869b]">
                 {monthsSet} of 12 months set
               </span>
             </span>
-            <span className="text-[18px] font-bold text-gray-700 tabular-nums dark:text-[#e8ecf4]">
+            <span className="text-[13.5px] sm:text-[18px] font-bold text-gray-700 tabular-nums dark:text-[#e8ecf4]">
               {formatCurrencySymbol(
                 totalTarget,
                 currency.symbol,
@@ -210,10 +207,10 @@ export default function SetTargetsModal({
       ) : (
         /* A table rather than stacked cards: the columns now carry headers, and
            dropping the per-row borders and padding takes ~12px off every row. */
-        <div className="max-h-[42vh] overflow-y-auto rounded-md [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <table className="w-full border-collapse text-sm">
+        <div className="max-h-[42vh] overflow-y-auto rounded-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <table className="w-full border-collapse text-sm min-w-[500px]">
             <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-[#1b2436]">
-              <tr className="text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400 dark:text-[#9aa6bd]">
+              <tr className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400 dark:text-[#9aa6bd]">
                 <th className="px-3 py-2 text-left">Month</th>
                 <th className="px-3 py-2 text-right">Actual</th>
                 <th className="px-3 py-2 text-right">Target</th>
@@ -234,7 +231,7 @@ export default function SetTargetsModal({
                       isCurrent ? "bg-blue-50/40 dark:bg-blue-400/5" : ""
                     }`}
                   >
-                    <td className="px-3 py-1.5 text-[13px] font-semibold text-gray-900 dark:text-[#e8ecf4]">
+                    <td className="px-3 py-1.5 text-[11.5px] sm:text-[13px] font-semibold text-gray-900 dark:text-[#e8ecf4]">
                       <span className="flex items-center gap-1.5">
                         {MONTHS_SHORT[row.month - 1]}
                         {isCurrent && (
@@ -245,7 +242,7 @@ export default function SetTargetsModal({
                       </span>
                     </td>
 
-                    <td className="px-3 py-1.5 text-right text-[12px] font-semibold text-blue-600 tabular-nums dark:text-[#7ba2e3]">
+                    <td className="px-3 py-1.5 text-right text-[11px] sm:text-[12px] font-semibold text-blue-600 tabular-nums dark:text-[#7ba2e3]">
                       {formatCurrencySymbol(
                         row.actual,
                         currency.symbol,
@@ -255,7 +252,7 @@ export default function SetTargetsModal({
 
                     <td className="px-3 py-1.5">
                       <div className="relative ml-auto w-32">
-                        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-gray-400 dark:text-[#7b869b]">
+                        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] sm:text-[12px] text-gray-400 dark:text-[#7b869b]">
                           {currency.symbol}
                         </span>
                         <input

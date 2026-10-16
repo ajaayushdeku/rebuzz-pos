@@ -305,7 +305,7 @@ export default function ManagePurposesModal({
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="truncate text-[13px] font-medium leading-tight text-gray-900 dark:text-[#e8ecf4]">
+                          <p className="truncate text-[12px] sm:text-[13px] font-medium leading-tight text-gray-900 dark:text-[#e8ecf4]">
                             {p.name}
                           </p>
                           {p.isDefault && (
@@ -381,7 +381,7 @@ export default function ManagePurposesModal({
                   Creating...
                 </>
               ) : (
-                "Create purpose"
+                "Create Purpose"
               )}
             </button>
           </div>

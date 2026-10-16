@@ -13,6 +13,7 @@ import ModalShell, {
   modalInput,
   modalInputError,
   modalGhostButton,
+  SectionLabel,
 } from "@/components/ui/ModalShell";
 import {
   FALLBACK_TIER_STYLE,
@@ -215,9 +216,7 @@ export default function LoyaltyStatusModal({
         )}
 
         <div>
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6] dark:text-[#95A1B8]">
-            Status Name
-          </label>
+          <SectionLabel>Status/Tier Name</SectionLabel>
           <input
             value={name}
             autoFocus
@@ -236,9 +235,7 @@ export default function LoyaltyStatusModal({
         </div>
 
         <div>
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6] dark:text-[#95A1B8]">
-            Minimum Points Required
-          </label>
+          <SectionLabel>Minimum Points Required</SectionLabel>
           <input
             type="number"
             min={0}

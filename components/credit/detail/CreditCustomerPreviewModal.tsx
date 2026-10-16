@@ -98,21 +98,24 @@ export default function CreditCustomerPreviewModal({
                     type="button"
                     onClick={() => handleCopy(type)}
                     aria-label={`Copy ${CREDIT_DOC_LABELS[type]} link`}
-                    className="flex h-7 sm:h-8 w-7 sm:w-8 items-center justify-center rounded-md sm:rounded-lg border border-gray-200 text-gray-500 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:border-white/25 dark:hover:text-[#e8ecf4] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#9aa6bd]"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:border-white/25 dark:hover:text-[#e8ecf4] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#9aa6bd]"
                   >
                     {copied === type ? (
-                      <Check className="h-3 sm:h-3.5 w-3 sm:w-3.5 text-emerald-600 dark:text-emerald-300" />
+                      <Check
+                        size={14}
+                        className="text-emerald-600 dark:text-emerald-300"
+                      />
                     ) : (
-                      <Copy className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
+                      <Copy size={14} />
                     )}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleOpen(type)}
-                    className="flex h-7 sm:h-8 items-center gap-1.5 rounded-md sm:rounded-lg bg-blue-600 dark:bg-[#1C2A43] dark:text-[#7BA2E3] border dark:border-[#2D5284]
+                    className="flex h-8 items-center gap-1.5 rounded-lg bg-blue-600 dark:bg-[#1C2A43] dark:text-[#7BA2E3] border dark:border-[#2D5284]
                     dark:hover:bg-[#2D5284] dark:hover:text-white cursor-pointer px-3 text-[11px] sm:text-[12px] font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   >
-                    <ExternalLink size={13} />
+                    <ExternalLink size={14} />
                     Open
                   </button>
                 </div>
@@ -120,7 +123,7 @@ export default function CreditCustomerPreviewModal({
             />
           ))}
 
-          <p className="pt-1 text-[11px] leading-relaxed text-gray-400 dark:text-[#9aa6bd]">
+          <p className="pt-1 text-[10px] sm:text-[11px] leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
             These links show the credit as the customer sees it, with its
             payments and outstanding due.
           </p>

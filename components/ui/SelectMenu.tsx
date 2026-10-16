@@ -353,11 +353,11 @@ export default function SelectMenu<T extends string = string>({
         aria-expanded={open}
         aria-label={ariaLabel}
         onClick={() => setOpen((o) => !o)}
-        className={`w-full flex items-center justify-between gap-2 pl-3 pr-2.5 text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white/5 dark:text-[#c3ccdc] ${
+        className={`w-full flex items-center justify-between mt-1 gap-2 pl-3 pr-2.5 text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white/5 dark:text-[#c3ccdc] ${
           // A caller that replaces the shape owns its own dark border too —
           // the swap takes the border class with it.
           triggerClassName ??
-          "py-2.5 border border-gray-200 rounded-xl dark:border-white/15"
+          "py-2.5 border border-gray-200 rounded-lg sm:rounded-xl dark:border-white/15"
         } ${capitalize ? "capitalize" : ""}`}
       >
         <span className="truncate">{selected?.label ?? placeholder}</span>

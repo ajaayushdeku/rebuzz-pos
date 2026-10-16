@@ -120,6 +120,8 @@ export function useGenerateSection(kind: PeriodKind, id: string) {
 export interface GenerationProgress {
   total: number;
   done: number;
+  succeeded: string[];
+  active: string[];
   /** Section names that failed, with the reason the UI should show. */
   failed: { section: string; code: string; message: string }[];
 }
@@ -170,6 +172,8 @@ export function useGeneratePeriod(kind: PeriodKind, id: string) {
       const state: GenerationProgress = {
         total: sections.length,
         done: 0,
+        succeeded: [],
+        active: [],
         failed: [],
       };
       setProgress({ ...state });
@@ -180,8 +184,18 @@ export function useGeneratePeriod(kind: PeriodKind, id: string) {
         for (;;) {
           const section = queue.shift();
           if (!section) return;
+          state.active.push(section);
+          // A new object each time, or React sees the same reference and the
+          // count never moves on screen.
+          setProgress({
+            ...state,
+            succeeded: [...state.succeeded],
+            active: [...state.active],
+            failed: [...state.failed],
+          });
           try {
             await mutateAsync({ section, mode });
+            state.succeeded.push(section);
           } catch (error) {
             const failure =
               error instanceof AiInsightsError
@@ -189,10 +203,14 @@ export function useGeneratePeriod(kind: PeriodKind, id: string) {
                 : { code: "UNKNOWN", message: "Could not be generated." };
             state.failed.push({ section, ...failure });
           } finally {
+            state.active = state.active.filter((name) => name !== section);
             state.done += 1;
-            // A new object each time, or React sees the same reference and the
-            // count never moves on screen.
-            setProgress({ ...state, failed: [...state.failed] });
+            setProgress({
+              ...state,
+              succeeded: [...state.succeeded],
+              active: [...state.active],
+              failed: [...state.failed],
+            });
           }
         }
       };

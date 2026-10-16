@@ -26,7 +26,7 @@ import {
  */
 
 const FIELD =
-  "h-11 w-full rounded-xl border border-gray-200 bg-white text-sm outline-none transition focus:ring-2 focus:ring-blue-500/20 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]";
+  "h-11 w-full rounded-xl border border-gray-300 bg-white text-sm outline-none transition focus:ring-2 focus:ring-blue-500/20 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]";
 
 /** `id` is what gets stored: a variant's where the product has any. */
 type Row = { id: string; label: string; variants: string; search: string };

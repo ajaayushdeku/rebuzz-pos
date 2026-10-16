@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { Percent, Check, Search, Loader2, Receipt } from "lucide-react";
-import ModalShell from "@/components/ui/ModalShell";
+import ModalShell, {
+  modalInput,
+  SectionLabel,
+} from "@/components/ui/ModalShell";
 import { useCreateTax, useCreateGroupTax, useTaxes } from "@/hooks/useTaxes";
 import HeaderActionButton from "@/components/ui/HeaderActionButton";
 
@@ -156,9 +159,7 @@ export const CreateTaxDialog = () => {
           {/* ── Tax type ── */}
           <div>
             <div className="mb-3">
-              <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
-                Tax Type
-              </h3>
+              <SectionLabel>Tax Type</SectionLabel>
               <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
                 Pick what kind of tax you want to create
               </p>
@@ -186,16 +187,12 @@ export const CreateTaxDialog = () => {
             <>
               <div>
                 <div className="mb-3">
-                  <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
-                    Details
-                  </h3>
+                  <SectionLabel>Details</SectionLabel>
                   <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
                     How this tax appears on invoices
                   </p>
                 </div>
-                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
-                  Tax Name
-                </label>
+                <SectionLabel>Tax Name</SectionLabel>
                 <input
                   placeholder="e.g. VAT, Service Tax"
                   value={normalForm.name}
@@ -211,16 +208,12 @@ export const CreateTaxDialog = () => {
 
               <div>
                 <div className="mb-3">
-                  <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
-                    Rate
-                  </h3>
+                  <SectionLabel>Rate</SectionLabel>
                   <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
                     Percentage added to the taxable amount
                   </p>
                 </div>
-                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
-                  Rate (%)
-                </label>
+                <SectionLabel>Rate (%)</SectionLabel>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#7b869b]">
                     <Percent className="h-3.5 w-3.5" />
@@ -236,7 +229,7 @@ export const CreateTaxDialog = () => {
                         rate: Number(e.target.value),
                       })
                     }
-                    className={`${inputClass} pl-8`}
+                    className={`${modalInput} pl-8`}
                     placeholder="0"
                   />
                 </div>
@@ -249,29 +242,23 @@ export const CreateTaxDialog = () => {
             <>
               <div>
                 <div className="mb-3">
-                  <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
-                    Details
-                  </h3>
+                  <SectionLabel>Details</SectionLabel>
                   <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
                     How this group appears when applied to a product
                   </p>
                 </div>
-                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
-                  Group Tax Name
-                </label>
+                <SectionLabel>Group Tax Name</SectionLabel>
                 <input
                   placeholder="e.g. Total Tax"
                   value={groupName}
                   onChange={(e) => setGroupName(e.target.value)}
-                  className={inputClass}
+                  className={modalInput}
                 />
               </div>
 
               <div>
                 <div className="mb-3">
-                  <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
-                    Select Taxes to Group
-                  </h3>
+                  <SectionLabel>Select Taxes to Group</SectionLabel>
                   <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
                     Their rates are added together to form the group rate
                   </p>
@@ -283,7 +270,7 @@ export const CreateTaxDialog = () => {
                     value={groupSearch}
                     onChange={(e) => setGroupSearch(e.target.value)}
                     placeholder="Search taxes..."
-                    className={`${inputClass} pl-8`}
+                    className={`${modalInput} pl-8`}
                   />
                 </div>
 

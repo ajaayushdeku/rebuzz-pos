@@ -3,15 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
-import {
-  Loader2,
-  HandCoins,
-  X,
-  Banknote,
-  CreditCard,
-  QrCode,
-  Smartphone,
-} from "lucide-react";
+import { HandCoins, X, Banknote, QrCode } from "lucide-react";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -35,7 +27,7 @@ function formatNow(): string {
 /** Small uppercase section heading, shared with the invoice payment modal. */
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400 dark:text-[#9aa6bd]">
+    <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-600  dark:text-[#9aa6bd]">
       {children}
     </span>
   );
@@ -186,11 +178,11 @@ export default function CreditPaymentModal({
               />
             </div>
             <div className="min-w-0">
-              <h2 className="text-[15px] font-semibold leading-tight text-gray-900 dark:text-[#e8ecf4]">
+              <h3 className="flex items-center gap-1.5 text-[13px] sm:text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
                 Record payment
-              </h2>
+              </h3>
 
-              <p className="mt-0.5 truncate text-[12px] text-gray-400 flex flex-row items-center dark:text-[#9aa6bd] ">
+              <p className="mt-0.5 text-[11px] flex flex-row sm:text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd] ">
                 {credit.user?.name || "Customer"} ·
                 {credit?.invoiceNo && (
                   <p className="pl-1 tabular-nums">
@@ -205,7 +197,7 @@ export default function CreditPaymentModal({
             type="button"
             onClick={() => !saving && onClose()}
             aria-label="Close"
-            className="-mr-1.5 -mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:text-[#e8ecf4] dark:hover:bg-white/10 dark:text-[#9aa6bd]"
+            className="-mr-1.5 -mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[#9aa6bd] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
           >
             <X size={16} strokeWidth={2.2} />
           </button>
@@ -324,7 +316,7 @@ export default function CreditPaymentModal({
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="rounded-xl px-5 py-3 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
+            className="rounded-xl px-5 py-3 text-[12px] sm:text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
           >
             Cancel
           </button>
@@ -332,7 +324,7 @@ export default function CreditPaymentModal({
             type="button"
             onClick={handleSubmit}
             disabled={saving || !isValidValue}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-sm"
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-[13px] sm:text-sm"
           >
             {saving ? (
               <>

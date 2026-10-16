@@ -20,7 +20,7 @@ import Link from "next/link";
 import { Product } from "@/lib/types/product";
 import { FREE_PRODUCT_LIMIT } from "@/lib/config/plans";
 import ModalShell from "@/components/ui/ModalShell";
-import SelectMenu from "@/components/ui/SelectMenu";
+// import SelectMenu from "@/components/ui/SelectMenu";
 import {
   VariantOptionsEditor,
   VariantRowsEditor,
@@ -37,6 +37,7 @@ import { CreateDiscountDialog } from "@/components/invoice/CreateDiscount";
 import toast from "react-hot-toast";
 import { formatCurrencySymbolOnly } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
+import FilterSelect from "../ui/FilterSelect";
 
 /**
  * Same colour code as the product detail modal: each data domain owns one hue,
@@ -198,7 +199,7 @@ function Section({
   return (
     <section className="space-y-3">
       <div className="flex items-baseline justify-between">
-        <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#9aa6bd]">
+        <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-gray-600  dark:text-[#9aa6bd]">
           {title}
         </h3>
         {note && (
@@ -239,7 +240,7 @@ function Field({
         )}
         <label
           className={`text-[11px] font-medium uppercase tracking-[0.06em] ${
-            domain ? DOMAIN[domain].label : "text-slate-400 dark:text-[#9aa6bd]"
+            domain ? DOMAIN[domain].label : "text-gray-600  dark:text-[#9aa6bd]"
           }`}
         >
           {label}
@@ -263,8 +264,8 @@ function Field({
 }
 
 const inputBase =
-  "w-full h-9 rounded-lg border px-3 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:border-transparent transition dark:placeholder:text-[#7b869b] dark:text-[#e8ecf4]";
-const inputClass = `${inputBase} border-slate-200 focus:ring-blue-500 dark:border-white/15`;
+  "w-full h-10 rounded-lg border px-3 text-[13px] text-slate-800 placeholder:text-slate-300 dark:bg-white/5 focus:outline-none focus:ring-2 focus:border-transparent transition dark:placeholder:text-[#7b869b] dark:text-[#e8ecf4]";
+const inputClass = `${inputBase} border-slate-300 focus:ring-blue-500 dark:border-white/15`;
 const inputErrorClass = `${inputBase} border-rose-300 focus:ring-rose-400 dark:border-rose-400/40`;
 
 interface ProductFormModalProps {
@@ -934,7 +935,7 @@ export default function ProductFormModal({
 
         {/* ── Details ── */}
         <Section title="Details">
-          <div className="space-y-3">
+          <div className="space-y-5">
             <Field label="Product name" required error={errors.name}>
               <input
                 value={form.name}
@@ -1004,9 +1005,9 @@ export default function ProductFormModal({
                   </div>
                 </div>
               ) : (
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                   <div className="flex-1">
-                    <SelectMenu
+                    {/* <SelectMenu
                       value={form.categoryId}
                       options={[
                         { value: "", label: "No category" },
@@ -1020,6 +1021,20 @@ export default function ProductFormModal({
                       className="w-full"
                       triggerClassName="h-9 border border-slate-200 rounded-lg dark:border-white/15"
                       capitalize={false}
+                    /> */}
+
+                    <FilterSelect
+                      value={form.categoryId}
+                      options={categories.map((item) => ({
+                        value: item._id,
+                        label: item.name,
+                      }))}
+                      onChange={(v) => set("categoryId", v)}
+                      placeholder="Select category"
+                      ariaLabel="Filter by category"
+                      className="w-full"
+                      buttonClassName="px-3 py-2.5 text-[13px] rounded-lg"
+                      menuClassName="w-full"
                     />
                   </div>
                   <button

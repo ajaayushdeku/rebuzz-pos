@@ -3,7 +3,10 @@
 import { Loader2, Tag } from "lucide-react";
 import type { Category } from "@/lib/types/category";
 import { normalizeColor } from "@/services/category.client";
-import ModalShell from "@/components/ui/ModalShell";
+import ModalShell, {
+  modalInput,
+  SectionLabel,
+} from "@/components/ui/ModalShell";
 
 const PRESET_COLORS = [
   "#F47003",
@@ -24,8 +27,8 @@ const PRESET_COLORS = [
   "#FB923C",
 ];
 
-const inputClass =
-  "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
+// const inputClass =
+//   "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
 
 interface EditCategoryModalProps {
   open: boolean;
@@ -90,31 +93,25 @@ const EditCategoryModal = ({
         {/* ── Details ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
-              Details
-            </h3>
+            <SectionLabel>Details</SectionLabel>
             <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
               How this category appears across the app
             </p>
           </div>
 
-          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
-            Category Name
-          </label>
+          <SectionLabel>Category Name</SectionLabel>
           <input
             value={form.name}
             onChange={(e) => onFormChange({ ...form, name: e.target.value })}
             placeholder="e.g. Beverages"
-            className={inputClass}
+            className={`${modalInput} mt-1`}
           />
         </div>
 
         {/* ── Colour ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
-              Colour
-            </h3>
+            <SectionLabel>Colour</SectionLabel>
             <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
               Pick a preset or enter a custom hex value
             </p>
@@ -143,9 +140,7 @@ const EditCategoryModal = ({
           {/* Custom colour + hex */}
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
-                Custom
-              </label>
+              <SectionLabel>Custom</SectionLabel>
               <input
                 type="color"
                 value={
@@ -154,14 +149,12 @@ const EditCategoryModal = ({
                 onChange={(e) =>
                   onFormChange({ ...form, color: e.target.value })
                 }
-                className="h-10 w-full cursor-pointer rounded-lg border border-gray-200 p-1 dark:border-white/15"
+                className="h-10 mt-1 w-full cursor-pointer rounded-lg border border-gray-200 p-1 dark:border-white/15"
               />
             </div>
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
-                Hex
-              </label>
-              <div className="relative">
+              <SectionLabel>Hex</SectionLabel>
+              <div className="relative ">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm dark:text-[#7b869b]">
                   #
                 </span>
@@ -173,7 +166,7 @@ const EditCategoryModal = ({
                   }}
                   placeholder="F47003"
                   maxLength={6}
-                  className={`${inputClass} pl-7 font-mono uppercase`}
+                  className={`${modalInput} pl-7 font-mono uppercase`}
                 />
               </div>
             </div>
@@ -182,10 +175,8 @@ const EditCategoryModal = ({
 
         {/* ── Preview ── */}
         <div>
-          <div className="mb-3">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-600 dark:text-[#95A1B8]">
-              Preview
-            </h3>
+          <div className="mb-2">
+            <SectionLabel>Preview</SectionLabel>
           </div>
           <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-3 shadow-sm dark:border-white/10 dark:from-white/5 dark:to-transparent">
             <span

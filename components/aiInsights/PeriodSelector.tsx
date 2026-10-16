@@ -38,13 +38,27 @@ export default function PeriodSelector({
   const total = data?.totalSections ?? 0;
 
   const options = periods.map((period) => {
+    const isReady = total > 0 && period.generatedSections >= total;
     const ready =
       period.generatedSections === 0
         ? "not generated"
-        : period.generatedSections >= total
+        : isReady
           ? "ready"
           : `${period.generatedSections} of ${total}`;
-    return { value: period.id, label: `${period.label} · ${ready}` };
+    return {
+      value: period.id,
+      label: `${period.label} · ${ready}`,
+      suffix: isReady ? (
+        <span className="inline-flex shrink-0 items-center gap-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+          <Check className="h-3 w-3" aria-hidden />
+          Ready
+        </span>
+      ) : period.generatedSections > 0 ? (
+        <span className="shrink-0 text-[11px] font-medium text-gray-400 dark:text-[#7b869b]">
+          {period.generatedSections}/{total}
+        </span>
+      ) : undefined,
+    };
   });
 
   return (

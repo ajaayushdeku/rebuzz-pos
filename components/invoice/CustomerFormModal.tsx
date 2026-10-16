@@ -38,7 +38,8 @@ type CustomerFormData = {
 };
 
 type CreateResult =
-  { success: true; data: unknown } | { success: false; error: string };
+  | { success: true; data: unknown }
+  | { success: false; error: string };
 
 const INITIAL_FORM: CustomerFormData = {
   name: "",
@@ -199,7 +200,8 @@ export default function CustomerFormModal({
 
     // Build a Customer object from the API response
     const createdData = (result.data as Record<string, unknown>)?.data as
-      Record<string, unknown> | undefined;
+      | Record<string, unknown>
+      | undefined;
     const createdCustomer: Customer = {
       id: (createdData?._id as string) ?? "",
       name: (createdData?.name as string) ?? form.name,
@@ -357,7 +359,7 @@ export default function CustomerFormModal({
                 a single field, rather than two boxes that happen to sit side
                 by side. */}
             <div
-              className={`mt-2 flex items-center rounded-xl border bg-white dark:bg-white/5 transition focus-within:ring-2 ${
+              className={`mt-2 flex items-center rounded-lg sm:rounded-xl border bg-white dark:bg-white/5 transition focus-within:ring-2 ${
                 checkError
                   ? "border-red-300 focus-within:border-red-400 focus-within:ring-red-500/20 dark:border-red-400/40"
                   : "border-gray-200 focus-within:border-blue-500 focus-within:ring-blue-500/20 dark:border-white/15"
@@ -372,7 +374,7 @@ export default function CustomerFormModal({
                 onChange={(e) => setCountryCode(e.target.value)}
                 placeholder="+977"
                 aria-label="Country code"
-                className="h-11 w-16 bg-transparent px-2 text-center text-[13px] tabular-nums outline-none"
+                className="h-10 sm:h-11 w-16 bg-transparent px-2 text-center text-[13px] tabular-nums outline-none"
               />
               <span className="h-6 w-px shrink-0 bg-gray-200 dark:bg-white/15" />
               <input
@@ -382,7 +384,7 @@ export default function CustomerFormModal({
                 onKeyDown={(e) => e.key === "Enter" && handleCheckPhone()}
                 placeholder="98XXXXXXXX"
                 aria-label="Phone number"
-                className="h-11 flex-1 bg-transparent px-3 text-[13px] tabular-nums outline-none"
+                className="h-10 sm:h-11 flex-1 bg-transparent px-3 text-[13px] tabular-nums outline-none"
               />
             </div>
             <p className="mt-1.5 text-[11px] text-gray-400 dark:text-[#7b869b]">

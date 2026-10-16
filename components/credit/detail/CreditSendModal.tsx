@@ -219,7 +219,7 @@ export default function CreditSendModal({
               type="button"
               onClick={emailAll}
               disabled={!recipient || busy}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[13px] font-semibold text-white transition hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[12px] sm:text-[13px] font-semibold text-white transition hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {emailingFor === "all" ? (
                 <>
@@ -246,7 +246,7 @@ export default function CreditSendModal({
             <div>
               <div className="flex items-baseline justify-between">
                 <SectionLabel>Documents</SectionLabel>
-                <span className="text-[11px] text-gray-400 pr-5 dark:text-[#9aa6bd]">
+                <span className="text-[10px] sm:text-[11px] text-gray-400 pr-5 dark:text-[#9aa6bd]">
                   Copy · Download · Email
                 </span>
               </div>
@@ -331,7 +331,7 @@ export default function CreditSendModal({
               )}
             </div>
 
-            <p className="text-[10px] sm:text-[11px] leading-relaxed text-gray-400 dark:text-[#9aa6bd]">
+            <p className="text-[10px] sm:text-[11px] leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
               Each link shows the credit with its payments and outstanding due.
             </p>
           </div>

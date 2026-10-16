@@ -8,14 +8,14 @@ import { useLockAppScroll } from "@/hooks/useLockAppScroll";
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400 dark:text-[#9aa6bd]">
+    <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-600  dark:text-[#9aa6bd]">
       {children}
     </span>
   );
 }
 
 export const modalInput =
-  "h-11 w-full rounded-xl border bg-white px-3.5 text-[13px] outline-none transition focus:ring-2 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
+  "h-10 sm:h-11 mt-1 w-full rounded-lg sm:rounded-xl border border-gray-300 bg-white px-3.5 text-[13px] outline-none transition focus:ring-2 dark:bg-white/5 dark:text-[#e8ecf4] dark:border-white/15 dark:placeholder:text-[#7b869b]";
 export const modalInputIdle =
   "border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 dark:border-white/15";
 export const modalInputError =
@@ -34,9 +34,9 @@ export const modalSelectTriggerError =
   "border-red-300 focus-visible:border-red-400 focus-visible:ring-red-500/20";
 
 export const modalGhostButton =
-  "shrink-0 rounded-xl px-5 py-3 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-white";
+  "shrink-0 rounded-xl px-5 py-2 sm:py-3 text-[12px] sm:text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-white";
 export const modalPrimaryButton =
-  "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white shadow-md transition-all disabled:cursor-not-allowed disabled:opacity-50";
+  "flex w-full items-center justify-center gap-2 rounded-xl py-2.5 sm:py-3 text-[12px] sm:text-[13px] font-bold text-white shadow-md transition-all disabled:cursor-not-allowed disabled:opacity-50";
 
 const subscribeToNothing = () => () => {};
 const getClientSnapshot = () => true;
@@ -86,8 +86,8 @@ export default function ModalShell({
   title,
   subtitle,
   icon: Icon,
-  iconColor = "text-blue-600",
-  iconBgColor = "bg-blue-50",
+  iconColor = "text-blue-600 dark:text-[#7ba2e3]",
+  iconBgColor = "bg-blue-50 dark:bg-blue-400/10",
   busy = false,
   maxWidth = "max-w-xl",
 
@@ -154,7 +154,7 @@ export default function ModalShell({
                   {title}
                 </h3>
                 {subtitle && (
-                  <p className="mt-0.5 text-[11px] sm:text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
+                  <p className="mt-0.5 text-[11px] sm:text-xs   max-w-xl truncate  tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
                     {subtitle}
                   </p>
                 )}
@@ -237,7 +237,7 @@ export function DocumentRow({
           <p className="text-[12px] sm:text-[13px] font-medium leading-tight text-gray-900 dark:text-[#e8ecf4]">
             {label}
           </p>
-          <p className="mt-0.5 text-[9px] sm:text-[11px] text-gray-400 dark:text-[#9aa6bd]">
+          <p className="mt-0.5 text-[9.5px] sm:text-[11px] text-gray-400 dark:text-[#9aa6bd]">
             {description}
           </p>
         </div>
@@ -286,7 +286,7 @@ export function DocumentRow({
 
   return (
     <div
-      className={`${base} border-gray-200 bg-white hover:border-gray-300 dark:border-white/15 dark:bg-white/5 dark:hover:border-white/25`}
+      className={`${base} border-gray-250 bg-white hover:border-gray-300 dark:border-white/15 dark:bg-white/5 dark:hover:border-white/25`}
     >
       {body}
     </div>

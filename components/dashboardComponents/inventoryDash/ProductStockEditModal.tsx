@@ -431,7 +431,7 @@ export default function ProductStockEditModal({
       >
         {/* ── Header ── */}
         <header className="flex items-start justify-between border-b border-gray-100 px-6 py-4 dark:border-white/10">
-          <div className="flex min-w-0 items-start  gap-3">
+          <div className="flex min-w-0 items-center  gap-3">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-blue-600 dark:text-[#7ba2e3] bg-blue-50 dark:bg-blue-400/10">
               <BoxesIcon size={16} />
             </div>
@@ -439,11 +439,11 @@ export default function ProductStockEditModal({
             <div className="min-w-0">
               <h3
                 id="stock-edit-title"
-                className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]"
+                className="flex items-center gap-1.5 text-[13px] sm:text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]"
               >
                 Edit stock
               </h3>
-              <p className="mt-0.5 text-[11px] w-[90%] sm:w-full sm:text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
+              <p className="mt-0.5 text-[11px] sm:text-xs   max-w-xl truncate  tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Adjust stock levels across products and variants, then save them
                 together.
               </p>
@@ -747,19 +747,19 @@ export default function ProductStockEditModal({
         </div>
 
         {/* ── Footer ── */}
-        <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-4 dark:border-white/10 dark:bg-white/5">
-          <span className="text-[12px] text-slate-400 dark:text-[#7b869b]">
+        <footer className="flex flex-col sm:flex-row w-full   shrink-0 items-start sm:items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-4 dark:border-white/10 dark:bg-white/5">
+          <span className="text-[12px] w-full text-slate-400 dark:text-[#7b869b]">
             {changedEntries.length === 0
               ? "No changes yet"
               : `${changedEntries.length} change${changedEntries.length > 1 ? "s" : ""} ready to save`}
           </span>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full s:w-fit justify-end">
             <button
               type="button"
               onClick={handleClose}
               disabled={bulkSaving}
-              className="rounded-lg border border-slate-200 bg-white dark:bg-white/5 px-4 py-2 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 dark:border-white/15 dark:text-[#c3ccdc]"
+              className="rounded-lg border border-slate-200 bg-white dark:bg-white/5 px-4 py-2 text-[12px] sm:text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 dark:border-white/15 dark:text-[#c3ccdc]"
             >
               Cancel
             </button>
@@ -767,7 +767,7 @@ export default function ProductStockEditModal({
               type="button"
               onClick={handleBulkSave}
               disabled={bulkSaving || changedCount === 0}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-[12px] sm:text-[13px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
             >
               {bulkSaving ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />

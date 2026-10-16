@@ -10,7 +10,10 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-import ModalShell from "@/components/ui/ModalShell";
+import ModalShell, {
+  modalInput,
+  SectionLabel,
+} from "@/components/ui/ModalShell";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { toBsLabel } from "@/lib/nepaliDate";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -191,11 +194,13 @@ export function editProblem(form: OfferEditForm): string | null {
   return null;
 }
 
-const input =
-  "h-11 w-full rounded-xl border border-gray-200 bg-white px-3.5 text-[13px] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
+// const input =
+//   "h-11 w-full rounded-xl border border-gray-200 bg-white px-3.5 text-[13px] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
 
-const label =
-  "mb-1.5 block text-[12px] font-medium text-[#3c4043] dark:text-[#e8ecf4]";
+const input = modalInput;
+
+// const label =
+//   "mb-1.5 block text-[12px] font-medium text-[#3c4043] dark:text-[#e8ecf4]";
 
 const hint = "mt-1.5 text-[11px] text-gray-400 dark:text-[#7b869b]";
 
@@ -241,7 +246,7 @@ function Section({
           className="mt-0.5 shrink-0 text-gray-400 dark:text-[#9aa6bd]"
         />
         <div>
-          <h4 className="text-[13px] font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
+          <h4 className="text-[12px] font-semibold text-[#3c4043]   font-semibold uppercase tracking-[0.09em] text-gray-600  dark:text-[#9aa6bd]">
             {title}
           </h4>
           <p className="text-[11px] text-gray-400 dark:text-[#7b869b]">
@@ -343,7 +348,8 @@ const EditOfferModal = ({
         >
           <div className="space-y-4">
             <div>
-              <label className={label}>Offer title</label>
+              {/* <label className={label}>Offer title</label> */}
+              <SectionLabel>Offer title</SectionLabel>
               <input
                 value={form.name}
                 onChange={(e) => set("name", e.target.value)}
@@ -360,7 +366,7 @@ const EditOfferModal = ({
                 {/* A plain caption, not a `<label>`: FilterSelect renders a
                     button, which `htmlFor` cannot point at — `ariaLabel` names
                     it instead. */}
-                <p className={label}>Deal type</p>
+                <SectionLabel>Deal type</SectionLabel>
                 {/* The app's own select rather than a native one, so it matches
                     the filters on the invoice table — and because a native
                     dropdown cannot be styled to sit level with the inputs
@@ -376,7 +382,7 @@ const EditOfferModal = ({
                   }
                   ariaLabel="Deal type"
                   preserveCase
-                  buttonClassName="h-11 pl-3.5 pr-3 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]"
+                  buttonClassName="h-11 mt-1 pl-3.5 pr-3 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]"
                 />
               </div>
 
@@ -384,11 +390,11 @@ const EditOfferModal = ({
                   box on a BOGO invites a number it cannot use. */}
               {hasAmount(form.type) && (
                 <div>
-                  <label className={label}>
+                  <SectionLabel>
                     {form.type === "percent"
                       ? "Discount percentage"
                       : `Discount amount (${currency.symbol})`}
-                  </label>
+                  </SectionLabel>
                   <div className="relative">
                     <input
                       type="number"
@@ -396,7 +402,7 @@ const EditOfferModal = ({
                       value={form.value || ""}
                       onChange={(e) => set("value", Number(e.target.value))}
                       placeholder={form.type === "percent" ? "15" : "100"}
-                      className={`${input} tabular-nums ${form.type === "percent" ? "pr-9" : ""}`}
+                      className={`${input} mt-1 tabular-nums ${form.type === "percent" ? "pr-9" : ""}`}
                     />
                     {form.type === "percent" && (
                       <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400 dark:text-[#9aa6bd]">
@@ -410,29 +416,35 @@ const EditOfferModal = ({
 
             {form.type === "bogo" && (
               <div>
-                <label className={label}>
+                <SectionLabel>
                   Which items is this on?{" "}
                   <span className="text-red-500 dark:text-red-300">*</span>
-                </label>
-                <ProductIdMultiPicker
-                  value={form.products}
-                  onChange={(products) => set("products", products)}
-                  placeholder="Choose the items..."
-                />
+                </SectionLabel>
+                <div className="mt-1">
+                  {" "}
+                  <ProductIdMultiPicker
+                    value={form.products}
+                    onChange={(products) => set("products", products)}
+                    placeholder="Choose the items..."
+                  />
+                </div>
               </div>
             )}
 
             {form.type === "freeItem" && (
               <div>
-                <label className={label}>
+                <SectionLabel>
                   Which item is free?{" "}
                   <span className="text-red-500 dark:text-red-300">*</span>
-                </label>
-                <ProductIdPicker
-                  value={form.freeProduct}
-                  onChange={(id) => set("freeProduct", id)}
-                  placeholder="Choose the free item..."
-                />
+                </SectionLabel>
+                <div className="mt-1">
+                  {" "}
+                  <ProductIdPicker
+                    value={form.freeProduct}
+                    onChange={(id) => set("freeProduct", id)}
+                    placeholder="Choose the free item..."
+                  />
+                </div>
                 <p className={hint}>
                   Stored as the product. Which variant is free is not something
                   the POS keeps.
@@ -449,9 +461,9 @@ const EditOfferModal = ({
         >
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className={label}>
+              <SectionLabel>
                 Minimum order spend ({currency.symbol})
-              </label>
+              </SectionLabel>
               <input
                 type="number"
                 min={0}
@@ -462,7 +474,7 @@ const EditOfferModal = ({
               />
             </div>
             <div>
-              <label className={label}>Limit per customer</label>
+              <SectionLabel>Limit per customer</SectionLabel>
               <input
                 type="number"
                 min={0}
@@ -485,7 +497,7 @@ const EditOfferModal = ({
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className={label}>Starts</label>
+                <SectionLabel>Starts</SectionLabel>
                 <input
                   type="date"
                   value={form.startDate}
@@ -495,7 +507,7 @@ const EditOfferModal = ({
                 <BsNote value={form.startDate} />
               </div>
               <div>
-                <label className={label}>Ends</label>
+                <SectionLabel>Ends</SectionLabel>
                 <input
                   type="date"
                   value={form.endDate}
@@ -507,8 +519,8 @@ const EditOfferModal = ({
             </div>
 
             <div>
-              <label className={label}>Days of the week</label>
-              <div className="flex flex-wrap gap-1.5">
+              <SectionLabel>Days of the week</SectionLabel>
+              <div className="flex flex-wrap gap-1.5 mt-1">
                 {DAY_CHIPS.map((day) => {
                   const on = form.days.includes(day.value);
                   return (
@@ -537,7 +549,7 @@ const EditOfferModal = ({
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className={label}>Daily from</label>
+                <SectionLabel>Daily from</SectionLabel>
                 <input
                   type="time"
                   value={form.startTime}
@@ -546,7 +558,7 @@ const EditOfferModal = ({
                 />
               </div>
               <div>
-                <label className={label}>Daily until</label>
+                <SectionLabel>Daily until</SectionLabel>
                 <input
                   type="time"
                   value={form.endTime}
@@ -565,7 +577,7 @@ const EditOfferModal = ({
         >
           <div className="space-y-4">
             <div>
-              <label className={label}>Promo code</label>
+              <SectionLabel>Promo code</SectionLabel>
               <input
                 value={form.code}
                 // Upper-cased on the way in, as in the builder: a code is read
@@ -581,7 +593,7 @@ const EditOfferModal = ({
               type="button"
               onClick={() => set("enabled", !form.enabled)}
               aria-pressed={form.enabled}
-              className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl border border-gray-200 px-3.5 py-3 text-left transition-colors hover:bg-gray-50 dark:border-white/15 dark:hover:bg-white/5"
+              className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl border border-gray-300 px-3.5 py-3 text-left transition-colors hover:bg-gray-50 dark:border-white/15 dark:hover:bg-white/5"
             >
               <span>
                 <span className="block text-[12px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">

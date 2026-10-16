@@ -470,7 +470,7 @@ export default function ExpenseIncomeForm({
           {/* ── Recurring ──
               Card + switch, matching the loyalty block in RecordPaymentModal:
               the options only appear once the switch is on. */}
-          <div className="rounded-xl border border-gray-200 px-4 py-3.5 dark:border-white/15">
+          <div className="rounded-xl border border-gray-300 px-4 py-3.5 dark:border-white/15">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="flex items-center gap-1.5 text-[13px] font-medium text-gray-900 dark:text-[#e8ecf4]">

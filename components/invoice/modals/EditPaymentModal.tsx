@@ -189,7 +189,7 @@ function EditPaymentForm({
             type="datetime-local"
             value={paidAt}
             onChange={(e) => setPaidAt(e.target.value)}
-            className="mt-2 h-11 w-full rounded-xl border border-gray-200 bg-white dark:bg-white/5 px-3.5 text-[13px] tabular-nums outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-white/15"
+            className="mt-2 h-11 w-full rounded-xl border border-gray-200 bg-white dark:bg-white/5 px-3.5 text-[12px] sm:text-[13px] tabular-nums outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-white/15"
           />
         </div>
       </div>
@@ -200,7 +200,7 @@ function EditPaymentForm({
           type="button"
           onClick={onClose}
           disabled={saving}
-          className="rounded-xl px-5 py-3 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
+          className="rounded-xl px-5 py-3 text-[12px] sm:text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
         >
           Cancel
         </button>
@@ -208,7 +208,7 @@ function EditPaymentForm({
           type="button"
           onClick={handleSubmit}
           disabled={saving || !isValid}
-          className="w-full bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-sm"
+          className="w-full bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-[12px] sm:text-sm"
         >
           {saving ? (
             <>

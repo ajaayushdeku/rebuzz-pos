@@ -4,7 +4,12 @@ import { Loader2, Percent, BadgePercent } from "lucide-react";
 import { Discount } from "@/app/(app)/settings/discount/page";
 import { formatCurrencySymbolOnly } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
-import ModalShell from "@/components/ui/ModalShell";
+import ModalShell, {
+  modalInput,
+  SectionLabel,
+} from "@/components/ui/ModalShell";
+import SelectMenu from "@/components/ui/SelectMenu";
+import { DISCOUNT_TYPES } from "@/components/invoice/CreateDiscount";
 
 type DiscountType = "percentage" | "fixed";
 
@@ -14,8 +19,8 @@ type DiscountForm = {
   rate: number;
 };
 
-const inputClass =
-  "w-full h-9 rounded-lg border border-slate-200 px-3 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
+// const inputClass =
+//   "w-full h-9 rounded-lg border border-slate-200 px-3 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
 
 const EditDiscountModal = ({
   open,
@@ -80,31 +85,25 @@ const EditDiscountModal = ({
       <div className="space-y-5">
         <div>
           <div className="mb-3">
-            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
-              Details
-            </h3>
+            <SectionLabel>Details</SectionLabel>
             <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
               A clear name helps staff pick the right discount
             </p>
           </div>
 
-          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
-            Discount Name
-          </label>
+          <SectionLabel>Discount Name</SectionLabel>
           <input
             value={form.name}
             onChange={(e) => onFormChange({ ...form, name: e.target.value })}
             placeholder="e.g. Seasonal Sale"
-            className={inputClass}
+            className={modalInput}
           />
         </div>
 
         {/* ── Amount ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
-              Amount
-            </h3>
+            <SectionLabel>Amount</SectionLabel>
             <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
               Choose a percentage of the total or a fixed amount
             </p>
@@ -112,27 +111,25 @@ const EditDiscountModal = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
-                Type
-              </label>
-              <select
+              <SectionLabel>Type</SectionLabel>
+
+              <SelectMenu
                 value={form.type}
-                onChange={(e) =>
+                options={DISCOUNT_TYPES}
+                onChange={(type) =>
                   onFormChange({
                     ...form,
-                    type: e.target.value as DiscountType,
+                    type: type as DiscountType,
                   })
                 }
-                className={`${inputClass} appearance-none`}
-              >
-                <option value="percentage">Percentage (%)</option>
-                <option value="fixed">Fixed Amount</option>
-              </select>
+                className="w-full"
+                capitalize={false}
+                aria-label="Discount type"
+              />
             </div>
+
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
-                Value
-              </label>
+              <SectionLabel>Value</SectionLabel>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400 dark:text-[#7b869b]">
                   {form.type === "percentage" ? (
@@ -148,7 +145,7 @@ const EditDiscountModal = ({
                   onChange={(e) =>
                     onFormChange({ ...form, rate: Number(e.target.value) })
                   }
-                  className={`${inputClass} pl-7`}
+                  className={`${modalInput} pl-7`}
                   placeholder="0"
                 />
               </div>

@@ -1,12 +1,19 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface FilterSelectOption {
   value: string;
   label: string;
+  /**
+   * Shown at the end of the row (and in the trigger when selected) — e.g. a
+   * "Ready" check or a count. Kept as a node so callers can colour it; the
+   * row lays it out with `shrink-0` so long labels truncate before it.
+   */
+  suffix?: ReactNode;
   /**
    * Shown in the trigger when active, but not pickable — the native `<option
    * disabled>` behaviour the hour-range filters use for their "Custom" entry,
@@ -53,6 +60,9 @@ export function FilterSelect({
   const selectedRef = useRef<HTMLButtonElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const [menuSide, setMenuSide] = useState<"left" | "right">("left");
+  const [menuDirection, setMenuDirection] = useState<"top" | "bottom">(
+    "bottom",
+  );
 
   /** Capitalising is the default; an identifier opts out. */
   const caseClass = preserveCase ? "" : "capitalize";
@@ -82,33 +92,44 @@ export function FilterSelect({
     const place = () => {
       const wrapper = ref.current;
       const panel = panelRef.current;
-      if (!wrapper || !panel) return;
+      const button = buttonRef.current;
+
+      if (!wrapper || !panel || !button) return;
 
       const wrapperRect = wrapper.getBoundingClientRect();
+      const buttonRect = button.getBoundingClientRect();
+      const menuWidth = panel.offsetWidth;
+      const menuHeight = panel.offsetHeight;
 
-      // Room either side of the trigger, and what the panel wants.
+      // Horizontal positioning
       const spaceRight = window.innerWidth - wrapperRect.left;
       const spaceLeft = wrapperRect.right;
-      const menuWidth = panel.offsetWidth;
 
-      // Flipped only when it genuinely does not fit on the right *and* does fit
-      // on the left; otherwise left, which keeps the usual alignment.
       setMenuSide(
         spaceRight < menuWidth && spaceLeft >= menuWidth ? "right" : "left",
+      );
+
+      // Vertical positioning
+      const spaceBelow = window.innerHeight - buttonRect.bottom;
+      const spaceAbove = buttonRect.top;
+
+      setMenuDirection(
+        spaceBelow < menuHeight && spaceAbove >= menuHeight ? "top" : "bottom",
       );
     };
 
     place();
 
-    // Keep the selected item visible for long lists — its own scrollTop only, so
-    // a panel that fits cannot scroll the page instead.
+    // Keep the selected option visible in long lists.
     const panel = panelRef.current;
     const item = selectedRef.current;
+
     if (panel && item && panel.scrollHeight > panel.clientHeight) {
       item.scrollIntoView({ block: "nearest" });
     }
 
     window.addEventListener("resize", place);
+
     return () => window.removeEventListener("resize", place);
   }, [isOpen]);
 
@@ -147,12 +168,15 @@ export function FilterSelect({
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          "w-full flex items-center justify-between gap-2 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc]",
+          "w-full flex items-center justify-between gap-2 border border-gray-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc]",
           caseClass,
           buttonClassName,
         )}
       >
-        <span className="truncate">{selected?.label ?? placeholder}</span>
+        <span className="flex min-w-0 flex-1 items-center gap-1.5">
+          <span className="truncate">{selected?.label ?? placeholder}</span>
+          {selected?.suffix}
+        </span>
         <ChevronDown
           size={14}
           className={`text-gray-400 transition-transform duration-200 dark:text-[#7b869b] ${
@@ -185,9 +209,10 @@ export function FilterSelect({
           ref={panelRef}
           role="listbox"
           className={cn(
-            "absolute z-30 my-1.5 max-h-72 max-w-[calc(100vw-1rem)] origin-top overflow-y-auto overscroll-contain scrollbar-hide rounded-md border border-gray-200 bg-white p-1 shadow-lg animate-in fade-in-0 zoom-in-95 duration-150 dark:border-white/15 dark:bg-[#1b2436]",
+            "absolute z-30  max-h-72 max-w-[calc(100vw-1rem)] origin-top overflow-y-auto overscroll-contain scrollbar-hide rounded-md border border-gray-200 bg-white p-1 shadow-lg animate-in fade-in-0 zoom-in-95 duration-150 dark:border-white/15 dark:bg-[#1b2436]",
             menuClassName,
             menuSide === "left" ? "left-0" : "right-0",
+            menuDirection === "top" ? "bottom-full mb-1.5" : "top-full mt-1.5",
           )}
         >
           {options.map((opt) => (
@@ -210,7 +235,10 @@ export function FilterSelect({
                     : "cursor-pointer text-gray-600 hover:bg-gray-100 dark:text-[#c3ccdc] dark:hover:bg-white/10"
               }`}
             >
-              {opt.label}
+              <span className="flex items-center gap-1.5">
+                <span className="min-w-0 flex-1 truncate">{opt.label}</span>
+                {opt.suffix}
+              </span>
             </button>
           ))}
         </div>

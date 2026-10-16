@@ -175,6 +175,8 @@ export default function EmailInvoiceModal({
             : "Send a PDF to the customer"
         }
         icon={Mail}
+        iconColor="text-blue-600 dark:text-[#7ba2e3]"
+        iconBgColor="bg-blue-50 dark:bg-blue-400/10"
         footer={
           invoice ? (
             <div className="flex items-center gap-2.5">
@@ -182,7 +184,7 @@ export default function EmailInvoiceModal({
                 type="button"
                 onClick={sendAll}
                 disabled={!canSend}
-                className="rounded-xl px-4 py-3 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
+                className="rounded-xl px-4 py-3 text-[12px] sm:text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
               >
                 Send all three
               </button>
@@ -190,7 +192,7 @@ export default function EmailInvoiceModal({
                 type="button"
                 onClick={sendOne}
                 disabled={!canSend}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[13px] font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[12px] sm:text-[13px] font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSendingEmail ? (
                   <>
@@ -242,7 +244,7 @@ export default function EmailInvoiceModal({
                     size={14}
                     className="shrink-0 text-gray-400 dark:text-[#9aa6bd]"
                   />
-                  <p className="truncate text-[13px] font-medium text-gray-800 dark:text-[#e8ecf4]">
+                  <p className="truncate text-[12px] sm:text-[13px] font-medium text-gray-800 dark:text-[#e8ecf4]">
                     {recipient}
                   </p>
                 </div>

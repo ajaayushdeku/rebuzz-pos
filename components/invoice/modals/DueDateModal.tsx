@@ -139,7 +139,7 @@ export default function DueDateModal({
         {offsets.map((offset) => (
           <span
             key={offset}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50/60 px-2.5 py-1.5 text-[12px] font-medium text-blue-700 dark:border-blue-400/25 dark:text-blue-300 dark:bg-blue-400/10"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50/60 px-2.5 py-1.5 text-[11px] sm:text-[12px] font-medium text-blue-700 dark:border-blue-400/25 dark:text-blue-300 dark:bg-blue-400/10"
           >
             {reminderLabel(offset)}
             <button
@@ -166,7 +166,7 @@ export default function DueDateModal({
       {/* Built from ModalShell's input metrics rather than using `modalInput`
           directly — the sign and the unit sit inside the same box, so the
           border and focus ring belong to the wrapper. */}
-      <div className="flex h-11 flex-1 items-center rounded-xl border border-gray-200 bg-white dark:bg-white/5 px-3.5 transition focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 dark:border-white/15">
+      <div className="flex h-10 sm:h-11 flex-1 items-center rounded-lg sm:rounded-xl border border-gray-200 bg-white dark:bg-white/5 px-3.5 transition focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 dark:border-white/15">
         {/* The sign is shown, not typed. It tells the reader what the number
             will mean without making them get it right themselves. */}
         <span
@@ -194,7 +194,7 @@ export default function DueDateModal({
             e.preventDefault();
             addOffset(value, direction, setValue);
           }}
-          className="w-full bg-transparent text-[13px] text-gray-800 outline-none dark:text-[#e8ecf4]"
+          className="w-full bg-transparent text-[12px] sm:text-[13px] text-gray-800 outline-none dark:text-[#e8ecf4]"
         />
         <span className="select-none pl-2 text-[12px] text-gray-400 dark:text-[#9aa6bd]">
           days
@@ -203,9 +203,9 @@ export default function DueDateModal({
       <button
         type="button"
         onClick={() => addOffset(value, direction, setValue)}
-        className="flex h-11 shrink-0 items-center gap-1.5 rounded-xl border border-gray-200 px-3.5 text-[12px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:border-white/25 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#c3ccdc]"
+        className="flex h-10 sm:h-11 shrink-0 items-center gap-1.5 rounded-lg sm:rounded-xl border border-gray-200 px-3.5 text-[12px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:border-white/25 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#c3ccdc]"
       >
-        <Plus size={13} />
+        <Plus size={14} />
         Add
       </button>
     </div>
@@ -239,7 +239,7 @@ export default function DueDateModal({
             type="button"
             onClick={handleSubmit}
             disabled={isSaving}
-            className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-[13px] font-semibold text-white tracking-wide transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2 sm:py-2.5 text-[12px] sm:text-[13px] font-semibold text-white tracking-wide transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSaving ? "Saving..." : "Save"}
           </button>
@@ -263,7 +263,7 @@ export default function DueDateModal({
               setDate(e.target.value);
               setError(null);
             }}
-            className={`h-11 w-full rounded-xl border bg-white dark:bg-white/5 px-3.5 text-[13px] text-gray-800 outline-none transition focus:ring-2 ${
+            className={`h-10 sm:h-11 w-full rounded-lg sm:rounded-xl border bg-white dark:bg-white/5 px-3.5 text-[12px] sm:text-[13px] text-gray-800 outline-none transition focus:ring-2 ${
               error
                 ? "border-red-300 focus:border-red-400 focus:ring-red-500/20 dark:focus:border-red-400/60 dark:border-red-400/40"
                 : "border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 dark:border-white/15"
@@ -298,7 +298,7 @@ export default function DueDateModal({
 
         {/* Neither before nor after, so it gets a tick rather than a field —
             there is only one day it can mean. */}
-        <label className="flex items-center gap-2 text-[13px] font-medium text-gray-700 dark:text-[#c3ccdc]">
+        <label className="flex items-center gap-2 text-[12px] sm:text-[13px] font-medium text-gray-700 dark:text-[#c3ccdc]">
           <input
             type="checkbox"
             checked={onDueDate}
@@ -320,7 +320,7 @@ export default function DueDateModal({
 
         {/* Said back in plain words, because a set of chips is easy to misread
             and this is what the customer will actually receive. */}
-        <p className="rounded-xl bg-gray-50 px-3.5 py-3 text-[12px] leading-relaxed text-gray-600 dark:text-[#a9b4c7] dark:bg-white/5">
+        <p className="rounded-xl bg-gray-50 px-3.5 py-3 text-[11px] sm:text-[12px] leading-relaxed text-gray-600 dark:text-[#a9b4c7] dark:bg-white/5">
           {ordered.length === 0 ? (
             "No reminders will be sent. The due date is still recorded and shown on the invoice."
           ) : (

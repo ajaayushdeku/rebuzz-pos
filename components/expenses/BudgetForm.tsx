@@ -300,7 +300,7 @@ export default function BudgetForm() {
                             ),
                           }}
                         />
-                        <span className="truncate text-[13px] font-medium text-gray-900 dark:text-[#e8ecf4]">
+                        <span className="truncate text-[12px] sm:text-[13px] font-medium text-gray-900 dark:text-[#e8ecf4]">
                           {name}
                         </span>
                       </div>

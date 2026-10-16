@@ -2,14 +2,21 @@
 
 import { useState } from "react";
 import { Percent, Loader2, BadgePercent } from "lucide-react";
-import ModalShell from "@/components/ui/ModalShell";
+import ModalShell, {
+  modalInput,
+  SectionLabel,
+} from "@/components/ui/ModalShell";
 import SelectMenu from "@/components/ui/SelectMenu";
 import { useCreateDiscount } from "@/hooks/useDiscounts";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbolOnly } from "@/utils/helper";
 import HeaderActionButton from "@/components/ui/HeaderActionButton";
+// import FilterSelect from "../ui/FilterSelect";
 
-const DISCOUNT_TYPES: { value: "percentage" | "fixed"; label: string }[] = [
+export const DISCOUNT_TYPES: {
+  value: "percentage" | "fixed";
+  label: string;
+}[] = [
   { value: "percentage", label: "Percentage (%)" },
   { value: "fixed", label: "Fixed Amount" },
 ];
@@ -56,8 +63,8 @@ export const CreateDiscountDialog = () => {
 
   // Matches SelectMenu's trigger (rounded-xl, py-2.5, 13px) so the Type
   // dropdown and the Value field sit on the same baseline and height.
-  const inputClass =
-    "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
+  // const inputClass =
+  //   "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
 
   return (
     <>
@@ -112,33 +119,27 @@ export const CreateDiscountDialog = () => {
         <div className="space-y-5">
           <div>
             <div className="mb-3">
-              <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
-                Details
-              </h3>
+              <SectionLabel>Details</SectionLabel>
               <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
                 A clear name helps staff pick the right discount
               </p>
             </div>
 
-            <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
-              Discount Name
-            </label>
+            <SectionLabel>Discount Name</SectionLabel>
             <input
               placeholder="e.g. Seasonal Sale"
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
-              className={inputClass}
+              className={modalInput}
             />
           </div>
 
           {/* ── Amount ── */}
           <div>
             <div className="mb-3">
-              <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
-                Amount
-              </h3>
+              <SectionLabel>Amount</SectionLabel>
               <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
                 Choose a percentage of the total or a fixed amount
               </p>
@@ -146,9 +147,7 @@ export const CreateDiscountDialog = () => {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
-                  Type
-                </label>
+                <SectionLabel>Type</SectionLabel>
                 <SelectMenu
                   value={formData.type}
                   options={DISCOUNT_TYPES}
@@ -157,11 +156,23 @@ export const CreateDiscountDialog = () => {
                   capitalize={false}
                   aria-label="Discount type"
                 />
+                {/* <FilterSelect
+                  value={formData.type}
+                  options={DISCOUNT_TYPES}
+                  onChange={(type) =>
+                    setFormData({
+                      ...formData,
+                      type: type as "percentage" | "fixed",
+                    })
+                  }
+                  placeholder="Quick select"
+                  className="w-full"
+                  buttonClassName="px-3 py-2.5 text-[13px] rounded-lg"
+                  menuClassName="min-w-full"
+                /> */}
               </div>
               <div>
-                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
-                  Value
-                </label>
+                <SectionLabel>Value</SectionLabel>
                 <div className="relative">
                   <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400 dark:text-[#7b869b]">
                     {formData.type === "percentage" ? (
@@ -180,7 +191,7 @@ export const CreateDiscountDialog = () => {
                         rate: Number(e.target.value),
                       })
                     }
-                    className={`${inputClass} pl-7 tabular-nums`}
+                    className={`${modalInput} pl-7 tabular-nums`}
                     placeholder="0"
                   />
                 </div>

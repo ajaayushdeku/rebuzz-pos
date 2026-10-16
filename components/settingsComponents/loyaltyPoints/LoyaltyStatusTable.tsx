@@ -52,7 +52,7 @@ export default function LoyaltyStatusTable({
         </span>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto scrollbar-hide">
         <div className="min-w-[680px]">
           {" "}
           {/* `table-fixed` with declared widths: auto layout sized the columns

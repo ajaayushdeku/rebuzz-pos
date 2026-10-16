@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { cn } from "@/lib/utils";
 import { formatDateRangeLabel } from "@/utils/helper";
+import { SectionLabel } from "@/components/ui/ModalShell";
 
 type DateMode = "single" | "range";
 
@@ -538,9 +539,9 @@ export function CalendarDateFilter({
               >
                 {/* Start */}
                 <div className="min-w-0">
-                  <label className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-400 dark:text-[#7b869b]">
+                  <SectionLabel>
                     {mode === "single" ? "Date" : "Start date"}
-                  </label>
+                  </SectionLabel>
 
                   <input
                     type="date"
@@ -548,13 +549,13 @@ export function CalendarDateFilter({
                     onChange={(e) => handleStartInputChange(e.target.value)}
                     onBlur={handleStartBlur}
                     className={cn(
-                      "h-9 w-full min-w-0 rounded-lg border border-gray-200 bg-white px-2.5 text-xs tracking-wide",
+                      "h-9 w-full min-w-0 mt-1 rounded-lg border border-gray-300 bg-white px-2.5 text-xs tracking-wide",
                       "focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
                       "dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]",
-                      "[&::-webkit-calendar-picker-indicator]:cursor-pointer",
-                      "[&::-webkit-calendar-picker-indicator]:opacity-60",
-                      "hover:[&::-webkit-calendar-picker-indicator]:opacity-100",
-                      "dark:[&::-webkit-calendar-picker-indicator]:invert",
+                      // "[&::-webkit-calendar-picker-indicator]:cursor-pointer",
+                      // "[&::-webkit-calendar-picker-indicator]:opacity-60",
+                      // "hover:[&::-webkit-calendar-picker-indicator]:opacity-100",
+                      // "dark:[&::-webkit-calendar-picker-indicator]:invert",
                     )}
                   />
                 </div>
@@ -562,23 +563,21 @@ export function CalendarDateFilter({
                 {/* End */}
                 {mode === "range" && (
                   <div className="min-w-0">
-                    <label className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-400 dark:text-[#7b869b]">
-                      End date
-                    </label>
+                    <SectionLabel>End date</SectionLabel>
 
                     <input
                       type="date"
                       value={endInput}
                       onChange={(e) => handleEndInputChange(e.target.value)}
                       className={cn(
-                        "h-9 w-full min-w-0 rounded-lg border border-gray-200 bg-white px-2.5 text-xs tracking-wide",
+                        "h-9 w-full min-w-0 mt-1 rounded-lg border border-gray-300 bg-white px-2.5 text-xs tracking-wide",
                         "focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
                         "dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]",
-                        "[&::-webkit-calendar-picker-indicator]:cursor-pointer",
-                        "[&::-webkit-calendar-picker-indicator]:opacity-60",
-                        "hover:[&::-webkit-calendar-picker-indicator]:opacity-100",
-                        "dark:[&::-webkit-calendar-picker-indicator]:invert",
-                        "dark:[&::-webkit-calendar-picker-indicator]:text-white",
+                        // "[&::-webkit-calendar-picker-indicator]:cursor-pointer",
+                        // "[&::-webkit-calendar-picker-indicator]:opacity-60",
+                        // "hover:[&::-webkit-calendar-picker-indicator]:opacity-100",
+                        // "dark:[&::-webkit-calendar-picker-indicator]:invert",
+                        // "dark:[&::-webkit-calendar-picker-indicator]:text-white",
                       )}
                     />
                   </div>

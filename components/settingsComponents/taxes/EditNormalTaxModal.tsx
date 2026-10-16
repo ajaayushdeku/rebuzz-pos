@@ -2,10 +2,10 @@
 
 import { Loader2, Percent, Receipt } from "lucide-react";
 import { Tax } from "@/services/apiTaxes.client";
-import ModalShell from "@/components/ui/ModalShell";
-
-const inputClass =
-  "w-full h-9 rounded-lg border border-slate-200 px-3 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
+import ModalShell, {
+  modalInput,
+  SectionLabel,
+} from "@/components/ui/ModalShell";
 
 const EditNormalTaxModal = ({
   open,
@@ -74,31 +74,25 @@ const EditNormalTaxModal = ({
             </p>
           </div>
 
-          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
-            Tax Name
-          </label>
+          <SectionLabel>Tax Name</SectionLabel>
           <input
             value={form.name}
             onChange={(e) => onFormChange({ ...form, name: e.target.value })}
             placeholder="e.g. VAT"
-            className={inputClass}
+            className={modalInput}
           />
         </div>
 
         {/* ── Rate ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
-              Rate
-            </h3>
+            <SectionLabel>Rate</SectionLabel>
             <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
               Percentage added to the taxable amount
             </p>
           </div>
 
-          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
-            Rate (%)
-          </label>
+          <SectionLabel>Rate (%)</SectionLabel>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#7b869b]">
               <Percent className="h-3.5 w-3.5" />
@@ -111,7 +105,7 @@ const EditNormalTaxModal = ({
               onChange={(e) =>
                 onFormChange({ ...form, rate: Number(e.target.value) })
               }
-              className={`${inputClass} pl-8`}
+              className={`${modalInput} pl-8`}
               placeholder="0"
             />
           </div>

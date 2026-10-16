@@ -84,7 +84,7 @@ export default function RemovePaymentModal({
       detail={detail || undefined}
       warning="This action cannot be undone."
       tone="danger"
-      confirmLabel="Remove payment"
+      confirmLabel="Remove"
       pendingLabel="Removing..."
       confirmIcon={Trash2}
       onConfirm={() => payment && onConfirm(payment._id)}

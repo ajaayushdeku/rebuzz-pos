@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Sparkles, TriangleAlert } from "lucide-react";
+import { Loader2, TriangleAlert } from "lucide-react";
 import toast from "react-hot-toast";
 
 import AiKeyRequiredNotice from "@/components/aiInsights/AiKeyRequiredNotice";
@@ -34,6 +34,7 @@ import type { SalesRecommendation } from "@/lib/ai-insights/sections/salesRecomm
 import type { SlowItemInsight } from "@/lib/ai-insights/sections/slowItems";
 import type { StaffingInsight } from "@/lib/ai-insights/sections/staffing";
 import type { PeriodKind } from "@/services/apiPeriodInsights.client";
+import PeriodProgressVisualizer from "./PeriodProgressVisualizer";
 
 /**
  * AI Insights for a completed analytics period.
@@ -244,52 +245,25 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
         </div>
       )}
 
-      {/*
-        The hero banner is gone, and with it the summary figures it existed to
-        display. What it also held was the only way to generate anything, so that
-        moved here — next to the period it acts on, rather than inside a banner
-        about the page as a whole.
-
-        Nothing is offered once a period is complete: each section keeps its own
-        Refresh for the one case that remains, which is wanting a different answer
-        to the same question.
-      */}
-      {missing.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#e3e3e3] bg-white px-4 py-3 dark:border-white/10 dark:bg-[#161d2e]">
-          <p className="text-[12px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
-            {missing.length} of {totalSections} sections have not been generated
-            for {period?.label ?? "this period"} yet.
-          </p>
-
-          {isAdmin ? (
-            <button
-              type="button"
-              onClick={() => void generateMissing()}
-              disabled={generation.isRunning || !periodId}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-violet-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-violet-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {generation.isRunning ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
-                  Generating…
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-3.5 w-3.5" aria-hidden />
-                  Generate{" "}
-                  {missing.length === totalSections ? "insights" : "the rest"}
-                </>
-              )}
-            </button>
-          ) : (
-            // Said rather than hidden: an admin reading over someone's shoulder
-            // should be able to see why there is no button.
-            <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
-              Only the business admin can generate insights.
-            </span>
-          )}
-        </div>
+      {/* The generate action lives inside the progress card below, next to the
+          checklist that names what is missing — not in a banner of its own.
+          Non-admins get the reason there instead of a hidden button. */}
+      {!isAdmin && missing.length > 0 && !insights.isLoading && (
+        <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
+          Only the business admin can generate insights.
+        </p>
       )}
+
+      <PeriodProgressVisualizer
+        periodLabel={period?.label}
+        isLoading={insights.isLoading || periodList.isLoading}
+        isGenerating={generation.isRunning}
+        storedSections={stored}
+        missingSections={missing}
+        progress={generation.progress}
+        canGenerate={isAdmin && !needsKey}
+        onGenerate={() => void generateMissing()}
+      />
 
       <div className="flex flex-col gap-2">
         {/* Everything inside names the period in its own copy — "September 2026"

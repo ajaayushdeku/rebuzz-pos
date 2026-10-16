@@ -306,7 +306,7 @@ export default function SendInvoiceModal({
             <div>
               <div className="flex items-baseline justify-between">
                 <SectionLabel>Documents</SectionLabel>
-                <span className="text-[11px]  text-gray-400 pr-5">
+                <span className="text-[10px] sm:text-[11px]  text-gray-400 pr-5">
                   Copy · Download · Email
                 </span>
               </div>
@@ -371,7 +371,7 @@ export default function SendInvoiceModal({
                     size={14}
                     className="shrink-0 text-gray-600 dark:text-gray-400"
                   />
-                  <p className="truncate text-[13px] font-medium text-gray-800 dark:text-gray-200">
+                  <p className="truncate text-[11px] sm:text-[13px] font-medium text-gray-800 dark:text-gray-200">
                     {recipient}
                   </p>
                 </div>
@@ -381,7 +381,7 @@ export default function SendInvoiceModal({
                     size={14}
                     className="mt-0.5 shrink-0 text-red-500"
                   />
-                  <p className="text-[12px] leading-relaxed text-red-600">
+                  <p className="text-[11px] sm:text-[12px] leading-relaxed text-red-600">
                     This customer has no email on file. Copy and download still
                     work; add an email to the customer profile to send.
                   </p>
@@ -389,7 +389,7 @@ export default function SendInvoiceModal({
               )}
             </div>
 
-            <p className="text-[11px] leading-relaxed text-gray-400">
+            <p className="text-[10px] sm:text-[11px] leading-relaxed text-gray-500">
               Anyone with a copied link can view that document — no sign-in
               needed.
             </p>

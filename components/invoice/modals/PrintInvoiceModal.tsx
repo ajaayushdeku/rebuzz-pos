@@ -174,16 +174,16 @@ export default function PrintInvoiceModal({
                   <button
                     type="button"
                     onClick={() => handlePrint(type)}
-                    className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-[12px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:border-white/25 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#c3ccdc]"
+                    className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-[11px] sm:text-[12px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:border-white/25 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#c3ccdc]"
                   >
-                    <Printer size={13} />
+                    <Printer size={14} />
                     Print
                   </button>
                 }
               />
             ))}
 
-            <p className="pt-1 text-[11px] leading-relaxed text-gray-400 dark:text-[#9aa6bd]">
+            <p className="pt-1 text-[10px] sm:text-[11px] leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
               Opens your browser&lsquo;s print dialog — pick a printer or save
               as PDF from there.
             </p>
