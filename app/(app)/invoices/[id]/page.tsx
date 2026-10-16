@@ -789,7 +789,7 @@ const InvoiceDetailPage = () => {
                   {canEditInvoice && (
                     <DropdownMenuItem
                       onClick={handleEditInvoice}
-                      className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm dark:focus:text-[#a8c4ee] dark:focus:bg-blue-400/15"
+                      className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-[13px] sm:text-sm dark:focus:text-[#a8c4ee] dark:focus:bg-blue-400/15"
                     >
                       Edit invoice
                     </DropdownMenuItem>
@@ -797,7 +797,7 @@ const InvoiceDetailPage = () => {
 
                   <DropdownMenuItem
                     onClick={() => setIsCustomerPreviewOpen(true)}
-                    className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm dark:focus:text-[#a8c4ee] dark:focus:bg-blue-400/15"
+                    className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-[13px] sm:text-sm dark:focus:text-[#a8c4ee] dark:focus:bg-blue-400/15"
                   >
                     Preview as Customer
                   </DropdownMenuItem>
@@ -806,14 +806,14 @@ const InvoiceDetailPage = () => {
 
                   <DropdownMenuItem
                     onClick={() => setIsExportPdfOpen(true)}
-                    className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm dark:focus:text-[#a8c4ee] dark:focus:bg-blue-400/15"
+                    className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-[13px] sm:text-sm dark:focus:text-[#a8c4ee] dark:focus:bg-blue-400/15"
                   >
                     Export as PDF
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
                     onClick={() => setIsPrintOpen(true)}
-                    className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm dark:focus:text-[#a8c4ee] dark:focus:bg-blue-400/15"
+                    className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-[13px] sm:text-sm dark:focus:text-[#a8c4ee] dark:focus:bg-blue-400/15"
                   >
                     Print options
                   </DropdownMenuItem>
@@ -823,7 +823,7 @@ const InvoiceDetailPage = () => {
                   {!isCredited && !isCreditArchived && !isPaid && (
                     <DropdownMenuItem
                       onClick={() => setIsMoveToCreditOpen(true)}
-                      className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-violet-50 focus:text-violet-600 text-sm dark:hover:bg-violet-400/10 dark:focus:text-violet-300 dark:focus:bg-violet-400/10"
+                      className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-violet-50 focus:text-violet-600 text-[13px] sm:text-sm dark:hover:bg-violet-400/10 dark:focus:text-violet-300 dark:focus:bg-violet-400/10"
                     >
                       Move to credit
                     </DropdownMenuItem>
@@ -832,7 +832,7 @@ const InvoiceDetailPage = () => {
                   {isPaid && (
                     <DropdownMenuItem
                       onClick={() => setIsRefundModalOpen(true)}
-                      className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-orange-600 focus:bg-orange-50 focus:text-orange-600 text-sm dark:text-orange-300"
+                      className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-orange-600 focus:bg-orange-50 focus:text-orange-600 text-[13px] sm:text-sm dark:text-orange-300"
                     >
                       Refund
                     </DropdownMenuItem>
@@ -841,7 +841,7 @@ const InvoiceDetailPage = () => {
                   {isCredited && !isCreditArchived && (
                     <DropdownMenuItem
                       onClick={() => setIsArchiveModalOpen(true)}
-                      className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm dark:text-red-300"
+                      className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-[13px] sm:text-sm dark:text-red-300"
                     >
                       Delete Credited Invoice
                     </DropdownMenuItem>
@@ -850,7 +850,7 @@ const InvoiceDetailPage = () => {
                   {!isPaid && !isCredited && !isCreditArchived && (
                     <DropdownMenuItem
                       onClick={() => setIsDeleteModalOpen(true)}
-                      className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm dark:text-red-300 dark:hover:bg-red-400/10 dark:focus:text-red-300 dark:focus:bg-red-400/10"
+                      className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-[13px] sm:text-sm dark:text-red-300 dark:hover:bg-red-400/10 dark:focus:text-red-300 dark:focus:bg-red-400/10"
                     >
                       Delete
                     </DropdownMenuItem>

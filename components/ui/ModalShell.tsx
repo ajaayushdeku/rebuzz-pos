@@ -214,8 +214,8 @@ export function DocumentRow({
   const selectable = typeof onSelect === "function";
 
   const body = (
-    <div className="flex flex-col  w-full sm:flex-row items-start sm:items-center sm:justify-between gap-2 sm:gap-3">
-      <div className="flex flex-row items-center gap-3">
+    <div className="flex flex-wrap items-center  gap-2 w-full ">
+      <div className="flex min-w-0 flex-1 flex-row items-center  gap-3">
         <div
           className={`flex h-8 sm:h-9 w-8 sm:w-9 shrink-0 items-center justify-center rounded-lg transition ${
             selected
@@ -237,7 +237,7 @@ export function DocumentRow({
           <p className="text-[12px] sm:text-[13px] font-medium leading-tight text-gray-900 dark:text-[#e8ecf4]">
             {label}
           </p>
-          <p className="mt-0.5 text-[10px] sm:text-[11px] text-gray-400 dark:text-[#9aa6bd]">
+          <p className="mt-0.5 text-[9px] sm:text-[11px] text-gray-400 dark:text-[#9aa6bd]">
             {description}
           </p>
         </div>
@@ -245,7 +245,7 @@ export function DocumentRow({
 
       {selectable ? (
         <span
-          className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition ${
+          className={`ml-auto flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition ${
             selected
               ? "border-blue-600 bg-blue-600"
               : "border-gray-300 dark:border-white/25"

@@ -118,7 +118,7 @@ export function ConfirmDialog({
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-3 text-[13px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:border-white/25 dark:hover:bg-white/10"
+            className="flex-1  border border-gray-200 bg-white rounded-lg sm:rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-[12px] sm:text-[13px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:border-white/25 dark:hover:bg-white/10"
           >
             Cancel
           </button>
@@ -126,7 +126,7 @@ export function ConfirmDialog({
             type="button"
             onClick={onConfirm}
             disabled={isPending}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-[13px] font-bold text-white shadow-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${toneStyle.button}`}
+            className={`flex flex-1 items-center justify-center gap-2 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-[12px] sm:text-[13px] font-bold text-white shadow-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${toneStyle.button}`}
           >
             {isPending ? (
               <>
@@ -135,7 +135,7 @@ export function ConfirmDialog({
               </>
             ) : (
               <>
-                <ConfirmIcon className="h-4 w-4" />
+                <ConfirmIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
                 {confirmLabel}
               </>
             )}
@@ -156,19 +156,19 @@ export function ConfirmDialog({
           {title}
         </h2>
 
-        <p className="mt-1 text-sm text-gray-600 dark:text-[#9aa6bd]">
+        <p className="mt-1 text-[12px] sm:text-sm text-gray-600 dark:text-[#9aa6bd]">
           {description}
         </p>
 
         {detail && (
-          <p className="mt-1 text-xs text-gray-500 tabular-nums dark:text-[#9aa6bd]">
+          <p className="mt-1 text-[11px] sm:text-xs text-gray-500 tabular-nums dark:text-[#9aa6bd]">
             {detail}
           </p>
         )}
 
         {warning && (
           <p
-            className={`mt-3 rounded-lg border px-4 sm:px-15 py-3 text-xs ${toneStyle.warning}`}
+            className={`mt-3 rounded-lg border px-4 sm:px-15 py-2 sm:py-3 text-[11px] sm:text-xs ${toneStyle.warning}`}
           >
             {warning}
           </p>

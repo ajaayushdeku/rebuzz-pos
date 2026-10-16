@@ -313,7 +313,7 @@ export default function CreditSendModal({
                     size={14}
                     className="shrink-0 text-gray-400 dark:text-[#9aa6bd]"
                   />
-                  <p className="truncate text-[13px] font-medium text-gray-800 dark:text-[#e8ecf4]">
+                  <p className="truncate text-[11px] sm:text-[13px] font-medium text-gray-800 dark:text-[#e8ecf4]">
                     {recipient}
                   </p>
                 </div>
@@ -331,7 +331,7 @@ export default function CreditSendModal({
               )}
             </div>
 
-            <p className="text-[11px] leading-relaxed text-gray-400 dark:text-[#9aa6bd]">
+            <p className="text-[10px] sm:text-[11px] leading-relaxed text-gray-400 dark:text-[#9aa6bd]">
               Each link shows the credit with its payments and outstanding due.
             </p>
           </div>

@@ -43,24 +43,6 @@ import { useCurrency } from "@/providers/CurrencyContext";
 const inputClass =
   "w-full rounded-lg border border-[#dadce0] px-3 py-2.5 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
 
-/**
- * One setting: what it is on the left, the control for it on the right, and a
- * worked example along the foot.
- *
- * Stacked on a phone and side by side from `sm`. The card used to put the icon,
- * the copy and the input in one `flex-col sm:flex-row items-center`, which gave
- * a phone a centred icon over left-aligned text with the input centred under
- * it, and gave a desktop an input wedged into the same row as the description.
- * The outer div also carried `flex-col` and an unconditional `flex-row` in the
- * same class string, so one of the two was dead whatever the width.
- *
- * `items-start`, not `items-center`: the icon belongs on the title's line, and
- * a two-line description would otherwise push it half a line down.
- *
- * The example sits below both columns rather than under the input, so it has
- * the card's full width to be a sentence in — inside the control column it
- * would be a 224px ribbon four lines tall.
- */
 function FieldCard({
   icon: Icon,
   title,

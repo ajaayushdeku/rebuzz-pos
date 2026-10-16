@@ -84,7 +84,9 @@ export default function ColumnPicker({
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Show columns</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-[13px] sm:text-sm">
+          Show columns
+        </DropdownMenuLabel>
 
         <DropdownMenuCheckboxItem
           checked={allShown}
@@ -93,6 +95,7 @@ export default function ColumnPicker({
           // next column costs another trip to the trigger.
           onSelect={(event) => event.preventDefault()}
           onCheckedChange={selectAll}
+          className="text-[13px] sm:text-sm"
         >
           Select all
         </DropdownMenuCheckboxItem>
@@ -108,6 +111,7 @@ export default function ColumnPicker({
               disabled={checked && atFloor}
               onSelect={(event) => event.preventDefault()}
               onCheckedChange={() => toggle(column.key)}
+              className="text-[13px] sm:text-sm"
             >
               {column.label}
             </DropdownMenuCheckboxItem>
