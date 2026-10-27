@@ -8,6 +8,7 @@ import PricingSection from "@/components/home/PricingSection";
 import AboutSection from "@/components/home/AboutSection";
 import FaqSection from "@/components/home/FaqSection";
 import HomeFooter from "@/components/home/HomeFooter";
+import AiInsightsSection from "@/components/home/AiInsightsSection";
 
 /**
  * The marketing page.
@@ -33,6 +34,7 @@ const Page = async () => {
       <FeatureGrid token={token} />
       <PricingSection />
       <AboutSection />
+      <AiInsightsSection />
       <FaqSection />
       <HomeFooter token={token} />
     </div>

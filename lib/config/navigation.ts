@@ -53,7 +53,12 @@ export type NavigationItem =
       type: "section";
       label: string;
       icon: LucideIcon;
-      items: { label: string; href: string; icon: LucideIcon }[];
+      items: {
+        label: string;
+        href: string;
+        icon: LucideIcon;
+        requiresAiKey?: boolean;
+      }[];
     };
 
 export const profileNavigationConfig: NavigationItem[] = [
@@ -128,6 +133,12 @@ export const navigationConfig: NavigationItem[] = [
         href: "/dashboard/customers",
         icon: UsersRound,
       },
+      {
+        label: "AI Insights",
+        icon: Sparkles,
+        href: "/dashboard/ai-insights",
+        requiresAiKey: true,
+      },
     ],
   },
   {
@@ -174,13 +185,13 @@ export const navigationConfig: NavigationItem[] = [
     icon: Gift,
     href: "/offers",
   },
-  {
-    type: "single",
-    label: "AI Insights",
-    icon: Sparkles,
-    href: "/ai-insights",
-    requiresAiKey: true,
-  },
+  // {
+  //   type: "single",
+  //   label: "AI Insights",
+  //   icon: Sparkles,
+  //   href: "/ai-insights",
+  //   requiresAiKey: true,
+  // },
   {
     type: "section",
     label: "Settings",

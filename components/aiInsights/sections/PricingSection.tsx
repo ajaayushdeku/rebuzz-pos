@@ -318,7 +318,7 @@ export default function PricingSection({
   return (
     <section>
       <SectionHeader
-        icon={BadgePercent}
+        icon={Tags}
         iconClassName="bg-emerald-50 text-emerald-600 dark:text-emerald-300 dark:bg-emerald-400/10"
         title="Pricing Opportunities"
         subtitle={`Price changes, discounts and margins from ${windowText}`}

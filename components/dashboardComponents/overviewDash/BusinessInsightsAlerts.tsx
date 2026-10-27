@@ -136,7 +136,7 @@ export default function BusinessInsightsAlerts() {
         body: "What the AI read in today's numbers. The first group is observations, grouped as on track, needs attention or for your info. Action needed lists the things worth doing something about now.",
       }}
       subtitle="Auto-generated insights based on today's data"
-      controls={
+      buttons={
         status === "success" && hasContent ? (
           <>
             {wins > 0 && (

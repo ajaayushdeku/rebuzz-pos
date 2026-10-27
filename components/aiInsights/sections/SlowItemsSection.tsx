@@ -1,6 +1,6 @@
 "use client";
 
-import { TriangleAlert } from "lucide-react";
+import { PackageSearch } from "lucide-react";
 
 import type { AiSectionState } from "@/hooks/useAiSection";
 import { SECTION_WINDOW_DAYS } from "@/lib/ai-insights/sections/shared";
@@ -62,9 +62,9 @@ export default function SlowItemsSection({
   return (
     <section>
       <SectionHeader
-        icon={TriangleAlert}
+        icon={PackageSearch}
         iconClassName="bg-red-50 text-red-500 dark:text-red-300 dark:bg-red-400/10"
-        title="Slow Item Insights"
+        title="Slow-Moving Items Insights"
         subtitle={`Items selling slowly in ${windowText}, and how to fix them`}
         info={{
           heading: "What counts as slow",

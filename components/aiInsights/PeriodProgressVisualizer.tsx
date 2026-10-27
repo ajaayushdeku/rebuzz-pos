@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  BadgePercent,
   Check,
   ChevronDown,
   CircleAlert,
@@ -10,11 +9,12 @@ import {
   HeartHandshake,
   LoaderCircle,
   Database,
-  Sparkles,
-  TrendingUp,
-  TriangleAlert,
   Users,
   type LucideIcon,
+  PackageSearch,
+  UtensilsCrossed,
+  Tags,
+  ChartNoAxesCombined,
 } from "lucide-react";
 
 import ProviderLogo from "@/components/settingsComponents/apiKeys/ProviderLogo";
@@ -61,14 +61,14 @@ type CheckpointStatus =
 
 const PERIOD_CHECKPOINTS: { key: string; label: string; icon: LucideIcon }[] = [
   { key: "retention", label: "Customer Retention", icon: HeartHandshake },
-  { key: "menu-suggestions", label: "Menu Suggestions", icon: Sparkles },
-  { key: "slow-items", label: "Slow-Moving Items", icon: TriangleAlert },
-  { key: "pricing", label: "Pricing Insights", icon: BadgePercent },
+  { key: "menu-suggestions", label: "Menu Suggestions", icon: UtensilsCrossed },
+  { key: "slow-items", label: "Slow-Moving Items", icon: PackageSearch },
+  { key: "pricing", label: "Pricing Insights", icon: Tags },
   { key: "hour-playbook", label: "Hourly Sales Playbook", icon: Clock },
   {
     key: "sales-recommendations",
     label: "Sales Recommendations",
-    icon: TrendingUp,
+    icon: ChartNoAxesCombined,
   },
   { key: "staffing", label: "Staffing Insights", icon: Users },
 ];
@@ -144,42 +144,56 @@ export default function PeriodProgressVisualizer({
 
   const statusDetails: Record<
     CheckpointStatus,
-    { label: string; className: string; dotClassName: string }
+    {
+      label: string;
+      className: string;
+      iconClassName: string;
+      dotClassName: string;
+    }
   > = {
     saved: {
       label: "Restored",
       className:
         "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+      iconClassName:
+        "border-emerald-500/25  text-emerald-600 dark:text-emerald-400",
       dotClassName: "bg-emerald-500",
     },
     generated: {
       label: "Generated",
       className:
         "border-blue-500/25 bg-blue-500/10 text-blue-600 dark:text-blue-400",
+      iconClassName: "border-blue-500/25  text-blue-600 dark:text-blue-400",
       dotClassName: "bg-blue-500",
     },
     loading: {
       label: "Loading…",
       className:
         "border-blue-500/25 bg-blue-500/10 text-blue-600 dark:text-blue-400",
+      iconClassName: "border-blue-500/25 text-blue-600 dark:text-blue-400",
       dotClassName: "bg-blue-500",
     },
     generating: {
       label: "Generating…",
       className:
         "border-violet-500/25 bg-violet-500/10 text-violet-600 dark:text-violet-400",
+      iconClassName:
+        "border-violet-500/25 text-violet-600 dark:text-violet-400",
       dotClassName: "bg-violet-500",
     },
     failed: {
       label: "Failed",
       className:
         "border-red-500/25 bg-red-500/10 text-red-600 dark:text-red-400",
+      iconClassName: "border-red-500/25 text-red-600 dark:text-red-400",
       dotClassName: "bg-red-500",
     },
     pending: {
       label: "Pending",
       className:
         "border-gray-300 bg-gray-100 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400",
+      iconClassName:
+        "border-gray-300 text-gray-500 dark:border-gray-700  dark:text-gray-400",
       dotClassName: "bg-gray-300 dark:bg-gray-600",
     },
   };
@@ -196,7 +210,7 @@ export default function PeriodProgressVisualizer({
         : `${completedCount} of ${PERIOD_CHECKPOINTS.length} sections ready`;
 
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:p-5">
+    <section className="rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900 sm:p-5">
       {/* The sweep the mark strokes itself with lives in the document here, so
           `fill="url(#…)"` resolves on this page — the API Keys screen mounts
           its own copy, but that tree is not present here. */}
@@ -269,7 +283,7 @@ export default function PeriodProgressVisualizer({
               return (
                 <li
                   key={section.key}
-                  className={`flex items-center gap-2.5 rounded-lg border px-2.5 py-2 ${details.className}`}
+                  className={`flex items-center gap-2.5 rounded-lg border px-2.5 py-3 ${details.className}`}
                 >
                   <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/70 dark:bg-black/20">
                     {isActive ? (
@@ -288,9 +302,18 @@ export default function PeriodProgressVisualizer({
                     )}
                     {/* Live dot so the state reads at a glance on a small screen. */}
                     <span
-                      className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-gray-900 ${details.dotClassName}`}
+                      className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full ring-2 ring-white dark:ring-gray-900 ${details.dotClassName}`}
                       aria-hidden
                     />
+
+                    {!isActive && (
+                      <span
+                        className={`absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-gray-900 ${details.iconClassName}`}
+                      >
+                        {" "}
+                        <SectionIcon className="h-2.5 w-2.5" aria-hidden />
+                      </span>
+                    )}
                   </span>
 
                   <span className="min-w-0 flex-1">
@@ -383,7 +406,7 @@ export default function PeriodProgressVisualizer({
                   )}
                   {isGenerating
                     ? `Generating…${progress ? ` ${progress.done} of ${progress.total}` : ""}`
-                    : `Generate Insights (${missingSections.length} missing)`}
+                    : `Generate Insights  ( ${missingSections.length} missing )`}
                 </button>
               </div>
             </div>

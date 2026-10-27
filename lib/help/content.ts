@@ -458,7 +458,7 @@ export const HELP_GUIDES: HelpGuide[] = [
     title: "Read a period’s AI insights",
     summary: "Generate advice for a finished month, quarter or year.",
     icon: CalendarClock,
-    href: "/ai-insights",
+    href: "/dashboard/ai-insights",
     hrefLabel: "AI Insights",
     steps: [
       "Open AI Insights. Choose Monthly, Quarterly or Yearly, then the period — it opens on the most recent finished one.",
@@ -821,7 +821,7 @@ export const HELP_PAGES: Record<string, HelpPageEntry> = {
     shows:
       "Every offer with its deal, what it runs on, the dates it covers in both calendars, and a Live or Off switch you can flip from the row. Editing and deleting are here too; building a new one sends you to the four-step builder.",
   },
-  "/ai-insights": {
+  "/dashboard/ai-insights": {
     what: "A finished month, quarter or year read back to you as advice.",
     shows:
       "Sections for pricing, slow items, menu ideas, sales, retention, the hour-by-hour playbook and staffing — each generated from your own figures for the period you pick, then saved. The header counts the sections still ungenerated and shows this hour’s allowance. Needs your own AI key; until then each section shows examples marked “Sample data”.",

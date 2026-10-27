@@ -1,6 +1,11 @@
 "use client";
 
-import { CircleCheck, Info, TrendingUp, TriangleAlert } from "lucide-react";
+import {
+  ChartNoAxesCombined,
+  CircleCheck,
+  Info,
+  TriangleAlert,
+} from "lucide-react";
 
 import type { AiSectionState } from "@/hooks/useAiSection";
 import {
@@ -60,7 +65,7 @@ export default function SalesRecommendationsSection({
   return (
     <section>
       <SectionHeader
-        icon={TrendingUp}
+        icon={ChartNoAxesCombined}
         iconClassName="bg-blue-50 text-blue-600 dark:text-blue-300 dark:bg-blue-400/10"
         title="Sales Recommendations"
         // The window is part of the subtitle so nobody reads these as

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Sparkles, Star } from "lucide-react";
+import { Search, Star, UtensilsCrossed } from "lucide-react";
 
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import type { AiSectionState } from "@/hooks/useAiSection";
@@ -125,7 +125,7 @@ export default function MenuSuggestionsSection({
   return (
     <section>
       <SectionHeader
-        icon={Sparkles}
+        icon={UtensilsCrossed}
         iconClassName="bg-violet-50 text-violet-600 dark:text-violet-300 dark:bg-violet-400/10"
         title="AI Menu Suggestions"
         subtitle={`Ideas built from your best sellers in ${windowText}`}
@@ -136,7 +136,7 @@ export default function MenuSuggestionsSection({
         align="flex-wrap"
         actionWidth="w-full"
         actions={
-          <div className="flex flex-row mb-2 w-full items-center gap-2 justify-between">
+          <div className="flex flex-row mb-2 w-full  items-center gap-2 justify-between">
             <div className="relative w-full">
               <Search
                 size={14}
@@ -150,10 +150,9 @@ export default function MenuSuggestionsSection({
                 className="h-9 w-full  rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 pl-9 pr-3 text-[13px] outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100  dark:focus:border-violet-400/60 dark:focus:ring-violet-400/25 dark:border-white/15"
               />
             </div>
-            <div className="mx-2 h-6.5 w-px bg-[#dadce0] dark:bg-white/40" />
 
-            <div className="flex items-center justify-end gap-2">
-              {" "}
+            <div className="w-[52%]  flex items-center justify-end gap-2">
+              <div className="mx-2 h-6.5 w-px bg-[#dadce0] dark:bg-white/40" />{" "}
               <SegmentedControl
                 options={DIFFICULTY_OPTIONS}
                 value={difficulty}
