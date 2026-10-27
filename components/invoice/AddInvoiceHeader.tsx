@@ -21,7 +21,7 @@ export default function AddInvoiceHeader() {
           whatever was left over, which is why long totals were cramped. */}
       <TableRow className="bg-gray-50 border-b border-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 dark:border-white/15 dark:bg-white/5">
         {/* Drag handle */}
-        <TableHead className="w-[28px]" />
+        <TableHead className="w-[28px] h-8  sm:h-10 " />
         <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 w-[32%] min-w-[190px] dark:text-[#9aa6bd]">
           Items
         </TableHead>
