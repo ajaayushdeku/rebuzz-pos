@@ -35,6 +35,7 @@ import {
   ContactRound,
   Sparkles,
   LifeBuoy,
+  Palette,
 } from "lucide-react";
 
 export type NavigationItem =
@@ -178,13 +179,19 @@ export const navigationConfig: NavigationItem[] = [
       },
     ],
   },
-
+  {
+    type: "single",
+    label: "Design Studio",
+    icon: Palette,
+    href: "/design-studio",
+  },
   {
     type: "single",
     label: "Offer",
     icon: Gift,
     href: "/offers",
   },
+
   // {
   //   type: "single",
   //   label: "AI Insights",

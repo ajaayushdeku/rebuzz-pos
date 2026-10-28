@@ -1,3 +1,5 @@
+"use client";
+
 import {
   CheckCircle2,
   Lightbulb,
@@ -19,8 +21,8 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { hasSavedAiKey } from "@/lib/ai-insights/hasSavedAiKey.server";
 import AiInsightsImageSlider from "./AiInsightsImageSlider";
+import HomeAiBusinessStory from "./HomeAIBusinessStory";
 
 type InsightContent = {
   key: string;
@@ -157,12 +159,15 @@ const aiInsightImages = [
   },
 ];
 
-const AiInsightsSection = async () => {
-  const APIKeyActive: boolean = await hasSavedAiKey();
+type AiInsightsSectionProps = {
+  isAPIKeySet: boolean;
+};
+
+const AiInsightsSection = ({ isAPIKeySet }: AiInsightsSectionProps) => {
   return (
     <section
       id="ai-insights"
-      className="scroll-mt-20 bg-[#f7f8fb] px-6 py-20 dark:bg-[#131a29] md:px-16"
+      className="scroll-mt-20 bg-[#f7f8fb] px-6 pt-20 dark:bg-[#131a29] md:px-16"
     >
       <div className="mx-auto max-w-6xl">
         <div className="mb-12 max-w-2xl">
@@ -217,7 +222,7 @@ const AiInsightsSection = async () => {
             </div>
           </div>
 
-          {!APIKeyActive ? (
+          {isAPIKeySet ? (
             <>
               <div className="relative flex flex-col overflow-hidden rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#0f1420] sm:p-8">
                 <div
@@ -405,6 +410,12 @@ const AiInsightsSection = async () => {
             </div>
           )}
         </div>
+
+        {isAPIKeySet && (
+          <div className="w-full ">
+            <HomeAiBusinessStory />
+          </div>
+        )}
       </div>
     </section>
   );

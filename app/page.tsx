@@ -9,6 +9,9 @@ import AboutSection from "@/components/home/AboutSection";
 import FaqSection from "@/components/home/FaqSection";
 import HomeFooter from "@/components/home/HomeFooter";
 import AiInsightsSection from "@/components/home/AiInsightsSection";
+import { hasSavedAiKey } from "@/lib/ai-insights/hasSavedAiKey.server";
+import { AiInsightsProvider } from "@/components/aiInsights/AiInsightsProvider";
+import { collectBriefingData } from "@/lib/ai-insights/collectBriefingData.server";
 
 /**
  * The marketing page.
@@ -22,6 +25,9 @@ const Page = async () => {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
+  const APIKeyActive: boolean = await hasSavedAiKey();
+  const briefingData = await collectBriefingData();
+
   return (
     // The page scrolls inside itself, as the app shell does, and hides the
     // bar while doing it: with nothing drawn there is nothing to appear on
@@ -33,8 +39,13 @@ const Page = async () => {
       <CapabilityBand />
       <FeatureGrid token={token} />
       <PricingSection />
+
+      <AiInsightsProvider briefingData={briefingData}>
+        <AiInsightsSection isAPIKeySet={APIKeyActive} />
+      </AiInsightsProvider>
+
       <AboutSection />
-      <AiInsightsSection />
+
       <FaqSection />
       <HomeFooter token={token} />
     </div>
