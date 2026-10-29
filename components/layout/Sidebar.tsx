@@ -60,8 +60,8 @@ export default function Sidebar() {
               size="sm"
             >
               <Plus className="w-2 h-2 mr-1 font-bold" />
-              <span className="whitespace-nowrap text-[15px] sm:text-[16px]">
-                Create new Invoice
+              <span className="whitespace-nowrap text-[14px] sm:text-[15px]">
+                Create Invoice
               </span>
             </Button>
           </Link>
