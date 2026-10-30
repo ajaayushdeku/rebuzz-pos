@@ -34,6 +34,7 @@ function getShapePoints(shapeType: ShapeType): string {
 interface DesignCanvasProps {
   layers: DesignLayer[];
   selectedLayer: string;
+  isCanvasFocused: boolean;
   setSelectedLayer: (id: string) => void;
   canvasWidth: number;
   canvasHeight: number;
@@ -44,11 +45,16 @@ interface DesignCanvasProps {
   ) => void;
   onLayerPointerMove: (event: PointerEvent<HTMLDivElement>) => void;
   onLayerPointerUp: () => void;
+  alignmentGuides: {
+    vertical: boolean;
+    horizontal: boolean;
+  };
 }
 
 export default function DesignCanvas({
   layers,
   selectedLayer,
+  isCanvasFocused,
   setSelectedLayer,
   canvasWidth,
   canvasHeight,
@@ -56,13 +62,15 @@ export default function DesignCanvas({
   onLayerPointerDown,
   onLayerPointerMove,
   onLayerPointerUp,
+  alignmentGuides,
 }: DesignCanvasProps) {
   return (
     <main className="flex min-w-0 flex-col items-center justify-center bg-[#e7eaf0] p-5 sm:p-14 dark:bg-[#202838]">
-      <div className="flex min-h-[360px] w-full items-center justify-center overflow-hidden rounded-lg sm:min-h-[440px]">
+      <div className="flex min-h-[360px] w-full items-center justify-center overflow-visible rounded-lg sm:min-h-[440px]">
         <div
           ref={canvasRef}
-          className="relative flex w-full max-w-[460px] flex-col items-center justify-center overflow-hidden bg-white px-5 text-center shadow-sm"
+          data-export-canvas="true"
+          className="relative flex w-full max-w-[460px] flex-col items-center justify-center overflow-visible bg-white px-5 text-center shadow-sm"
           style={{
             aspectRatio: `${canvasWidth} / ${canvasHeight}`,
           }}
@@ -77,19 +85,23 @@ export default function DesignCanvas({
                 onPointerMove={onLayerPointerMove}
                 onPointerUp={onLayerPointerUp}
                 onPointerCancel={onLayerPointerUp}
-                className={`absolute cursor-move touch-none ${
-                  selectedLayer === layer.id
-                    ? "outline outline-2 outline-blue-500"
+                className={`absolute cursor-move touch-none  ${
+                  selectedLayer === layer.id && isCanvasFocused
+                    ? "selected-design-layer"
                     : ""
                 }`}
                 style={{
                   left: `${(layer.x / canvasWidth) * 100}%`,
                   top: `${(layer.y / canvasHeight) * 100}%`,
                   width: `${(layer.width / canvasWidth) * 100}%`,
-                  height:
-                    layer.type === "shape" || layer.type === "banner"
-                      ? `${((layer.height ?? 100) / canvasHeight) * 100}%`
-                      : undefined,
+                  // height:
+                  //   layer.type === "shape" ||
+                  //   layer.type === "banner" ||
+                  //   layer.type === "image"
+                  //     ? `${((layer.height ?? 100) / canvasHeight) * 100}%`
+                  //     : undefined,
+
+                  height: `${((layer.height ?? 100) / canvasHeight) * 100}%`,
                   minHeight: layer.type === "image" ? undefined : "1px",
                   opacity: (layer.opacity ?? 100) / 100,
                   zIndex: layers.length - index,
@@ -216,16 +228,24 @@ export default function DesignCanvas({
 
                     case "image":
                       return (
+                        // <div
+                        //   onClick={() => setSelectedLayer(layer.id)}
+                        //   className={`relative h-full w-full cursor-pointer overflow-visible
+                        //      ${
+                        //     selectedLayer === layer.id
+                        //       ? "ring-2 ring-[#244074]"
+                        //       : ""
+                        //   }`}
+                        //   style={{
+                        //     boxSizing: "border-box",
+                        //   }}
+                        // >
                         <div
                           onClick={() => setSelectedLayer(layer.id)}
-                          className={`relative z-10 cursor-pointer ${
-                            selectedLayer === layer.id
-                              ? "ring-2 ring-[#244074]"
-                              : ""
-                          }`}
+                          className={`relative h-full w-full cursor-pointer overflow-visible
+                            `}
                           style={{
-                            width: "100%",
-                            maxWidth: "100%",
+                            boxSizing: "border-box",
                           }}
                         >
                           {layer.src && (
@@ -233,7 +253,40 @@ export default function DesignCanvas({
                               src={layer.src}
                               alt={layer.name}
                               draggable={false}
-                              className="block h-auto w-full rounded object-contain"
+                              className="block h-full w-full"
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: layer.objectFit ?? "contain",
+                                borderRadius: `${layer.borderRadius ?? 0}px`,
+                                border: layer.borderEnabled
+                                  ? `${layer.borderWidth ?? 1}px solid ${
+                                      layer.borderColor ?? "#244074"
+                                    }`
+                                  : "none",
+                                boxSizing: "border-box",
+                                boxShadow: layer.shadowEnabled
+                                  ? `${layer.shadowOffsetX ?? 0}px ${
+                                      layer.shadowOffsetY ?? 4
+                                    }px ${layer.shadowBlur ?? 12}px ${
+                                      layer.shadowColor ?? "rgba(0, 0, 0, 0.25)"
+                                    }`
+                                  : "none",
+                                transform: `scaleX(${layer.flipHorizontal ? -1 : 1}) scaleY(${
+                                  layer.flipVertical ? -1 : 1
+                                })`,
+                                transformOrigin: "center",
+                                filter: [
+                                  `brightness(${layer.brightness ?? 100}%)`,
+                                  `contrast(${layer.contrast ?? 100}%)`,
+                                  `saturate(${layer.saturation ?? 100}%)`,
+                                  `grayscale(${layer.grayscale ?? 0}%)`,
+                                  `sepia(${layer.sepia ?? 0}%)`,
+                                  `blur(${layer.blur ?? 0}px)`,
+                                  `hue-rotate(${layer.hueRotate ?? 0}deg)`,
+                                  `invert(${layer.invert ?? 0}%)`,
+                                ].join(" "),
+                              }}
                             />
                           )}
                         </div>
@@ -309,6 +362,22 @@ export default function DesignCanvas({
               </div>
             );
           })}
+
+          {/* Vertical center alignment guide */}
+          {alignmentGuides.vertical && (
+            <div
+              data-export-ignore="true"
+              className="pointer-events-none absolute top-0 bottom-0 left-1/2 z-[9999] -translate-x-1/2 border-l border-dashed border-pink-500"
+            />
+          )}
+
+          {/* Horizontal center alignment guide */}
+          {alignmentGuides.horizontal && (
+            <div
+              data-export-ignore="true"
+              className="pointer-events-none absolute right-0 left-0 top-1/2 z-[9999] -translate-y-1/2 border-t border-dashed border-pink-500"
+            />
+          )}
         </div>
       </div>
 

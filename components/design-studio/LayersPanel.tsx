@@ -13,7 +13,13 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { useState, type Dispatch, type SetStateAction } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import type { DesignLayer } from "@/components/design-studio/contents";
 
 interface LayersPanelProps {
@@ -36,6 +42,19 @@ export default function LayersPanel({
   deleteLayer,
 }: LayersPanelProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const layerRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+  useEffect(() => {
+    if (!selectedLayer || !isExpanded) return;
+
+    const selectedElement = layerRefs.current.get(selectedLayer);
+
+    selectedElement?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    });
+  }, [selectedLayer, isExpanded]);
+
   return (
     <div>
       {/* <div className="mb-4 flex items-center justify-between">
@@ -90,6 +109,13 @@ export default function LayersPanel({
             return (
               <div
                 key={id}
+                ref={(element) => {
+                  if (element) {
+                    layerRefs.current.set(id, element);
+                  } else {
+                    layerRefs.current.delete(id);
+                  }
+                }}
                 className={`flex items-center gap-2 rounded-lg border p-2 transition ${
                   isSelected
                     ? "border-[#244074] bg-white dark:border-[#7ba2e3] dark:bg-[#0f1420]"

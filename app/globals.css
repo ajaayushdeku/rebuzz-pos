@@ -306,3 +306,31 @@
     animation-duration: 10ms;
   }
 }
+
+/* Selected design layer */
+.selected-design-layer {
+  outline: 0.5px solid rgba(86, 86, 86, 0.45);
+  outline-offset: 0;
+}
+
+/* Corner markers */
+.selected-design-layer::before,
+.selected-design-layer::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+}
+
+/* Four thicker corner borders */
+.selected-design-layer::before {
+  background:
+    linear-gradient(#107eb9, #107eb9) top left / 12px 3px no-repeat,
+    linear-gradient(#107eb9, #107eb9) top left / 3px 12px no-repeat,
+    linear-gradient(#107eb9, #107eb9) top right / 12px 3px no-repeat,
+    linear-gradient(#107eb9, #107eb9) top right / 3px 12px no-repeat,
+    linear-gradient(#107eb9, #107eb9) bottom left / 12px 3px no-repeat,
+    linear-gradient(#107eb9, #107eb9) bottom left / 3px 12px no-repeat,
+    linear-gradient(#107eb9, #107eb9) bottom right / 12px 3px no-repeat,
+    linear-gradient(#107eb9, #107eb9) bottom right / 3px 12px no-repeat;
+}

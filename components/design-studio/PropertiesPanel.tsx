@@ -1,14 +1,20 @@
 "use client";
 
-import type { Dispatch, SetStateAction } from "react";
+import { useRef, type Dispatch, type SetStateAction } from "react";
 import {
   AlignCenter,
   AlignLeft,
   AlignRight,
+  FlipHorizontal,
+  FlipVertical,
+  Image as ImageIcon,
+  ImagePlus,
+  Lock,
   RectangleHorizontal,
   Shapes,
   Sparkles,
   Type,
+  UnlockIcon,
 } from "lucide-react";
 
 import { shapeOptions } from "@/components/design-studio/contents";
@@ -50,16 +56,38 @@ export default function PropertiesPanel({
     );
   };
 
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      return;
+    }
+
+    const imageUrl = URL.createObjectURL(file);
+
+    updateSelectedLayer({
+      src: imageUrl,
+    });
+
+    // Allow selecting the same file again.
+    event.target.value = "";
+  };
+
   const fieldClass =
-    "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-[13px] " +
-    "outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 " +
-    "dark:border-white/10 dark:bg-[#202838]";
+    "w-full rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-[13px] text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100 ";
 
   const labelClass =
-    "mb-1.5 block text-xs font-medium text-gray-600 " + "dark:text-gray-300";
+    "mb-1.5 block text-[11px] font-medium text-gray-500  " +
+    "dark:text-gray-400";
 
   const sectionClass =
     "space-y-4 border-t border-gray-200 pt-4 dark:border-white/10";
+
+  const valueClass = "text-xs text-gray-500 dark:text-gray-400";
 
   return (
     <div>
@@ -69,23 +97,81 @@ export default function PropertiesPanel({
 
       <p className="mb-4 mt-3 text-xs text-gray-500 dark:text-gray-400">
         Selected element:{" "}
-        <span className="font-medium text-gray-700 dark:text-gray-200">
+        <span className="block truncate font-medium text-gray-700 dark:text-gray-200">
           {selectedLayerInfo?.name ?? "None"}
         </span>
       </p>
 
       <div className="max-h-120 space-y-4 overflow-y-auto scrollbar-hide">
+        {/* Position */}
+        {selectedLayerInfo && (
+          <div className="grid grid-cols-2 gap-2">
+            <label className="space-y-1">
+              <span className={labelClass}>X Position</span>
+              <input
+                type="number"
+                // min={0}
+                // max={selectedPreset.width - selectedLayerInfo.width}
+                value={Math.round(selectedLayerInfo.x)}
+                onChange={(event) => {
+                  const value = Number(event.target.value);
+                  if (!Number.isFinite(value)) return;
+
+                  // updateSelectedLayer({
+                  //   x: Math.max(
+                  //     0,
+                  //     Math.min(
+                  //       selectedPreset.width - selectedLayerInfo.width,
+                  //       value,
+                  //     ),
+                  //   ),
+                  // });
+                  updateSelectedLayer({ x: value });
+                }}
+                className={fieldClass}
+              />
+            </label>
+
+            <label className="space-y-1">
+              <span className={labelClass}>Y Position</span>
+              <input
+                type="number"
+                // min={0}
+                // max={selectedPreset.height - selectedLayerInfo.height}
+                value={Math.round(selectedLayerInfo.y)}
+                onChange={(event) => {
+                  const value = Number(event.target.value);
+                  if (!Number.isFinite(value)) return;
+
+                  // updateSelectedLayer({
+                  //   y: Math.max(
+                  //     0,
+                  //     Math.min(
+                  //       selectedPreset.height - selectedLayerInfo.height,
+                  //       value,
+                  //     ),
+                  //   ),
+                  // });
+
+                  updateSelectedLayer({ y: value });
+                }}
+                className={fieldClass}
+              />
+            </label>
+          </div>
+        )}
+
         {/* Font size */}
         <div>
           <div className="flex items-center justify-between">
             <label
               htmlFor="font-size"
-              className="mb-2 block text-xs font-medium text-gray-700 dark:text-gray-300"
+              className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300"
             >
               Font size
             </label>
 
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className={valueClass}>
               {selectedLayerInfo?.fontSize ?? 16} px
             </span>
           </div>
@@ -117,11 +203,11 @@ export default function PropertiesPanel({
           <div className="flex items-center justify-between">
             <label
               htmlFor="opacity"
-              className="mb-2 block text-xs font-medium text-gray-700 dark:text-gray-300"
+              className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300"
             >
               Opacity
             </label>{" "}
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className={valueClass}>
               {selectedLayerInfo?.opacity ?? 100}%
             </span>
           </div>
@@ -145,16 +231,16 @@ export default function PropertiesPanel({
         </div>
         {/* Rotation */}
         {selectedLayerInfo && (
-          <div className="space-y-2">
+          <div>
             <div className="flex items-center justify-between">
               <label
                 htmlFor="layer-rotation"
-                className="text-xs font-medium text-gray-700 dark:text-gray-300"
+                className="mb-1.5 text-xs font-medium text-gray-700 dark:text-gray-300"
               >
                 Rotation
               </label>
 
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              <span className={valueClass}>
                 {Math.round(selectedLayerInfo.rotation ?? 0)}°
               </span>
             </div>
@@ -190,13 +276,13 @@ export default function PropertiesPanel({
                     rotation: Math.max(-360, Math.min(360, value)),
                   });
                 }}
-                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
+                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-[13px] text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
               />
 
               <button
                 type="button"
                 onClick={() => updateSelectedLayer({ rotation: 0 })}
-                className="shrink-0 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/5"
+                className="shrink-0 rounded-lg border border-rose-300 px-3 py-2 text-xs font-medium text-rose-700 transition-colors bg-rose-300/10 hover:bg-rose-100 cursor-pointer dark:border-rose-400/30 dark:text-rose-300 dark:hover:bg-rose-300/15"
               >
                 Reset
               </button>
@@ -216,10 +302,7 @@ export default function PropertiesPanel({
 
             {/* Text content */}
             <div className="space-y-1.5">
-              <label
-                htmlFor="text-content"
-                className="block text-xs font-medium text-gray-700 dark:text-gray-300"
-              >
+              <label htmlFor="text-content" className={labelClass}>
                 Text Content
               </label>
               <textarea
@@ -229,17 +312,14 @@ export default function PropertiesPanel({
                 onChange={(event) =>
                   updateSelectedLayer({ content: event.target.value })
                 }
-                className="w-full resize-y rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
+                className="w-full resize-y rounded-lg border border-gray-200 bg-white px-3 py-2 text-[13px] text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
                 placeholder="Enter your text..."
               />
             </div>
 
             {/* Font family */}
             <div className="space-y-1.5">
-              <label
-                htmlFor="text-font-family"
-                className="block text-xs font-medium text-gray-700 dark:text-gray-300"
-              >
+              <label htmlFor="text-font-family" className={labelClass}>
                 Font Family
               </label>
               <select
@@ -248,7 +328,7 @@ export default function PropertiesPanel({
                 onChange={(event) =>
                   updateSelectedLayer({ fontFamily: event.target.value })
                 }
-                className="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-sm text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
+                className="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-[13px] text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
               >
                 <option value="Arial">Arial</option>
                 <option value="Inter">Inter</option>
@@ -263,10 +343,7 @@ export default function PropertiesPanel({
             {/* Font weight and style */}
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1.5">
-                <label
-                  htmlFor="text-font-weight"
-                  className="block text-xs font-medium text-gray-700 dark:text-gray-300"
-                >
+                <label htmlFor="text-font-weight" className={labelClass}>
                   Font Weight
                 </label>
                 <select
@@ -277,7 +354,7 @@ export default function PropertiesPanel({
                       fontWeight: Number(event.target.value),
                     })
                   }
-                  className="w-full rounded-lg border border-gray-200 bg-white px-2 py-2 text-sm text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
+                  className="w-full rounded-lg border border-gray-200 bg-white px-2 py-2 text-[13px] text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
                 >
                   <option value={300}>Light</option>
                   <option value={400}>Regular</option>
@@ -290,10 +367,7 @@ export default function PropertiesPanel({
               </div>
 
               <div className="space-y-1.5">
-                <label
-                  htmlFor="text-font-style"
-                  className="block text-xs font-medium text-gray-700 dark:text-gray-300"
-                >
+                <label htmlFor="text-font-style" className={labelClass}>
                   Font Style
                 </label>
                 <select
@@ -304,7 +378,7 @@ export default function PropertiesPanel({
                       fontStyle: event.target.value as "normal" | "italic",
                     })
                   }
-                  className="w-full rounded-lg border border-gray-200 bg-white px-2 py-2 text-sm text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
+                  className="w-full rounded-lg border border-gray-200 bg-white px-2 py-2 text-[13px] text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
                 >
                   <option value="normal">Normal</option>
                   <option value="italic">Italic</option>
@@ -314,10 +388,7 @@ export default function PropertiesPanel({
 
             {/* Text color */}
             <div className="space-y-1.5">
-              <label
-                htmlFor="text-color"
-                className="block text-xs font-medium text-gray-700 dark:text-gray-300"
-              >
+              <label htmlFor="text-color" className={labelClass}>
                 Text Color
               </label>
               <div className="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 dark:border-white/10">
@@ -330,7 +401,7 @@ export default function PropertiesPanel({
                   }
                   className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent"
                 />
-                <span className="text-sm text-gray-600 dark:text-gray-300">
+                <span className="text-[13px] text-gray-600 dark:text-gray-300">
                   {(selectedLayerInfo.color ?? "#111827").toUpperCase()}
                 </span>
               </div>
@@ -338,9 +409,7 @@ export default function PropertiesPanel({
 
             {/* Text alignment */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
-                Alignment
-              </label>
+              <label className={labelClass}>Alignment</label>
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { value: "left", label: "Left", icon: AlignLeft },
@@ -373,10 +442,7 @@ export default function PropertiesPanel({
 
             {/* Text decoration */}
             <div className="space-y-1.5">
-              <label
-                htmlFor="text-decoration"
-                className="block text-xs font-medium text-gray-700 dark:text-gray-300"
-              >
+              <label htmlFor="text-decoration" className={labelClass}>
                 Text Decoration
               </label>
               <select
@@ -390,7 +456,7 @@ export default function PropertiesPanel({
                       | "line-through",
                   })
                 }
-                className="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-sm text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
+                className="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-[13px] text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
               >
                 <option value="none">None</option>
                 <option value="underline">Underline</option>
@@ -399,16 +465,13 @@ export default function PropertiesPanel({
             </div>
 
             {/* Text container width */}
-            <div className="space-y-2">
+            <div>
               <div className="flex items-center justify-between">
-                <label
-                  htmlFor="text-container-width"
-                  className="text-xs font-medium text-gray-700 dark:text-gray-300"
-                >
+                <label htmlFor="text-container-width" className={labelClass}>
                   Container Width
                 </label>
 
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className={valueClass}>
                   {Math.round(selectedLayerInfo.width)} px
                 </span>
               </div>
@@ -457,24 +520,21 @@ export default function PropertiesPanel({
                     ),
                   });
                 }}
-                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
+                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-[13px] text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
               />
 
-              <p className="text-[11px] text-gray-500 dark:text-gray-400">
+              <p className="text-[11px] mt-1 ml-1 text-gray-500 dark:text-gray-400">
                 Controls the text box width and wrapping area.
               </p>
             </div>
 
             {/* Line height */}
-            <div className="space-y-2">
+            <div>
               <div className="flex items-center justify-between">
-                <label
-                  htmlFor="text-line-height"
-                  className="text-xs font-medium text-gray-700 dark:text-gray-300"
-                >
+                <label htmlFor="text-line-height" className={labelClass}>
                   Line Height
                 </label>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className={valueClass}>
                   {selectedLayerInfo.lineHeight ?? 1.2}
                 </span>
               </div>
@@ -495,15 +555,12 @@ export default function PropertiesPanel({
             </div>
 
             {/* Letter spacing */}
-            <div className="space-y-2">
+            <div>
               <div className="flex items-center justify-between">
-                <label
-                  htmlFor="text-letter-spacing"
-                  className="text-xs font-medium text-gray-700 dark:text-gray-300"
-                >
+                <label htmlFor="text-letter-spacing" className={labelClass}>
                   Letter Spacing
                 </label>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className={valueClass}>
                   {selectedLayerInfo.letterSpacing ?? 0}px
                 </span>
               </div>
@@ -537,10 +594,7 @@ export default function PropertiesPanel({
 
             {/* Shape type */}
             <div className="space-y-1.5">
-              <label
-                htmlFor="shape-type"
-                className="block text-xs font-medium text-gray-700 dark:text-gray-300"
-              >
+              <label htmlFor="shape-type" className={labelClass}>
                 Shape Type
               </label>
 
@@ -558,7 +612,7 @@ export default function PropertiesPanel({
                         : Math.max(20, selectedShape.height ?? 100),
                   });
                 }}
-                className="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-sm text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
+                className="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-[13px] text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
               >
                 {shapeOptions.map(({ type, label }) => (
                   <option key={type} value={type}>
@@ -569,10 +623,8 @@ export default function PropertiesPanel({
             </div>
 
             {/* Shape color */}
-            <div className="space-y-2">
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
-                Fill Color
-              </label>
+            <div>
+              <label className={labelClass}>Fill Color</label>
 
               <div className="flex flex-wrap gap-2">
                 {[
@@ -606,7 +658,9 @@ export default function PropertiesPanel({
                 ))}
               </div>
 
-              <label className="flex items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <label
+                className={`${labelClass} w-full flex justify-between items-center mt-3`}
+              >
                 Custom color
                 <input
                   type="color"
@@ -626,9 +680,7 @@ export default function PropertiesPanel({
 
             {/* Fill toggle */}
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
-                Shape Fill
-              </label>
+              <label className={labelClass}>Shape Fill</label>
 
               <div className="grid grid-cols-2 gap-2">
                 {[
@@ -655,16 +707,13 @@ export default function PropertiesPanel({
             </div>
 
             {/* Outline thickness */}
-            <div className="space-y-2">
+            <div>
               <div className="flex items-center justify-between">
-                <label
-                  htmlFor="shape-stroke-width"
-                  className="text-xs font-medium text-gray-700 dark:text-gray-300"
-                >
+                <label htmlFor="shape-stroke-width" className={labelClass}>
                   Outline Thickness
                 </label>
 
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className={valueClass}>
                   {selectedShape.strokeWidth ?? 2}px
                 </span>
               </div>
@@ -687,15 +736,11 @@ export default function PropertiesPanel({
 
             {/* Width and height */}
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
-                Dimensions
-              </label>
+              {/* <label className={labelClass}>Dimensions</label> */}
 
               <div className="grid grid-cols-2 gap-2">
-                <label className="space-y-1">
-                  <span className="block text-[11px] text-gray-500 dark:text-gray-400">
-                    Width (px)
-                  </span>
+                <label>
+                  <span className={labelClass}>Width (px)</span>
 
                   <input
                     type="number"
@@ -718,14 +763,12 @@ export default function PropertiesPanel({
                         ),
                       });
                     }}
-                    className="w-full rounded-lg border border-gray-200 bg-white px-2 py-2 text-sm text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
+                    className="w-full rounded-lg border border-gray-200 bg-white px-2 py-2 text-[13px] text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
                   />
                 </label>
 
-                <label className="space-y-1">
-                  <span className="block text-[11px] text-gray-500 dark:text-gray-400">
-                    Height (px)
-                  </span>
+                <label>
+                  <span className={labelClass}>Height (px)</span>
 
                   <input
                     type="number"
@@ -748,25 +791,20 @@ export default function PropertiesPanel({
                         ),
                       });
                     }}
-                    className="w-full rounded-lg border border-gray-200 bg-white px-2 py-2 text-sm text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
+                    className="w-full rounded-lg border border-gray-200 bg-white px-2 py-2 text-[13px] text-gray-800 outline-none focus:border-[#244074] dark:border-white/10 dark:bg-[#151d2b] dark:text-gray-100"
                   />
                 </label>
               </div>
             </div>
 
             {/* Shape opacity */}
-            <div className="space-y-2">
+            <div>
               <div className="flex items-center justify-between">
-                <label
-                  htmlFor="selected-shape-opacity"
-                  className="text-xs font-medium text-gray-700 dark:text-gray-300"
-                >
+                <label htmlFor="selected-shape-opacity" className={labelClass}>
                   Opacity
                 </label>
 
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {selectedShape.opacity}%
-                </span>
+                <span className={valueClass}>{selectedShape.opacity}%</span>
               </div>
 
               <input
@@ -996,7 +1034,7 @@ export default function PropertiesPanel({
             <div>
               <div className="flex items-center justify-between">
                 <label className={labelClass}>Corner Radius</label>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className={valueClass}>
                   {selectedLayerInfo.borderRadius ?? 12}px
                 </span>
               </div>
@@ -1018,7 +1056,7 @@ export default function PropertiesPanel({
             <div>
               <div className="flex items-center justify-between">
                 <label className={labelClass}>Inner Padding</label>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className={valueClass}>
                   {selectedLayerInfo.padding ?? 16}px
                 </span>
               </div>
@@ -1055,7 +1093,7 @@ export default function PropertiesPanel({
               <div>
                 <div className="flex items-center justify-between">
                   <label className={labelClass}>Border Thickness</label>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                  <span className={valueClass}>
                     {selectedLayerInfo.borderWidth ?? 0}px
                   </span>
                 </div>
@@ -1263,7 +1301,7 @@ export default function PropertiesPanel({
                 <div className="flex items-center justify-between">
                   <label className={labelClass}>Corner radius</label>
 
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                  <span className={valueClass}>
                     {selectedLayerInfo.buttonBorderRadius ?? 8}px
                   </span>
                 </div>
@@ -1282,6 +1320,606 @@ export default function PropertiesPanel({
                 />
               </div>
             </section>
+          </div>
+        )}
+
+        {/* Image-specific properties */}
+        {selectedLayerInfo?.type === "image" && (
+          <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-3 dark:border-white/10 dark:bg-[#111827]">
+            <div className="flex items-center gap-2">
+              <ImageIcon className="h-4 w-4 text-[#244074] dark:text-[#7ba2e3]" />
+              <h4 className="text-xs font-semibold text-gray-900 dark:text-gray-100">
+                Image Properties
+              </h4>
+            </div>
+
+            {/* Change Image */}
+            <div className={sectionClass}>
+              <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                Image
+              </h5>
+
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+
+              {/* Current Image Preview */}
+              <div className="overflow-hidden rounded-lg border border-border bg-muted">
+                {selectedLayerInfo?.src ? (
+                  <div className="flex h-36 items-center justify-center p-2">
+                    <img
+                      src={selectedLayerInfo.src}
+                      alt="Selected image preview"
+                      className="h-full w-full rounded-md object-contain"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex h-36 flex-col items-center justify-center gap-2 text-muted-foreground">
+                    <ImagePlus className="h-8 w-8" />
+                    <span className="text-xs">No image selected</span>
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-border px-3 py-2.5 text-[13px] font-medium transition-colors hover:bg-muted"
+              >
+                <ImagePlus className="h-4 w-4" />
+                Change Image
+              </button>
+
+              <p className="text-xs text-muted-foreground">
+                Replace the selected image while keeping its existing
+                properties.
+              </p>
+            </div>
+
+            {/* Transform */}
+            <section className="space-y-3">
+              <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                Transform
+              </h5>
+
+              {/* Position */}
+              <div className="grid grid-cols-2 gap-2">
+                <label className="space-y-1">
+                  <span className={labelClass}>X Position</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={selectedPreset.width - selectedLayerInfo.width}
+                    value={Math.round(selectedLayerInfo.x)}
+                    onChange={(event) => {
+                      const value = Number(event.target.value);
+                      if (!Number.isFinite(value)) return;
+
+                      updateSelectedLayer({
+                        x: Math.max(
+                          0,
+                          Math.min(
+                            selectedPreset.width - selectedLayerInfo.width,
+                            value,
+                          ),
+                        ),
+                      });
+                    }}
+                    className={fieldClass}
+                  />
+                </label>
+
+                <label className="space-y-1">
+                  <span className={labelClass}>Y Position</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={selectedPreset.height - selectedLayerInfo.height}
+                    value={Math.round(selectedLayerInfo.y)}
+                    onChange={(event) => {
+                      const value = Number(event.target.value);
+                      if (!Number.isFinite(value)) return;
+
+                      updateSelectedLayer({
+                        y: Math.max(
+                          0,
+                          Math.min(
+                            selectedPreset.height - selectedLayerInfo.height,
+                            value,
+                          ),
+                        ),
+                      });
+                    }}
+                    className={fieldClass}
+                  />
+                </label>
+              </div>
+
+              {/* Dimensions */}
+              <div className="flex items-center justify-between mt-4">
+                <label className={labelClass}>Aspect Ratio</label>
+
+                <button
+                  type="button"
+                  aria-pressed={selectedLayerInfo.lockAspectRatio ?? false}
+                  onClick={() =>
+                    updateSelectedLayer({
+                      lockAspectRatio: !selectedLayerInfo.lockAspectRatio,
+                    })
+                  }
+                  className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition ${
+                    selectedLayerInfo.lockAspectRatio
+                      ? "bg-blue-50 text-[#244074] dark:bg-[#244074]/20 dark:text-blue-200"
+                      : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5"
+                  }`}
+                >
+                  {selectedLayerInfo.lockAspectRatio ? (
+                    <Lock className="h-3.5 w-3.5" />
+                  ) : (
+                    <UnlockIcon className="h-3.5 w-3.5" />
+                  )}
+                  {selectedLayerInfo.lockAspectRatio ? "Locked" : "Unlocked"}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {/* Width */}
+                <label className="space-y-1">
+                  <span className={labelClass}>Width (px)</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={selectedPreset.width}
+                    value={Math.round(selectedLayerInfo.width)}
+                    onChange={(event) => {
+                      const value = Number(event.target.value);
+                      if (!Number.isFinite(value) || value < 1) return;
+
+                      let width = Math.min(value, selectedPreset.width);
+                      let height = selectedLayerInfo.height;
+
+                      if (selectedLayerInfo.lockAspectRatio) {
+                        const ratio =
+                          selectedLayerInfo.width / selectedLayerInfo.height;
+
+                        height = width / ratio;
+
+                        if (height > selectedPreset.height) {
+                          height = selectedPreset.height;
+                          width = height * ratio;
+                        }
+                      }
+
+                      updateSelectedLayer({
+                        width,
+                        height,
+                        x: Math.min(
+                          selectedLayerInfo.x,
+                          selectedPreset.width - width,
+                        ),
+                        y: Math.min(
+                          selectedLayerInfo.y,
+                          selectedPreset.height - height,
+                        ),
+                      });
+                    }}
+                    className={fieldClass}
+                  />
+                </label>
+
+                {/* Height */}
+                <label className="space-y-1">
+                  <span className={labelClass}>Height (px)</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={selectedPreset.height}
+                    value={Math.round(selectedLayerInfo.height)}
+                    onChange={(event) => {
+                      const value = Number(event.target.value);
+                      if (!Number.isFinite(value) || value < 1) return;
+
+                      let height = Math.min(value, selectedPreset.height);
+                      let width = selectedLayerInfo.width;
+
+                      if (selectedLayerInfo.lockAspectRatio) {
+                        const ratio =
+                          selectedLayerInfo.width / selectedLayerInfo.height;
+
+                        width = height * ratio;
+
+                        if (width > selectedPreset.width) {
+                          width = selectedPreset.width;
+                          height = width / ratio;
+                        }
+                      }
+
+                      updateSelectedLayer({
+                        width,
+                        height,
+                        x: Math.min(
+                          selectedLayerInfo.x,
+                          selectedPreset.width - width,
+                        ),
+                        y: Math.min(
+                          selectedLayerInfo.y,
+                          selectedPreset.height - height,
+                        ),
+                      });
+                    }}
+                    className={fieldClass}
+                  />
+                </label>
+              </div>
+
+              <p className="text-[11px] ml-0.5 text-gray-500 dark:text-gray-400">
+                Lock the aspect ratio to preserve the image proportions when
+                resizing.
+              </p>
+
+              {/* Flip controls */}
+              <div className="space-y-1.5">
+                <label className={labelClass}>Flip Image</label>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    aria-pressed={selectedLayerInfo.flipHorizontal ?? false}
+                    onClick={() =>
+                      updateSelectedLayer({
+                        flipHorizontal: !selectedLayerInfo.flipHorizontal,
+                      })
+                    }
+                    className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition ${
+                      selectedLayerInfo.flipHorizontal
+                        ? "border-[#244074] bg-blue-50 text-[#244074] dark:border-[#7ba2e3] dark:bg-[#244074]/20 dark:text-blue-200"
+                        : "border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/5"
+                    }`}
+                  >
+                    <FlipHorizontal className="h-4 w-4" />
+                    Horizontal
+                  </button>
+
+                  <button
+                    type="button"
+                    aria-pressed={selectedLayerInfo.flipVertical ?? false}
+                    onClick={() =>
+                      updateSelectedLayer({
+                        flipVertical: !selectedLayerInfo.flipVertical,
+                      })
+                    }
+                    className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition ${
+                      selectedLayerInfo.flipVertical
+                        ? "border-[#244074] bg-blue-50 text-[#244074] dark:border-[#7ba2e3] dark:bg-[#244074]/20 dark:text-blue-200"
+                        : "border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/5"
+                    }`}
+                  >
+                    <FlipVertical className="h-4 w-4" />
+                    Vertical
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            {/* Appearance */}
+            <section className="space-y-3 border-t border-gray-200 pt-3 dark:border-white/10">
+              <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                Appearance
+              </h5>
+
+              {/* Object Fit */}
+              <label className="block space-y-1">
+                <span className={labelClass}>Image Fit</span>
+
+                <select
+                  value={selectedLayerInfo.objectFit ?? "contain"}
+                  onChange={(event) =>
+                    updateSelectedLayer({
+                      objectFit: event.target.value as
+                        | "cover"
+                        | "contain"
+                        | "fill"
+                        | "none",
+                    })
+                  }
+                  className={fieldClass}
+                >
+                  <option value="cover">Cover</option>
+                  <option value="contain">Contain</option>
+                  <option value="fill">Fill</option>
+                  <option value="none">None</option>
+                </select>
+              </label>
+
+              {/* Border Radius */}
+              <div>
+                <div className="flex items-center justify-between">
+                  <label className={labelClass}>Border Radius</label>
+                  <span className={valueClass}>
+                    {selectedLayerInfo.borderRadius ?? 0}px
+                  </span>
+                </div>
+
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={selectedLayerInfo.borderRadius ?? 0}
+                  onChange={(event) =>
+                    updateSelectedLayer({
+                      borderRadius: Number(event.target.value),
+                    })
+                  }
+                  className="w-full accent-[#244074]"
+                />
+              </div>
+
+              {/* Border */}
+              <div className="space-y-2">
+                <label className="flex cursor-pointer items-center justify-between">
+                  <span className={labelClass}>Border</span>
+
+                  <input
+                    type="checkbox"
+                    checked={selectedLayerInfo.borderEnabled ?? false}
+                    onChange={(event) =>
+                      updateSelectedLayer({
+                        borderEnabled: event.target.checked,
+                      })
+                    }
+                    className="h-4 w-4 accent-[#244074]"
+                  />
+                </label>
+
+                {selectedLayerInfo.borderEnabled && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className="space-y-1">
+                      <span className={labelClass}>Width</span>
+                      <input
+                        type="number"
+                        min={0}
+                        max={30}
+                        value={selectedLayerInfo.borderWidth ?? 1}
+                        onChange={(event) =>
+                          updateSelectedLayer({
+                            borderWidth: Math.max(
+                              0,
+                              Number(event.target.value),
+                            ),
+                          })
+                        }
+                        className={fieldClass}
+                      />
+                    </label>
+
+                    <label className="space-y-1">
+                      <span className={labelClass}>Color</span>
+                      <input
+                        type="color"
+                        value={selectedLayerInfo.borderColor ?? "#244074"}
+                        onChange={(event) =>
+                          updateSelectedLayer({
+                            borderColor: event.target.value,
+                          })
+                        }
+                        className="h-9 w-full cursor-pointer rounded-lg border border-gray-200 bg-white p-1 dark:border-white/10 dark:bg-[#111827]"
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              {/* Shadow */}
+              <div className="space-y-2">
+                <label className="flex cursor-pointer items-center justify-between">
+                  <span className={labelClass}>Shadow</span>
+
+                  <input
+                    type="checkbox"
+                    checked={selectedLayerInfo.shadowEnabled ?? false}
+                    onChange={(event) =>
+                      updateSelectedLayer({
+                        shadowEnabled: event.target.checked,
+                      })
+                    }
+                    className="h-4 w-4 accent-[#244074]"
+                  />
+                </label>
+
+                {selectedLayerInfo.shadowEnabled && (
+                  <div className="space-y-3">
+                    <label className="block space-y-1">
+                      <span className={labelClass}>Shadow Color</span>
+                      <input
+                        type="color"
+                        value={selectedLayerInfo.shadowColor ?? "#000000"}
+                        onChange={(event) =>
+                          updateSelectedLayer({
+                            shadowColor: event.target.value,
+                          })
+                        }
+                        className="h-9 w-full cursor-pointer rounded-lg border border-gray-200 bg-white p-1 dark:border-white/10 dark:bg-[#111827]"
+                      />
+                    </label>
+
+                    {(
+                      [
+                        {
+                          label: "Blur",
+                          key: "shadowBlur",
+                          max: 50,
+                          fallback: 12,
+                        },
+                        {
+                          label: "Offset X",
+                          key: "shadowOffsetX",
+                          max: 50,
+                          fallback: 0,
+                        },
+                        {
+                          label: "Offset Y",
+                          key: "shadowOffsetY",
+                          max: 50,
+                          fallback: 4,
+                        },
+                      ] as const
+                    ).map((item) => (
+                      <div key={item.key}>
+                        <div className="flex items-center justify-between">
+                          <label className={labelClass}>{item.label}</label>
+                          <span className={valueClass}>
+                            {selectedLayerInfo[item.key] ?? item.fallback}px
+                          </span>
+                        </div>
+
+                        <input
+                          type="range"
+                          min={0}
+                          max={item.max}
+                          value={selectedLayerInfo[item.key] ?? item.fallback}
+                          onChange={(event) =>
+                            updateSelectedLayer({
+                              [item.key]: Number(event.target.value),
+                            })
+                          }
+                          className="w-full accent-[#244074]"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Image Adjustments */}
+            <section className="space-y-3 border-t border-gray-200 pt-3 dark:border-white/10">
+              <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                Adjustments
+              </h5>
+
+              {(
+                [
+                  {
+                    label: "Brightness",
+                    key: "brightness",
+                    min: 0,
+                    max: 200,
+                    defaultValue: 100,
+                    unit: "%",
+                  },
+                  {
+                    label: "Contrast",
+                    key: "contrast",
+                    min: 0,
+                    max: 200,
+                    defaultValue: 100,
+                    unit: "%",
+                  },
+                  {
+                    label: "Saturation",
+                    key: "saturation",
+                    min: 0,
+                    max: 200,
+                    defaultValue: 100,
+                    unit: "%",
+                  },
+                  {
+                    label: "Grayscale",
+                    key: "grayscale",
+                    min: 0,
+                    max: 100,
+                    defaultValue: 0,
+                    unit: "%",
+                  },
+                  {
+                    label: "Sepia",
+                    key: "sepia",
+                    min: 0,
+                    max: 100,
+                    defaultValue: 0,
+                    unit: "%",
+                  },
+                  {
+                    label: "Blur",
+                    key: "blur",
+                    min: 0,
+                    max: 20,
+                    defaultValue: 0,
+                    unit: "px",
+                  },
+                  {
+                    label: "Hue Rotate",
+                    key: "hueRotate",
+                    min: 0,
+                    max: 360,
+                    defaultValue: 0,
+                    unit: "°",
+                  },
+                  {
+                    label: "Invert",
+                    key: "invert",
+                    min: 0,
+                    max: 100,
+                    defaultValue: 0,
+                    unit: "%",
+                  },
+                ] as const
+              ).map((adjustment) => {
+                const value =
+                  selectedLayerInfo?.[adjustment.key] ??
+                  adjustment.defaultValue;
+
+                return (
+                  <div key={adjustment.key}>
+                    <div className="flex items-center justify-between">
+                      <label className={labelClass}>{adjustment.label}</label>
+
+                      <span className={valueClass}>
+                        {value}
+                        {adjustment.unit}
+                      </span>
+                    </div>
+
+                    <input
+                      type="range"
+                      min={adjustment.min}
+                      max={adjustment.max}
+                      step={1}
+                      value={value}
+                      onChange={(e) =>
+                        updateSelectedLayer({
+                          [adjustment.key]: Number(e.target.value),
+                        })
+                      }
+                      className="w-full accent-[#244074] cursor-pointer"
+                    />
+                  </div>
+                );
+              })}
+            </section>
+
+            <button
+              type="button"
+              onClick={() =>
+                updateSelectedLayer({
+                  brightness: 100,
+                  contrast: 100,
+                  saturation: 100,
+                  grayscale: 0,
+                  sepia: 0,
+                  blur: 0,
+                  hueRotate: 0,
+                  invert: 0,
+                })
+              }
+              className="w-full rounded-lg  border border-rose-300 px-3 py-2 text-xs font-medium  text-rose-700 transition-colors bg-rose-300/10 hover:bg-rose-100 cursor-pointer dark:border-rose-400/30 dark:text-rose-300 dark:hover:bg-rose-300/15"
+            >
+              Reset Adjustments
+            </button>
           </div>
         )}
 

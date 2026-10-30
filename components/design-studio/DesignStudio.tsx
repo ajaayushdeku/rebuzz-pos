@@ -1,14 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-
-// Keep your existing imports for icons, types, presets,
-// templates, and initialLayers here.
+import { toPng } from "html-to-image";
 import {
   initialLayers,
   canvasPresets,
   designTemplates,
-  shapeOptions,
 } from "@/components/design-studio/contents";
 
 import type {
@@ -36,8 +33,44 @@ import LayersPanel from "./LayersPanel";
 import DesignCanvas from "./DesignCanvas";
 import LeftSidebar from "./LeftSidebar";
 
-// Keep your existing getShapePoints function here for now.
-// We'll move it to shape-utils.ts in a later step.
+function normalizeExportColors(element: HTMLElement) {
+  const elements = [
+    element,
+    ...Array.from(element.querySelectorAll<HTMLElement>("*")),
+  ];
+
+  const colorProperties = [
+    "color",
+    "background-color",
+    "border-top-color",
+    "border-right-color",
+    "border-bottom-color",
+    "border-left-color",
+    "outline-color",
+    "text-decoration-color",
+    "fill",
+    "stroke",
+  ];
+
+  elements.forEach((el) => {
+    const computed = window.getComputedStyle(el);
+
+    colorProperties.forEach((property) => {
+      const value = computed.getPropertyValue(property);
+
+      if (/\b(?:lab|lch|oklab|oklch)\(/i.test(value)) {
+        const temp = document.createElement("div");
+        temp.style.color = value;
+        document.body.appendChild(temp);
+
+        const rgb = window.getComputedStyle(temp).color;
+        temp.remove();
+
+        el.style.setProperty(property, rgb, "important");
+      }
+    });
+  });
+}
 
 const designTools = [
   { label: "Templates", icon: LayoutTemplate },
@@ -50,6 +83,13 @@ const designTools = [
 
 export default function DesignStudio() {
   // 1. Shared state
+  const [isExporting, setIsExporting] = useState(false);
+  const [alignmentGuides, setAlignmentGuides] = useState({
+    vertical: false,
+    horizontal: false,
+  });
+
+  const [isCanvasFocused, setIsCanvasFocused] = useState(false);
 
   const [activeTool, setActiveTool] = useState("select");
   const [layers, setLayers] = useState<DesignLayer[]>(initialLayers);
@@ -100,6 +140,27 @@ export default function DesignStudio() {
     (template) =>
       templateCategory === "All" || template.category === templateCategory,
   );
+
+  useEffect(() => {
+    const handleOutsideClick = (event: PointerEvent) => {
+      const canvas = canvasRef.current;
+      const target = event.target;
+
+      if (!canvas || !(target instanceof Node)) return;
+
+      // If the click is outside the actual canvas, deselect.
+      if (!canvas.contains(target)) {
+        // setSelectedLayer("");
+        setIsCanvasFocused(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("pointerdown", handleOutsideClick);
+    };
+  }, []);
 
   const updateSelectedLayer = (updates: Partial<DesignLayer>) => {
     setLayers((previous) =>
@@ -298,6 +359,12 @@ export default function DesignStudio() {
     event.currentTarget.setPointerCapture(event.pointerId);
 
     setSelectedLayer(layer.id);
+    setIsCanvasFocused(true);
+
+    setAlignmentGuides({
+      vertical: false,
+      horizontal: false,
+    });
 
     dragRef.current = {
       id: layer.id,
@@ -307,6 +374,50 @@ export default function DesignStudio() {
       originY: layer.y,
     };
   };
+
+  // const handleLayerPointerMove = (
+  //   event: React.PointerEvent<HTMLDivElement>,
+  // ) => {
+  //   const drag = dragRef.current;
+  //   const canvas = canvasRef.current;
+
+  //   if (!drag || !canvas) return;
+
+  //   const rect = canvas.getBoundingClientRect();
+
+  //   // Convert screen movement into canvas design coordinates.
+  //   const deltaX =
+  //     ((event.clientX - drag.startX) / rect.width) * selectedPreset.width;
+
+  //   const deltaY =
+  //     ((event.clientY - drag.startY) / rect.height) * selectedPreset.height;
+
+  //   setLayers((previous) =>
+  //     previous.map((layer) =>
+  //       layer.id === drag.id
+  //         ? {
+  //             ...layer,
+  //             // x: Math.max(
+  //             //   0,
+  //             //   Math.min(
+  //             //     selectedPreset.width - layer.width,
+  //             //     drag.originX + deltaX,
+  //             //   ),
+  //             // ),
+  //             x: drag.originX + deltaX,
+  //             // y: Math.max(
+  //             //   0,
+  //             //   Math.min(
+  //             //     selectedPreset.height - layer.height,
+  //             //     drag.originY + deltaY,
+  //             //   ),
+  //             // ),
+  //             y: drag.originY + deltaY,
+  //           }
+  //         : layer,
+  //     ),
+  //   );
+  // };
 
   const handleLayerPointerMove = (
     event: React.PointerEvent<HTMLDivElement>,
@@ -318,6 +429,10 @@ export default function DesignStudio() {
 
     const rect = canvas.getBoundingClientRect();
 
+    const draggedLayer = layers.find((layer) => layer.id === drag.id);
+
+    if (!draggedLayer) return;
+
     // Convert screen movement into canvas design coordinates.
     const deltaX =
       ((event.clientX - drag.startX) / rect.width) * selectedPreset.width;
@@ -325,25 +440,56 @@ export default function DesignStudio() {
     const deltaY =
       ((event.clientY - drag.startY) / rect.height) * selectedPreset.height;
 
+    // Calculate the element's new position.
+    let newX = drag.originX + deltaX;
+    let newY = drag.originY + deltaY;
+
+    // Convert the 8px screen tolerance into design coordinates.
+    const snapToleranceX = (8 / rect.width) * selectedPreset.width;
+    const snapToleranceY = (8 / rect.height) * selectedPreset.height;
+
+    const layerWidth = draggedLayer.width;
+    const layerHeight = draggedLayer.height ?? 100;
+
+    // Calculate the center of the canvas.
+    const canvasCenterX = selectedPreset.width / 2;
+    const canvasCenterY = selectedPreset.height / 2;
+
+    // Calculate the center of the dragged element.
+    const layerCenterX = newX + layerWidth / 2;
+    const layerCenterY = newY + layerHeight / 2;
+
+    // Check whether the element is close enough to the vertical center.
+    const verticalSnap =
+      Math.abs(layerCenterX - canvasCenterX) <= snapToleranceX;
+
+    // Check whether the element is close enough to the horizontal center.
+    const horizontalSnap =
+      Math.abs(layerCenterY - canvasCenterY) <= snapToleranceY;
+
+    // Snap the element to the canvas center.
+    if (verticalSnap) {
+      newX = canvasCenterX - layerWidth / 2;
+    }
+
+    if (horizontalSnap) {
+      newY = canvasCenterY - layerHeight / 2;
+    }
+
+    // Update the visible alignment guides.
+    setAlignmentGuides({
+      vertical: verticalSnap,
+      horizontal: horizontalSnap,
+    });
+
+    // Update the dragged layer.
     setLayers((previous) =>
       previous.map((layer) =>
         layer.id === drag.id
           ? {
               ...layer,
-              x: Math.max(
-                0,
-                Math.min(
-                  selectedPreset.width - layer.width,
-                  drag.originX + deltaX,
-                ),
-              ),
-              y: Math.max(
-                0,
-                Math.min(
-                  selectedPreset.height - layer.height,
-                  drag.originY + deltaY,
-                ),
-              ),
+              x: newX,
+              y: newY,
             }
           : layer,
       ),
@@ -352,6 +498,11 @@ export default function DesignStudio() {
 
   const handleLayerPointerUp = () => {
     dragRef.current = null;
+
+    setAlignmentGuides({
+      vertical: false,
+      horizontal: false,
+    });
   };
 
   const moveLayer = (id: string, direction: "up" | "down") => {
@@ -397,6 +548,77 @@ export default function DesignStudio() {
     imageInputRef.current?.click();
   };
 
+  const handleExport = async () => {
+    const canvasElement = canvasRef.current;
+
+    if (!canvasElement || isExporting) return;
+
+    const selectedLayers = Array.from(
+      canvasElement.querySelectorAll(".selected-design-layer"),
+    );
+
+    try {
+      setIsExporting(true);
+
+      await document.fonts.ready;
+
+      const rect = canvasElement.getBoundingClientRect();
+
+      if (!rect.width || !rect.height) {
+        throw new Error("Canvas has invalid dimensions.");
+      }
+
+      // Temporarily remove editor selection outlines.
+      selectedLayers.forEach((element) => {
+        element.classList.remove("selected-design-layer");
+      });
+
+      const scale = selectedPreset.width / rect.width;
+
+      const dataUrl = await toPng(canvasElement, {
+        pixelRatio: scale,
+        backgroundColor: "#ffffff",
+        cacheBust: true,
+
+        filter: (node) => {
+          return !(
+            node instanceof HTMLElement && node.dataset.exportIgnore === "true"
+          );
+        },
+
+        style: {
+          width: `${rect.width}px`,
+          height: `${rect.height}px`,
+          overflow: "hidden",
+        },
+      });
+
+      // Download the generated image.
+      const link = document.createElement("a");
+
+      link.download = `rebuzz-design-${selectedPreset.width}x${selectedPreset.height}.png`;
+      link.href = dataUrl;
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Failed to export design:", error);
+    } finally {
+      // Restore the selection outlines.
+      selectedLayers.forEach((element) => {
+        element.classList.add("selected-design-layer");
+      });
+
+      setIsExporting(false);
+    }
+  };
+
+  const handleLayerSelect = (id: string) => {
+    setSelectedLayer(id);
+    setIsCanvasFocused(true);
+  };
+
   return (
     <div className="min-h-full mx-auto w-full bg-surface-page pt-4 dark:bg-[#0f1420] sm:pt-6">
       {/* Top toolbar */}
@@ -434,10 +656,12 @@ export default function DesignStudio() {
 
             <button
               type="button"
-              className="flex items-center justify-center gap-2 rounded-lg bg-[#244074] px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-[#31558f]"
+              onClick={handleExport}
+              disabled={isExporting}
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <Download className="h-4 w-4" />
-              Export
+              <Download size={16} />
+              {isExporting ? "Exporting..." : "Export"}
             </button>
           </div>
         </div>
@@ -474,7 +698,6 @@ export default function DesignStudio() {
         </button>
       </div>
 
-      {/* Design studio workspace */}
       {/* Design studio workspace */}
       <div className="relative grid min-h-[calc(100vh-64px)] grid-cols-1 overflow-x-clip lg:grid-cols-[300px_minmax(0,1fr)_320px]">
         {/* Mobile backdrop */}
@@ -540,6 +763,7 @@ export default function DesignStudio() {
           <DesignCanvas
             layers={layers}
             selectedLayer={selectedLayer}
+            isCanvasFocused={isCanvasFocused}
             setSelectedLayer={setSelectedLayer}
             canvasWidth={selectedPreset.width}
             canvasHeight={selectedPreset.height}
@@ -547,6 +771,7 @@ export default function DesignStudio() {
             onLayerPointerDown={handleLayerPointerDown}
             onLayerPointerMove={handleLayerPointerMove}
             onLayerPointerUp={handleLayerPointerUp}
+            alignmentGuides={alignmentGuides}
           />
         </div>
 
@@ -575,7 +800,8 @@ export default function DesignStudio() {
             <LayersPanel
               layers={layers}
               selectedLayer={selectedLayer}
-              setSelectedLayer={setSelectedLayer}
+              // setSelectedLayer={setSelectedLayer}
+              setSelectedLayer={handleLayerSelect}
               setLayers={setLayers}
               updateLayerName={updateLayerName}
               moveLayer={moveLayer}
