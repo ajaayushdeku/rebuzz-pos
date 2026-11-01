@@ -179,11 +179,17 @@ export const navigationConfig: NavigationItem[] = [
       },
     ],
   },
+  // {
+  //   type: "single",
+  //   label: "Design Studio",
+  //   icon: Palette,
+  //   href: "/design-studio",
+  // },
   {
     type: "single",
-    label: "Design Studio",
+    label: "AI Design Generator",
     icon: Palette,
-    href: "/design-studio",
+    href: "/ai-design",
   },
   {
     type: "single",

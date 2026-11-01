@@ -734,6 +734,8 @@ export default function DesignStudio() {
             </button>
           </div>
 
+          
+
           <LeftSidebar
             designTools={designTools}
             activeTool={activeTool}
