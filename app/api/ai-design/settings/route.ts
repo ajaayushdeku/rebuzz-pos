@@ -55,10 +55,11 @@ async function forward(
   const json = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    const { error, available, detail, retryAfter } = readAiError(json);
+    const { error, available, detail, retryAfter, requestId } =
+      readAiError(json);
 
     return NextResponse.json(
-      { error, available, detail, retryAfter },
+      { error, available, detail, retryAfter, requestId },
       { status: res.status },
     );
   }

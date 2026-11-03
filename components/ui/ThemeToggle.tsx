@@ -64,7 +64,13 @@ export default function ThemeToggle() {
       localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
     } catch {
       // Private browsing, or storage turned off: the theme still changes,
-      // it just will not be remembered.
+      // the cookie below can still remember it.
+    }
+    try {
+      const secure = window.location.protocol === "https:" ? "; Secure" : "";
+      document.cookie = `${THEME_KEY}=${dark ? "dark" : "light"}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
+    } catch {
+      // If cookies are also unavailable, this change lasts for this page only.
     }
   };
 

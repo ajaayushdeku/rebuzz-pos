@@ -1,6 +1,37 @@
 import { PLANS } from "@/lib/config/plans";
 import PlanCards from "./PlanCards";
 
+// Display approximate USD equivalents on the marketing page only. The plan
+// definitions remain in NPR because that is the currency used for billing.
+const NPR_PER_USD = 151.55;
+
+function approximateUsd(price: string): string {
+  const amount = Number(price.replace(/[^\d.]/g, ""));
+  if (!Number.isFinite(amount)) return price;
+
+  const formatted = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(amount / NPR_PER_USD);
+
+  return formatted;
+}
+
+const USD_PLANS = PLANS.map((plan) => ({
+  ...plan,
+  price: approximateUsd(plan.price),
+  discount: plan.discount
+    ? {
+        originalPrice: approximateUsd(plan.discount.originalPrice),
+        saving: approximateUsd(plan.discount.saving),
+      }
+    : undefined,
+  printerAddon: plan.printerAddon
+    ? { ...plan.printerAddon, price: approximateUsd(plan.printerAddon.price) }
+    : undefined,
+}));
+
 /**
  * * ── Pricing ──
  * The same `PLANS` the subscription page is built from, so a price
@@ -27,10 +58,11 @@ export default function PricingSection() {
           </p>
         </div>
 
-        <PlanCards plans={PLANS} />
+        <PlanCards plans={USD_PLANS} />
 
         <p className="mt-8 text-center text-sm text-gray-500 dark:text-[#9aa6bd]">
-          Prices in NPR. The free plan does not expire and needs no card — you
+          Rounded USD equivalents, converted at NPR 151.55 per USD. Plans are
+          billed in NPR. The free plan does not expire and needs no card — you
           can pick a paid plan later, from inside the app.
         </p>
       </div>

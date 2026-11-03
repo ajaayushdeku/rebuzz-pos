@@ -32,6 +32,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Invoices",
   description: "Track your sales",
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+  },
 };
 
 export default async function RootLayout({

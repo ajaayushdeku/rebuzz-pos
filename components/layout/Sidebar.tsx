@@ -75,9 +75,9 @@ export default function Sidebar() {
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
-            <ChevronsRight className="h-4 w-4 hidden md:block" />
+            <ChevronsRight className="h-4 w-4 " />
           ) : (
-            <ChevronsLeft className="h-4 w-4 hidden md:block" />
+            <ChevronsLeft className="h-4 w-4 " />
           )}
         </Button>
       </div>

@@ -1,9 +1,9 @@
 import { cookies } from "next/headers";
 
 import HomeNavbar from "@/components/home/HomeNavbar";
-import HomeHero from "@/components/home/HomeHero";
-import CapabilityBand from "@/components/home/CapabilityBand";
-import FeatureGrid from "@/components/home/FeatureGrid";
+import InvoiceAiHero from "@/components/home/InvoiceAiHero";
+import { InvoiceCreditWorkflowSection } from "@/components/home/InvoiceCreditWorkflowSection";
+import BusinessToolsSection from "@/components/home/BusinessToolsSection";
 import PricingSection from "@/components/home/PricingSection";
 import AboutSection from "@/components/home/AboutSection";
 import FaqSection from "@/components/home/FaqSection";
@@ -35,14 +35,15 @@ const Page = async () => {
     // still scroll it.
     <div className="scrollbar-hide h-dvh overflow-y-auto bg-white dark:bg-[#0f1420]">
       <HomeNavbar token={token} />
-      <HomeHero token={token} />
-      <CapabilityBand />
-      <FeatureGrid token={token} />
-      <PricingSection />
+      <InvoiceAiHero token={token} />
+      <InvoiceCreditWorkflowSection token={token} />
 
       <AiInsightsProvider briefingData={briefingData}>
         <AiInsightsSection isAPIKeySet={APIKeyActive} />
       </AiInsightsProvider>
+
+      <BusinessToolsSection token={token} />
+      <PricingSection />
 
       <AboutSection />
 

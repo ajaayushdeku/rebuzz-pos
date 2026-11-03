@@ -167,7 +167,7 @@ const AiInsightsSection = ({ isAPIKeySet }: AiInsightsSectionProps) => {
   return (
     <section
       id="ai-insights"
-      className="scroll-mt-20 bg-[#f7f8fb] px-6 pt-20 dark:bg-[#131a29] md:px-16"
+      className="scroll-mt-20 bg-[#f7f8fb] px-6 pt-20 pb-10 dark:bg-[#131a29] md:px-16"
     >
       <div className="mx-auto max-w-6xl">
         <div className="mb-12 max-w-2xl">

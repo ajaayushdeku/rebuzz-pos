@@ -24,8 +24,6 @@ function OfferBuilder() {
   return (
     <div className="min-h-screen bg-surface-page px-6 py-5 sm:py-8  md:px-10 dark:bg-[#0f1420]">
       <div className="mx-auto w-full">
-        {/* The grid below brings its own pt-4, so the rule carries no
-            margin of its own. */}
         <PageHeader
           title="Create an offer"
           subtitle="Create your offer and preview how customers will see it."
@@ -33,9 +31,6 @@ function OfferBuilder() {
           // flexItems="items-start flex-col"
           actionWidth="w-fit sm:w-full"
           actions={
-            /* Only below xl, where the two columns stack. Wide enough and both
-               are on screen at once, so a switch would be a control with
-               nothing to switch. */
             <div className="flex items-center gap-1 rounded-lg sm:rounded-xl bg-[#e4f2fe]  p-1 xl:hidden dark:bg-white/10">
               {VIEWS.map(({ id, label, icon: Icon }) => {
                 const active = view === id;

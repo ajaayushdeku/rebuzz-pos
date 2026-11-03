@@ -10,6 +10,7 @@ const publicPages = [
   "/signup",
   "/forgot-password",
   "/signup/verify",
+  "/ai-design",
   // Reachable without a token on purpose: the token is cleared on the way in,
   // so the page would bounce to /login and the reason would never be shown.
   ACCESS_DENIED_PATH,

@@ -23,6 +23,7 @@ export interface AiErrorBody {
   detail?: string;
   retryAfter?: number;
   raw?: string;
+  requestId?: string;
 }
 
 /* Turn the POS API's jsend failure into the body the browser has always read. The POS answers `{ status: "fail" | "error", data: { code, message, ... } }` */
@@ -38,6 +39,7 @@ export function readAiError(json: unknown): AiErrorBody {
     available?: string[];
     retryAfter?: number;
     raw?: string;
+    requestId?: string;
     data?: {
       code?: unknown;
       message?: unknown;
@@ -45,6 +47,7 @@ export function readAiError(json: unknown): AiErrorBody {
       detail?: string;
       retryAfter?: number;
       raw?: string;
+      requestId?: string;
     };
   };
   const data = body.data ?? {};
@@ -63,5 +66,6 @@ export function readAiError(json: unknown): AiErrorBody {
     detail: data.detail ?? body.detail ?? undefined,
     retryAfter: data.retryAfter ?? body.retryAfter ?? undefined,
     raw: data.raw ?? body.raw ?? undefined,
+    requestId: data.requestId ?? body.requestId ?? undefined,
   };
 }

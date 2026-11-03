@@ -1,11 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 // import NavbarWelcome from "@/components/NavbarWelcome";
 import HomeUserMenu from "@/components/HomeUserMenu";
 import ServerEnvBadge from "@/components/ServerEnvBadge";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import { DashboardNavLink } from "./DashboardNavLink";
 
 /**
  * The hairline between groups in the navbar.
@@ -56,21 +56,7 @@ export default function HomeNavbar({ token }: { token?: string }) {
             <ThemeToggle />
             <NavDivider />
 
-            <button className="group inline-flex h-8 md:h-9 items-center justify-center md:rounded-md md:border border-[#244074]/20 bg-transparent md:bg-[#244074] px-1  md:px-3 tracking-wider text-sm font-medium text-gray-600 dark:text-[#7BA2CA] md:text-white dark:md:text-white md:shadow-sm transition-all duration-200 hover:-translate-y-px hover:bg-[#1b3159] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#244074]/30">
-              <Link
-                href="/dashboard"
-                aria-label="Go to Dashboard"
-                className="flex items-center gap-2"
-              >
-                <LayoutDashboard
-                  size={16}
-                  strokeWidth={2.5}
-                  className="transition-transform duration-200 group-hover:scale-105"
-                  aria-hidden
-                />
-                <span className="hidden md:inline">Dashboard</span>
-              </Link>
-            </button>
+            <DashboardNavLink />
 
             {/* <span className="hidden lg:inline">
               <NavbarWelcome />

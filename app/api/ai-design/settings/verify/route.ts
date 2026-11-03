@@ -48,10 +48,10 @@ export async function POST(req: NextRequest) {
   const json = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    const { error, detail, retryAfter } = readAiError(json);
+    const { error, detail, retryAfter, requestId } = readAiError(json);
 
     return NextResponse.json(
-      { error, detail, retryAfter },
+      { error, detail, retryAfter, requestId },
       { status: res.status },
     );
   }
