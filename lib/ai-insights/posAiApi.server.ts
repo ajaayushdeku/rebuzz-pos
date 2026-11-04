@@ -9,10 +9,17 @@ export function aiApiUrl(path: string): string | null {
 }
 
 /* The absolute URL for a period-insights route, or null when no standalone service is configured. `path` is the route as the service spells it: "/periods", "/month/2026-09", "/month/2026-09/pricing" */
-export function periodApiUrl(path: string): string | null {
-  return AI_SERVICE_URL ? `${AI_SERVICE_URL}/period-insights${path}` : null;
-}
+// export function periodApiUrl(path: string): string | null {
+//   return AI_SERVICE_URL ? `${AI_SERVICE_URL}/period-insights${path}` : null;
+// }
 
+export function periodApiUrl(path: string): string | null {
+  if (AI_SERVICE_URL) {
+    return `${AI_SERVICE_URL}/period-insights${path}`;
+  }
+
+  return POS_API_URL ? `${POS_API_URL}/business/period-insights${path}` : null;
+}
 /** Whether this deployment can serve period insights at all. */
 export const periodInsightsAvailable = () => Boolean(AI_SERVICE_URL);
 
