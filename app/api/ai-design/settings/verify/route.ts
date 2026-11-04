@@ -22,7 +22,20 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => null);
 
-  const apiKey = typeof body?.apiKey === "string" ? body.apiKey.trim() : "";
+  const accountId =
+    typeof body?.accountId === "string" ? body.accountId.trim() : "";
+
+  const apiToken =
+    typeof body?.apiToken === "string" ? body.apiToken.trim() : "";
+
+  // Both credentials must be provided together.
+  // If neither is provided, the backend verifies saved credentials.
+  if (Boolean(accountId) !== Boolean(apiToken)) {
+    return NextResponse.json(
+      { error: "CLOUDFLARE_CREDENTIALS_REQUIRED" },
+      { status: 400 },
+    );
+  }
 
   let res: Response;
 
@@ -33,7 +46,9 @@ export async function POST(req: NextRequest) {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(apiKey ? { apiKey } : {}),
+      body: JSON.stringify(
+        accountId && apiToken ? { accountId, apiToken } : {},
+      ),
       cache: "no-store",
     });
   } catch (error) {

@@ -20,6 +20,7 @@ export function periodApiUrl(path: string): string | null {
 
   return POS_API_URL ? `${POS_API_URL}/business/period-insights${path}` : null;
 }
+
 /** Whether this deployment can serve period insights at all. */
 export const periodInsightsAvailable = () => Boolean(AI_SERVICE_URL);
 

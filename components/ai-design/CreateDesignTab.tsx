@@ -9,6 +9,7 @@ import {
   Lightbulb,
   MessageSquare,
   Paperclip,
+  Plus,
   RefreshCw,
   Send,
   Settings,
@@ -44,7 +45,7 @@ type GenerateResponse = {
   generation?: {
     model: string;
     size: string;
-    quality: string;
+    quality: string | null;
     outputFormat: string;
     created: number;
   };
@@ -98,9 +99,11 @@ export function CreateDesignTab({
 }) {
   const [input, setInput] = useState("");
   const [examplesExpanded, setExamplesExpanded] = useState(true);
-  const [openAiConfigured, setOpenAiConfigured] = useState<boolean | null>(
-    null,
-  );
+  const [cloudflareConfigured, setCloudflareConfigured] = useState<
+    boolean | null
+  >(null);
+
+  const [cloudflareEnabled, setCloudflareEnabled] = useState(false);
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -133,6 +136,30 @@ export function CreateDesignTab({
   const imageInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const startNewChat = () => {
+    if (isGenerating) return;
+
+    setMessages([
+      {
+        id: 1,
+        role: "assistant",
+        content:
+          "Hi! I'm your AI Design Assistant. Tell me what kind of graphic you'd like to create. You can describe a promotion, showcase a product, or share an announcement. I'll help turn your idea into a design!",
+      },
+    ]);
+    setInput("");
+    setGeneratedImages([]);
+    setGenerationInfo(undefined);
+    setPreviousContext(null);
+    setDesignBrief(null);
+    setError("");
+    setReferenceImages([]);
+    setUploadedImages([]);
+    if (referenceInputRef.current) referenceInputRef.current.value = "";
+    if (imageInputRef.current) imageInputRef.current.value = "";
+    textareaRef.current?.focus();
+  };
+
   useEffect(() => {
     let cancelled = false;
 
@@ -148,11 +175,15 @@ export function CreateDesignTab({
         }
 
         if (!cancelled) {
-          setOpenAiConfigured(Boolean(result.data?.configured));
+          setCloudflareConfigured(
+            Boolean(result.data?.configured && result.data?.enabled),
+          );
+          setCloudflareEnabled(!!result.data?.enabled);
         }
       } catch {
         if (!cancelled) {
-          setOpenAiConfigured(false);
+          setCloudflareConfigured(false);
+          setCloudflareEnabled(false);
         }
       }
     };
@@ -400,11 +431,19 @@ export function CreateDesignTab({
     if (!files) return;
 
     const selectedFiles = Array.from(files);
+
     const currentFiles =
       type === "reference" ? referenceImages : uploadedImages;
 
-    const maxCount = type === "reference" ? 3 : 5;
-    const remainingSlots = maxCount - currentFiles.length;
+    const maxCategoryCount = type === "reference" ? 3 : 5;
+
+    const totalUploaded = referenceImages.length + uploadedImages.length;
+    const remainingTotalSlots = Math.max(0, 4 - totalUploaded);
+
+    const remainingCategorySlots = Math.max(
+      0,
+      maxCategoryCount - currentFiles.length,
+    );
 
     const validFiles = selectedFiles.filter(
       (file) =>
@@ -416,15 +455,20 @@ export function CreateDesignTab({
       alert("Only PNG, JPG, and WebP images up to 5 MB are supported.");
     }
 
-    if (validFiles.length > remainingSlots) {
+    const availableSlots = Math.min(
+      remainingTotalSlots,
+      remainingCategorySlots,
+    );
+
+    if (validFiles.length > availableSlots) {
       alert(
-        `You can upload a maximum of ${maxCount} ${
-          type === "reference" ? "reference images" : "design assets"
+        `You can upload a maximum of 4 images in total, with up to ${
+          type === "reference" ? "3 reference images" : "5 design assets"
         }.`,
       );
     }
 
-    const filesToAdd = validFiles.slice(0, Math.max(0, remainingSlots));
+    const filesToAdd = validFiles.slice(0, availableSlots);
 
     if (type === "reference") {
       setReferenceImages((previous) => [...previous, ...filesToAdd]);
@@ -444,8 +488,17 @@ export function CreateDesignTab({
   const downloadImage = (image: GeneratedImage, index: number) => {
     const link = document.createElement("a");
 
+    const extensionByMimeType: Record<string, string> = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+    };
+
+    const extension =
+      extensionByMimeType[image.mimeType.toLowerCase()] || "png";
+
     link.href = `data:${image.mimeType};base64,${image.b64Json}`;
-    link.download = `ai-design-${index + 1}.${generationInfo?.outputFormat || "png"}`;
+    link.download = `ai-design-${index + 1}.${extension}`;
 
     document.body.appendChild(link);
     link.click();
@@ -468,16 +521,16 @@ export function CreateDesignTab({
       <nav aria-label="Design creation steps" className="relative rounded-2xl ">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-[18%] right-[18%] top-1/2 z-0 h-[3px] -translate-y-1/2 rounded-full bg-slate-200/90 dark:bg-slate-800"
+          className="pointer-events-none absolute left-[0%] right-[50%] top-1/2 z-0 h-[3px] -translate-y-1/2 rounded-full bg-slate-200/90 dark:bg-slate-800"
         >
           <div
             className="relative h-full rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-fuchsia-500 transition-[width] duration-700 ease-out motion-reduce:transition-none after:absolute after:inset-0 after:rounded-full after:bg-gradient-to-r after:from-blue-400 after:to-fuchsia-400 after:opacity-70 after:blur-[3px]"
             style={{
-              width: `${((activeWorkflowStep - 1) / 2) * 100}%`,
+              width: `${(activeWorkflowStep - 1) * 100}%`,
             }}
           />
         </div>
-        <ol className="relative z-10 grid grid-cols-3 gap-2 sm:gap-3">
+        <ol className="relative z-10 grid grid-cols-3 gap-15 sm:gap-10">
           {workflowSteps.map((step) => {
             const isComplete =
               generatedImages.length > 0
@@ -492,9 +545,9 @@ export function CreateDesignTab({
                 aria-current={isActive ? "step" : undefined}
                 className={`group relative min-w-0 overflow-hidden rounded-xl border p-2.5 transition-all duration-200 motion-safe:hover:-translate-y-0.5 sm:p-3 ${
                   isComplete
-                    ? "border-emerald-200 bg-gradient-to-br from-emerald-50/90 to-background dark:border-emerald-900 dark:from-emerald-950/40 dark:to-card"
+                    ? "border-emerald-200 bg-gradient-to-br from-emerald-50/90 to-background dark:border-emerald-900 dark:from-emerald-950/80 dark:to-card"
                     : isActive
-                      ? "border-blue-300 bg-gradient-to-br from-blue-100/90 via-violet-50/80 to-background ring-1 ring-blue-200/60 dark:border-blue-800 dark:from-blue-950/60 dark:via-violet-950/30 dark:to-card dark:ring-blue-900/50"
+                      ? "border-blue-300 bg-gradient-to-br from-blue-100/90 via-violet-50/80 to-background ring-1 ring-blue-200/60 dark:border-blue-800 dark:from-blue-950/80 dark:via-violet-950/40 dark:to-card dark:ring-blue-900/50"
                       : "border-border/80 bg-background/60 hover:border-blue-200 hover:bg-blue-50/60 dark:hover:border-blue-900 dark:hover:bg-blue-950/20"
                 }`}
               >
@@ -610,32 +663,41 @@ export function CreateDesignTab({
               </div>
             </div>
 
-            <div className="flex justify-end">
-              {" "}
+            <div className="flex flex-row-reverse sm:flex-col items-end justify-start sm:justify-end gap-3">
+              <button
+                type="button"
+                onClick={startNewChat}
+                disabled={isGenerating}
+                className="inline-flex h-7.5 items-center justify-center gap-2 rounded-full  border border-blue-700 bg-blue-600 px-3.5 text-xs font-bold text-white shadow-sm transition-all duration-200 hover:border-blue-800 hover:bg-blue-700 hover:shadow-md active:scale-[0.97] cursor-pointer disabled:pointer-events-none disabled:opacity-50 dark:border-blue-500 dark:bg-blue-600 dark:hover:bg-blue-500"
+              >
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                <span>New Chat</span>
+              </button>
+
               <div
-                className={`inline-flex w-fit flex-row items-center justify-end  gap-1.5 rounded-full border px-3 py-0.5 text-[11px] sm:text-[11.5px] font-medium shadow-sm ${
-                  openAiConfigured
+                className={`inline-flex w-fit flex-row items-center justify-end gap-1.5 rounded-full border px-3 py-0.5 text-[11px] sm:text-[11.5px] font-medium shadow-sm ${
+                  cloudflareConfigured
                     ? "border-blue-200/80 bg-white/80 text-blue-700 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-300"
                     : "border-amber-200 bg-amber-50/90 text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
                 }`}
               >
-                {openAiConfigured ? (
+                {cloudflareConfigured ? (
                   <>
                     <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-                    AI connected
+                    Cloudflare connected
                   </>
-                ) : openAiConfigured === null ? (
+                ) : cloudflareConfigured === null ? (
                   <>
                     <RefreshCw
                       className="h-3.5 w-3.5 animate-spin"
                       aria-hidden="true"
                     />
-                    Checking OpenAI setup
+                    Checking Cloudflare setup
                   </>
                 ) : (
                   <>
                     <Lightbulb className="h-3.5 w-3.5" aria-hidden="true" />
-                    Set up your OpenAI API key
+                    Connect your Cloudflare account
                     <button
                       type="button"
                       onClick={onOpenSettings}
@@ -789,12 +851,18 @@ export function CreateDesignTab({
             <p className="mb-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] leading-relaxed text-muted-foreground">
               <span>
                 <Paperclip className="mr-1 inline h-3 w-3" aria-hidden="true" />
-                Style reference: {referenceImages.length}/3 max
+                Style references: {referenceImages.length}/3
               </span>
+
               <span>
                 <ImagePlus className="mr-1 inline h-3 w-3" aria-hidden="true" />
-                Add logos or products: {uploadedImages.length}/5 max
+                Design assets: {uploadedImages.length}/5
               </span>
+
+              <span className="font-medium text-foreground">
+                Total: {referenceImages.length + uploadedImages.length}/4 images
+              </span>
+
               <span>PNG, JPG or WebP · up to 5 MB each</span>
             </p>
 
@@ -880,7 +948,11 @@ export function CreateDesignTab({
                   <button
                     type="button"
                     onClick={() => referenceInputRef.current?.click()}
-                    disabled={isGenerating || referenceImages.length >= 3}
+                    disabled={
+                      isGenerating ||
+                      referenceImages.length >= 3 ||
+                      referenceImages.length + uploadedImages.length >= 4
+                    }
                     title={`Add style reference image (${referenceImages.length} of 3)`}
                     aria-label={`Add style reference image, ${referenceImages.length} of 3 added`}
                     className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:border-blue-300 hover:bg-blue-50/60 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:border-blue-900 dark:hover:bg-blue-950/30 dark:hover:text-blue-300"
@@ -891,7 +963,11 @@ export function CreateDesignTab({
                   <button
                     type="button"
                     onClick={() => imageInputRef.current?.click()}
-                    disabled={isGenerating || uploadedImages.length >= 5}
+                    disabled={
+                      isGenerating ||
+                      uploadedImages.length >= 5 ||
+                      referenceImages.length + uploadedImages.length >= 4
+                    }
                     title={`Add image to design (${uploadedImages.length} of 5)`}
                     aria-label={`Add image to design, ${uploadedImages.length} of 5 added`}
                     className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:border-violet-300 hover:bg-violet-50/60 hover:text-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:border-violet-900 dark:hover:bg-violet-950/30 dark:hover:text-violet-300"

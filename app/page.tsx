@@ -3,10 +3,14 @@ import { cookies } from "next/headers";
 import HomeNavbar from "@/components/home/HomeNavbar";
 import InvoiceAiHero from "@/components/home/InvoiceAiHero";
 import { InvoiceCreditWorkflowSection } from "@/components/home/InvoiceCreditWorkflowSection";
+import AiRecommendationsSection from "@/components/home/AiRecommendationsSection";
 import BusinessToolsSection from "@/components/home/BusinessToolsSection";
+import AiTrustSetupSection from "@/components/home/AiTrustSetupSection";
+import ProductExamplesSection from "@/components/home/ProductExamplesSection";
+import FinalSignupSection from "@/components/home/FinalSignupSection";
 import PricingSection from "@/components/home/PricingSection";
-import AboutSection from "@/components/home/AboutSection";
-import FaqSection from "@/components/home/FaqSection";
+import GlobalAboutSection from "@/components/home/GlobalAboutSection";
+import GlobalFaqSection from "@/components/home/GlobalFaqSection";
 import HomeFooter from "@/components/home/HomeFooter";
 import AiInsightsSection from "@/components/home/AiInsightsSection";
 import { hasSavedAiKey } from "@/lib/ai-insights/hasSavedAiKey.server";
@@ -42,12 +46,15 @@ const Page = async () => {
         <AiInsightsSection isAPIKeySet={APIKeyActive} />
       </AiInsightsProvider>
 
+      <AiRecommendationsSection token={token} />
       <BusinessToolsSection token={token} />
+      <GlobalAboutSection />
+      <AiTrustSetupSection token={token} />
+      <ProductExamplesSection token={token} />
       <PricingSection />
 
-      <AboutSection />
-
-      <FaqSection />
+      <GlobalFaqSection />
+      <FinalSignupSection token={token} />
       <HomeFooter token={token} />
     </div>
   );

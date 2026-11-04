@@ -7,6 +7,11 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  STAT_ROW,
+  STAT_ROW_ITEM,
+} from "../dashboardComponents/overviewDash/statRow";
 
 const workflowSteps = [
   {
@@ -32,11 +37,7 @@ const workflowSteps = [
   },
 ];
 
-export function InvoiceCreditWorkflowSection({
-  token,
-}: {
-  token?: string;
-}) {
+export function InvoiceCreditWorkflowSection({ token }: { token?: string }) {
   return (
     <section
       id="invoicing"
@@ -56,11 +57,20 @@ export function InvoiceCreditWorkflowSection({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div
+          className={cn(
+            "flex items-start gap-3 -mx-6 snap-x snap-mandatory overflow-x-auto scroll-pl-6 px-6  scrollbar-hide",
+            "sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-2 sm:snap-none sm:overflow-visible sm:px-0 sm:pb-0",
+            "md:gap-3 lg:grid-cols-3",
+          )}
+        >
           {workflowSteps.map(({ number, title, description, icon: Icon }) => (
             <article
               key={number}
-              className="relative rounded-2xl border border-gray-200/80 bg-[#f8f9fc] p-6 dark:border-white/10 dark:bg-[#131a29] sm:p-7"
+              className={cn(
+                "relative rounded-2xl border border-gray-200/80 bg-[#f8f9fc] p-6 dark:border-white/10 dark:bg-[#131a29] sm:p-7",
+                STAT_ROW_ITEM,
+              )}
             >
               <div className="mb-6 flex items-center justify-between">
                 <span className="text-xs font-semibold tracking-[0.18em] text-[#244074]/60 dark:text-[#7ba2e3]/70">
@@ -96,7 +106,7 @@ export function InvoiceCreditWorkflowSection({
             </div>
           </div>
 
-          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+          <div className="flex shrink-0  gap-2 items-end justify-end flex-row">
             <Button
               asChild
               className="rounded-xl bg-[#244074] text-white hover:bg-[#1b3159]"
@@ -107,9 +117,7 @@ export function InvoiceCreditWorkflowSection({
               </Link>
             </Button>
             <Button asChild variant="outline" className="rounded-xl">
-              <Link
-                href={token ? "/dashboard/ai-insights" : "#ai-insights"}
-              >
+              <Link href={token ? "/dashboard/ai-insights" : "#ai-insights"}>
                 Explore AI insights
               </Link>
             </Button>

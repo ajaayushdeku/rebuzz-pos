@@ -74,13 +74,23 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
 
-  const apiKey = typeof body?.apiKey === "string" ? body.apiKey.trim() : "";
+  const accountId =
+    typeof body?.accountId === "string" ? body.accountId.trim() : "";
 
-  if (!apiKey) {
-    return NextResponse.json({ error: "API_KEY_REQUIRED" }, { status: 400 });
+  const apiToken =
+    typeof body?.apiToken === "string" ? body.apiToken.trim() : "";
+
+  if (!accountId || !apiToken) {
+    return NextResponse.json(
+      { error: "CLOUDFLARE_CREDENTIALS_REQUIRED" },
+      { status: 400 },
+    );
   }
 
-  return forward("POST", { apiKey });
+  return forward("POST", {
+    accountId,
+    apiToken,
+  });
 }
 
 export async function PATCH(req: NextRequest) {

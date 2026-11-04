@@ -116,7 +116,10 @@ export function DesignArtwork({
 export type AISettings = {
   configured: boolean;
   enabled: boolean;
-  maskedKey: string | null;
+  maskedAccountId: string | null;
+  maskedApiToken: string | null;
+  textModel: string | null;
+  imageModel: string | null;
   lastVerifiedAt: string | null;
   updatedAt: string | null;
 };

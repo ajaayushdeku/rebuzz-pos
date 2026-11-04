@@ -187,7 +187,7 @@ export const navigationConfig: NavigationItem[] = [
   // },
   {
     type: "single",
-    label: "AI Design Generator",
+    label: "AI Graphics",
     icon: Palette,
     href: "/ai-design",
   },

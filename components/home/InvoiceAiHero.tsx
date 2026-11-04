@@ -51,9 +51,12 @@ export default function InvoiceAiHero({ token }: { token?: string }) {
 
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-6 pb-20 pt-16 md:px-16 md:pt-20 lg:grid-cols-12 lg:gap-8 lg:pb-24">
         <div className="lg:col-span-6">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#244074]/25 bg-[#244074]/10 px-3 py-1 text-xs font-semibold text-[#244074] dark:text-[#7ba2e3]">
+          <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#244074]/25 bg-[#244074]/10 px-3 py-1 text-[11px] font-semibold leading-4 text-[#244074] dark:text-[#7ba2e3] sm:text-xs">
             <Zap size={11} aria-hidden="true" />
-            Invoicing and AI insights for growing businesses worldwide
+            <span className="sm:hidden">Invoicing + AI insights</span>
+            <span className="hidden sm:inline">
+              Invoicing and AI insights for growing businesses worldwide
+            </span>
           </span>
 
           <div className="mt-5 flex flex-col items-left gap-0.5">
