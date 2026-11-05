@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Paperclip,
   Plus,
+  Power,
   RefreshCw,
   Send,
   Settings,
@@ -20,7 +21,8 @@ import {
 } from "lucide-react";
 import { examplePrompts, instructionSteps } from "../design-studio/mock-data";
 import { DesignTabHeader } from "./DesignTabHeader";
-import { formatAiDesignError } from "./formatAiDesignError";
+import { getAiDesignErrorInfo } from "./formatAiDesignError";
+import type { AiDesignErrorInfo } from "./formatAiDesignError";
 import { ChatMessage } from "@/app/(app)/ai-design/page";
 import { useEffect, useRef, useState } from "react";
 
@@ -51,8 +53,29 @@ type GenerateResponse = {
   };
   error?: string;
   detail?: string;
+  providerCode?: string | number;
+  status?: number;
   requestId?: string;
 };
+
+type FailedGenerateRequest = {
+  prompt: string;
+  conversationHistory: ChatMessage[];
+  generateImage: boolean;
+  previousContext: Record<string, unknown> | null;
+  referenceImages: File[];
+  uploadedImages: File[];
+};
+
+class AiDesignRequestError extends Error {
+  info: AiDesignErrorInfo;
+
+  constructor(info: AiDesignErrorInfo) {
+    super(info.message);
+    this.name = "AiDesignRequestError";
+    this.info = info;
+  }
+}
 
 function ImageFilePreview({
   file,
@@ -132,6 +155,8 @@ export function CreateDesignTab({
   const [referenceImages, setReferenceImages] = useState<File[]>([]);
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
 
+  const failedRequestRef = useRef<FailedGenerateRequest | null>(null);
+
   const referenceInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -153,6 +178,7 @@ export function CreateDesignTab({
     setPreviousContext(null);
     setDesignBrief(null);
     setError("");
+    failedRequestRef.current = null;
     setReferenceImages([]);
     setUploadedImages([]);
     if (referenceInputRef.current) referenceInputRef.current.value = "";
@@ -175,9 +201,7 @@ export function CreateDesignTab({
         }
 
         if (!cancelled) {
-          setCloudflareConfigured(
-            Boolean(result.data?.configured && result.data?.enabled),
-          );
+          setCloudflareConfigured(Boolean(result.data?.configured));
           setCloudflareEnabled(!!result.data?.enabled);
         }
       } catch {
@@ -200,6 +224,15 @@ export function CreateDesignTab({
   const generationStatus = isGeneratingImage
     ? "Generating your graphic..."
     : "Preparing your design brief...";
+  const chatStatus = isGenerating
+    ? generationStatus
+    : cloudflareConfigured === null
+      ? "Checking Cloudflare setup..."
+      : cloudflareConfigured && cloudflareEnabled
+        ? "Ready to create"
+        : cloudflareConfigured
+          ? "AI is disabled — enable it in AI Settings"
+          : "Connect your Cloudflare account to get started";
 
   const workflowSteps = [
     {
@@ -226,48 +259,65 @@ export function CreateDesignTab({
     prompt: string,
     conversationHistory: ChatMessage[],
     generateImage = false,
+    retryRequest?: FailedGenerateRequest,
   ) => {
     if (isGenerating || !prompt.trim()) return;
 
-    if (generateImage && !previousContext) {
+    const requestContext = retryRequest?.previousContext ?? previousContext;
+    const requestSnapshot: FailedGenerateRequest = retryRequest
+      ? { ...retryRequest, previousContext: requestContext }
+      : {
+          prompt,
+          conversationHistory: [...conversationHistory],
+          generateImage,
+          previousContext: requestContext,
+          referenceImages: [...referenceImages],
+          uploadedImages: [...uploadedImages],
+        };
+
+    if (requestSnapshot.generateImage && !requestContext) {
       setError("Please prepare your design brief before generating.");
       return;
     }
 
     setIsGenerating(true);
-    setIsGeneratingImage(generateImage);
+    setIsGeneratingImage(requestSnapshot.generateImage);
     setError("");
-
-    if (generateImage) {
-      setGeneratedImages([]);
-      setGenerationInfo(undefined);
+    if (retryRequest) {
+      setMessages((previous) => previous.filter((message) => !message.error));
     }
 
     try {
       const formData = new FormData();
 
-      formData.append("prompt", prompt);
-      formData.append("generateImage", generateImage ? "true" : "false");
+      formData.append("prompt", requestSnapshot.prompt);
+      formData.append(
+        "generateImage",
+        requestSnapshot.generateImage ? "true" : "false",
+      );
 
       formData.append(
         "conversationHistory",
         JSON.stringify(
-          conversationHistory.map((message) => ({
+          requestSnapshot.conversationHistory.map((message) => ({
             role: message.role,
             content: message.content,
           })),
         ),
       );
 
-      if (previousContext) {
-        formData.append("previousContext", JSON.stringify(previousContext));
+      if (requestSnapshot.previousContext) {
+        formData.append(
+          "previousContext",
+          JSON.stringify(requestSnapshot.previousContext),
+        );
       }
 
-      referenceImages.forEach((file) => {
+      requestSnapshot.referenceImages.forEach((file) => {
         formData.append("referenceImages", file);
       });
 
-      uploadedImages.forEach((file) => {
+      requestSnapshot.uploadedImages.forEach((file) => {
         formData.append("assets", file);
       });
 
@@ -281,16 +331,21 @@ export function CreateDesignTab({
         .catch(() => ({}) as GenerateResponse);
 
       if (!response.ok || !result.success) {
-        throw new Error(
-          formatAiDesignError(
-            result,
-            "Unable to process your design request. Please try again.",
-          ),
+        const errorInfo = getAiDesignErrorInfo(
+          {
+            ...result,
+            status: response.status,
+          },
+          "Unable to process your design request. Please try again.",
         );
+
+        throw new AiDesignRequestError(errorInfo);
       }
 
       // 1. AI needs additional information.
       if (result.needsClarification) {
+        failedRequestRef.current = null;
+
         if (result.context) {
           setPreviousContext(result.context);
         }
@@ -317,6 +372,7 @@ export function CreateDesignTab({
           throw new Error("The AI did not return a valid design brief.");
         }
 
+        failedRequestRef.current = null;
         setPreviousContext(result.context);
         setDesignBrief(result.context);
 
@@ -339,6 +395,7 @@ export function CreateDesignTab({
         throw new Error("The AI response did not contain a generated image.");
       }
 
+      failedRequestRef.current = null;
       setGeneratedImages(result.images);
       setGenerationInfo(result.generation);
 
@@ -358,25 +415,58 @@ export function CreateDesignTab({
         },
       ]);
     } catch (err) {
-      const message =
+      const fallbackMessage =
         err instanceof Error
           ? err.message
           : "Something went wrong while generating your design.";
 
-      setError(message);
+      const errorInfo =
+        err instanceof AiDesignRequestError
+          ? err.info
+          : getAiDesignErrorInfo(
+              {
+                error: err instanceof TypeError ? "NETWORK_ERROR" : undefined,
+                message: fallbackMessage,
+              },
+              "Something went wrong while generating your design.",
+            );
+
+      failedRequestRef.current = requestSnapshot;
+      setError(errorInfo.message);
 
       setMessages((previous) => [
         ...previous,
         {
           id: Date.now(),
           role: "assistant",
-          content: `I couldn't complete your request. ${message}`,
+          content: errorInfo.message,
+          error: {
+            category: errorInfo.category,
+            title: errorInfo.title,
+            advice: errorInfo.advice,
+            requestId: errorInfo.requestId,
+          },
         },
       ]);
     } finally {
       setIsGenerating(false);
       setIsGeneratingImage(false);
     }
+  };
+
+  const retryLastRequest = () => {
+    const failedRequest = failedRequestRef.current;
+
+    if (!failedRequest || isGenerating) return;
+
+    setMessages((previous) => previous.filter((message) => !message.error));
+
+    void generateDesign(
+      failedRequest.prompt,
+      failedRequest.conversationHistory,
+      failedRequest.generateImage,
+      failedRequest,
+    );
   };
 
   const sendMessage = async (message?: string) => {
@@ -395,10 +485,14 @@ export function CreateDesignTab({
     const conversationHistory = messages.slice(1);
 
     // Add the user's message to the chat immediately.
-    setMessages((previous) => [...previous, userMessage]);
+    setMessages((previous) => [
+      ...previous.filter((message) => !message.error),
+      userMessage,
+    ]);
 
     setInput("");
     setError("");
+    failedRequestRef.current = null;
     setGeneratedImages([]);
     setGenerationInfo(undefined);
     setDesignBrief(null);
@@ -505,6 +599,10 @@ export function CreateDesignTab({
     link.remove();
   };
 
+  const latestErrorMessageId = [...messages]
+    .reverse()
+    .find((message) => message.error)?.id;
+
   return (
     <div className="space-y-8">
       <DesignTabHeader
@@ -597,7 +695,7 @@ export function CreateDesignTab({
                     >
                       {step.title}
                     </span>
-                    <span className="mt-0.5 hidden text-xs text-muted-foreground sm:block">
+                    <span className="mt-0.5 hidden text-xs text-muted-foreground md:block">
                       {step.detail}
                     </span>
                   </span>
@@ -655,10 +753,16 @@ export function CreateDesignTab({
                     className={`h-2 w-2 rounded-full ${
                       isGenerating
                         ? "animate-pulse bg-amber-500"
-                        : "bg-emerald-500"
+                        : cloudflareConfigured === null
+                          ? "animate-pulse bg-slate-400"
+                          : cloudflareConfigured && cloudflareEnabled
+                            ? "bg-emerald-500"
+                            : cloudflareConfigured
+                              ? "bg-amber-500"
+                              : "bg-rose-500"
                     }`}
                   />
-                  {isGenerating ? generationStatus : "Ready to create"}
+                  {chatStatus}
                 </p>
               </div>
             </div>
@@ -676,23 +780,39 @@ export function CreateDesignTab({
 
               <div
                 className={`inline-flex w-fit flex-row items-center justify-end gap-1.5 rounded-full border px-3 py-0.5 text-[11px] sm:text-[11.5px] font-medium shadow-sm ${
-                  cloudflareConfigured
-                    ? "border-blue-200/80 bg-white/80 text-blue-700 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-300"
-                    : "border-amber-200 bg-amber-50/90 text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
+                  cloudflareConfigured === null
+                    ? "border-border bg-background/70 text-muted-foreground"
+                    : cloudflareConfigured && cloudflareEnabled
+                      ? "border-blue-200/80 bg-white/80 text-blue-700 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-300"
+                      : "border-amber-200 bg-amber-50/90 text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
                 }`}
               >
-                {cloudflareConfigured ? (
-                  <>
-                    <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-                    Cloudflare connected
-                  </>
-                ) : cloudflareConfigured === null ? (
+                {cloudflareConfigured === null ? (
                   <>
                     <RefreshCw
                       className="h-3.5 w-3.5 animate-spin"
                       aria-hidden="true"
                     />
                     Checking Cloudflare setup
+                  </>
+                ) : cloudflareConfigured && cloudflareEnabled ? (
+                  <>
+                    <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                    Cloudflare connected
+                  </>
+                ) : cloudflareConfigured ? (
+                  <>
+                    <Power className="h-3.5 w-3.5" aria-hidden="true" />
+                    Cloudflare connected · AI disabled
+                    <button
+                      type="button"
+                      onClick={onOpenSettings}
+                      aria-label="Open AI Settings to enable AI"
+                      title="Open AI Settings to enable AI"
+                      className="ml-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-200/70 text-amber-900 transition-colors hover:bg-amber-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-1 dark:bg-amber-900/70 dark:text-amber-100 dark:hover:bg-amber-800 cursor-pointer"
+                    >
+                      <Settings className="h-3.5 w-3.5" aria-hidden="true" />
+                    </button>
                   </>
                 ) : (
                   <>
@@ -736,15 +856,70 @@ export function CreateDesignTab({
                   )}
                 </div>
 
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 sm:max-w-[75%] ${
-                    message.role === "assistant"
-                      ? "rounded-tl-sm bg-muted"
-                      : "rounded-tr-sm bg-blue-600 text-white"
-                  }`}
-                >
-                  {message.content}
-                </div>
+                {message.error ? (
+                  <div className="max-w-[90%] rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm dark:border-amber-900/70 dark:bg-amber-950/30 sm:max-w-[85%]">
+                    <div className="flex items-start gap-2.5">
+                      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300">
+                        <Lightbulb className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-amber-900 dark:text-amber-200">
+                          {message.error.title}
+                        </p>
+                        <p className="mt-1 leading-relaxed text-amber-800 dark:text-amber-300">
+                          {message.content ||
+                            (message.error.category === "safety"
+                              ? "The provider couldn't generate this particular image."
+                              : "The request could not be completed.")}
+                        </p>
+                        <p className="mt-2 leading-relaxed text-amber-800/90 dark:text-amber-300/90">
+                          {message.error.advice}
+                        </p>
+                        {message.error.requestId && (
+                          <p className="mt-3 break-all text-[11px] text-amber-700/80 dark:text-amber-400/80">
+                            Request ID: {message.error.requestId}
+                          </p>
+                        )}
+                        {message.id === latestErrorMessageId && (
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={retryLastRequest}
+                              disabled={isGenerating}
+                              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <RefreshCw
+                                className={`h-3.5 w-3.5 ${isGenerating ? "animate-spin" : ""}`}
+                              />
+                              {isGenerating ? "Retrying..." : "Try again"}
+                            </button>
+                            {(message.error.category === "authentication" ||
+                              message.error.category === "permission") && (
+                              <button
+                                type="button"
+                                onClick={onOpenSettings}
+                                className="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-background px-3 py-2 text-xs font-semibold text-amber-900 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:text-amber-200 dark:hover:bg-amber-950"
+                              >
+                                <Settings className="h-3.5 w-3.5" />
+                                AI Settings
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 sm:max-w-[75%] ${
+                      message.role === "assistant"
+                        ? "rounded-tl-sm bg-muted"
+                        : "rounded-tr-sm bg-blue-600 text-white"
+                    }`}
+                  >
+                    {message.content}
+                  </div>
+                )}
               </div>
             ))}
 
@@ -1200,8 +1375,9 @@ export function CreateDesignTab({
                     creating a new graphic.
                   </p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Download this version first if you want to keep it; the
-                    preview is cleared when you request a change or regenerate.
+                    Your current preview stays visible if a new generation fails
+                    and is replaced only after a new image is generated
+                    successfully.
                   </p>
                 </div>
 

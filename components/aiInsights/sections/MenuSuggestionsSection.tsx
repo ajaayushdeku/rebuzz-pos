@@ -227,7 +227,7 @@ export default function MenuSuggestionsSection({
                   metrics={menuMetrics(item, money)}
                   // A new item is added on the products page.
                   footer={
-                    <CardAction href="/records/products/add" primary={true}>
+                    <CardAction href="/records/products" primary={true}>
                       Add to menu
                     </CardAction>
                   }

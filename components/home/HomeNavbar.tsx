@@ -30,7 +30,7 @@ function NavDivider() {
  */
 export default function HomeNavbar({ token }: { token?: string }) {
   return (
-    <nav className="sticky top-0 z-30 bg-[#f7f8fb]/80 backdrop-blur-md dark:bg-[#131a29]/80">
+    <nav className="sticky top-0 z-40 bg-[#f7f8fb]/80 backdrop-blur-md dark:bg-[#131a29]/80">
       <div className="mx-auto flex max-w-full items-center justify-between gap-4 px-6 py-3">
         <Link href="/" className="flex min-w-0 items-center gap-1.5">
           <Image
@@ -43,6 +43,9 @@ export default function HomeNavbar({ token }: { token?: string }) {
           <span className="text-lg font-bold tracking-tight">
             <span className="text-[#244074] dark:text-[#7ba2e3]">Re</span>
             <span style={{ color: "#E26924" }}>Buzz</span>
+            <span className="ml-1.5 align-end text-[15px] font-semibold uppercase tracking-[2px] text-gray-400 dark:text-[#7b869b]">
+              IQ
+            </span>
           </span>
         </Link>
 

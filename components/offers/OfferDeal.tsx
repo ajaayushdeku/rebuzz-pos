@@ -20,7 +20,7 @@ import { getVariants, productLabel, variantLabel } from "@/lib/productVariants";
 import { Product } from "@/lib/types/product";
 
 const FIELD =
-  "h-11 w-full rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-white/15";
+  "h-11 w-full rounded-xl border border-emerald-600/30 bg-white/90 px-3.5 text-sm text-[#3c4043] outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 dark:border-emerald-400/20 dark:bg-white/5 dark:text-[#e8ecf4]";
 
 const LABEL =
   "mb-1.5 block text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]";
@@ -143,7 +143,7 @@ function ProductPicker({
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search items..."
-                  className="w-full rounded-lg border border-[#dadce0] py-1.5 pl-8 pr-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-white/15"
+                  className="w-full rounded-lg border border-emerald-100 bg-white/90 py-1.5 pl-8 pr-3 text-sm text-[#3c4043] outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 dark:border-emerald-400/20 dark:bg-white/5 dark:text-[#e8ecf4]"
                 />
               </div>
             </div>
@@ -318,7 +318,7 @@ function ProductMultiPicker({
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search items..."
-                    className="w-full rounded-lg border border-[#dadce0] py-1.5 pl-8 pr-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-white/15"
+                    className="w-full rounded-lg border border-emerald-100 bg-white/90 py-1.5 pl-8 pr-3 text-sm text-[#3c4043] outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 dark:border-emerald-400/20 dark:bg-white/5 dark:text-[#e8ecf4]"
                   />
                 </div>
               </div>

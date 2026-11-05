@@ -15,6 +15,19 @@ export type ChatMessage = {
   id: number;
   role: "assistant" | "user";
   content: string;
+  error?: {
+    category:
+      | "safety"
+      | "authentication"
+      | "permission"
+      | "rate_limit"
+      | "server"
+      | "network"
+      | "general";
+    title: string;
+    advice: string;
+    requestId?: string;
+  };
 };
 
 export function DesignArtwork({
@@ -137,7 +150,8 @@ export default function DesignStudioPage() {
           // flexItems="items-start flex-col"
           actionWidth="w-fit sm:w-full"
           actions={
-            <div className="flex w-full gap-1 overflow-x-auto rounded-xl border border-border bg-muted/50 p-1 sm:w-auto">
+            // <div className="flex w-full gap-1 overflow-x-auto rounded-xl border border-border bg-muted/50 p-1 sm:w-auto">
+            <div className="flex items-center gap-1 rounded-lg sm:rounded-xl bg-muted/50 border border-border  p-1 dark:bg-white/10 overflow-x-auto sm:w-auto">
               {designTabs.map((tab) => {
                 const Icon =
                   tab.id === "create"
@@ -151,14 +165,14 @@ export default function DesignStudioPage() {
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors sm:px-4 ${
+                    className={`flex shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors sm:px-4 ${
                       activeTab === tab.id
-                        ? "bg-background text-foreground shadow-sm"
+                        ? "bg-background text-foreground shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     <Icon className="h-4 w-4" />
-                    <span className="hidden sm:block"> {tab.label}</span>
+                    <span className="hidden md:block"> {tab.label}</span>
                   </button>
                 );
               })}

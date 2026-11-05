@@ -21,8 +21,8 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
-import AiInsightsImageSlider from "./AiInsightsImageSlider";
-import HomeAiBusinessStory from "./HomeAIBusinessStory";
+// import AiInsightsImageSlider from "./AiInsightsImageSlider";
+import HomeAiBusinessStory from "../HomeAIBusinessStory";
 
 type InsightContent = {
   key: string;
@@ -106,58 +106,58 @@ const insightsContents: InsightContent[] = [
   },
 ];
 
-const aiInsightImages = [
-  {
-    src: "/ai-business-story.png",
-    alt: "AI-generated business performance story and sales insights dashboard",
-    title: "Business Insight Story",
-  },
-  {
-    src: "/period-picker.png",
-    alt: "Date and period selector for business analytics and AI insights",
-    title: "Flexible Analytics Periods",
-  },
-  {
-    src: "/ai-menu-suggestions.png",
-    alt: "AI-powered menu suggestions and product combination recommendations",
-    title: "AI Menu Suggestions",
-  },
-  {
-    src: "/customer-retention.png",
-    alt: "Customer retention analytics and repeat purchase opportunities",
-    title: "Customer Retention Radar",
-  },
-  {
-    src: "/slow-moving-items.png",
-    alt: "Slow-moving product analysis and inventory improvement suggestions",
-    title: "Slow-Moving Items Insights",
-  },
-  {
-    src: "/pricing-opportunities.png",
-    alt: "Product pricing analysis and profitability improvement opportunities",
-    title: "Pricing Opportunities",
-  },
-  {
-    src: "/hour-by-hour-playbook.png",
-    alt: "Hourly sales trends and business activity analysis",
-    title: "Hour-by-Hour Playbook",
-  },
-  {
-    src: "/sales-recommendations.png",
-    alt: "AI-powered sales recommendations and revenue growth opportunities",
-    title: "Sales Recommendations",
-  },
-  {
-    src: "/staffing-recommendations.png",
-    alt: "Staffing recommendations based on hourly sales and customer demand",
-    title: "Staffing Recommendations",
-  },
-  {
-    src: "/upcoming-festival-prep.png",
-    alt: "Festival preparation insights for seasonal demand and inventory planning",
-    title: "Upcoming Festival Prep",
-  },
-];
+// const aiInsightImages = [
+//   {
+//     src: "/ai-business-story.png",
+//     alt: "AI-generated business performance story and sales insights dashboard",
+//     title: "Business Insight Story",
+//   },
+//   {
+//     src: "/period-picker.png",
+//     alt: "Date and period selector for business analytics and AI insights",
+//     title: "Flexible Analytics Periods",
+//   },
+//   {
+//     src: "/ai-menu-suggestions.png",
+//     alt: "AI-powered menu suggestions and product combination recommendations",
+//     title: "AI Menu Suggestions",
+//   },
+//   {
+//     src: "/customer-retention.png",
+//     alt: "Customer retention analytics and repeat purchase opportunities",
+//     title: "Customer Retention Radar",
+//   },
+//   {
+//     src: "/slow-moving-items.png",
+//     alt: "Slow-moving product analysis and inventory improvement suggestions",
+//     title: "Slow-Moving Items Insights",
+//   },
+//   {
+//     src: "/pricing-opportunities.png",
+//     alt: "Product pricing analysis and profitability improvement opportunities",
+//     title: "Pricing Opportunities",
+//   },
+//   {
+//     src: "/hour-by-hour-playbook.png",
+//     alt: "Hourly sales trends and business activity analysis",
+//     title: "Hour-by-Hour Playbook",
+//   },
+//   {
+//     src: "/sales-recommendations.png",
+//     alt: "AI-powered sales recommendations and revenue growth opportunities",
+//     title: "Sales Recommendations",
+//   },
+//   {
+//     src: "/staffing-recommendations.png",
+//     alt: "Staffing recommendations based on hourly sales and customer demand",
+//     title: "Staffing Recommendations",
+//   },
+//   {
+//     src: "/upcoming-festival-prep.png",
+//     alt: "Festival preparation insights for seasonal demand and inventory planning",
+//     title: "Upcoming Festival Prep",
+//   },
+// ];
 
 type AiInsightsSectionProps = {
   isAPIKeySet: boolean;
@@ -186,9 +186,9 @@ const AiInsightsSection = ({ isAPIKeySet }: AiInsightsSectionProps) => {
           </p>
         </div>
 
-        <div className="lg:col-span-2 mb-6">
+        {/* <div className="lg:col-span-2 mb-6">
           <AiInsightsImageSlider images={aiInsightImages} interval={4000} />
-        </div>
+        </div> */}
 
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           {/* AI features */}

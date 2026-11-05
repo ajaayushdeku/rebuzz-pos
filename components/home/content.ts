@@ -22,7 +22,7 @@ export const COMPANY = {
   name: "Brand Builder Pvt. Ltd.",
   address: "Niva Galli, Pokhara, Nepal",
   email: "support@rebuzzpos.com",
-  phone: "+977 982-6189697",
+  phone: "+977 9802850777",
   /** Digits only, as WhatsApp's link format expects. */
   whatsapp: "9779826189697",
   website: "https://rebuzzpos.com/",

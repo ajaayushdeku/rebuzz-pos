@@ -31,7 +31,7 @@ function OfferBuilder() {
           // flexItems="items-start flex-col"
           actionWidth="w-fit sm:w-full"
           actions={
-            <div className="flex items-center gap-1 rounded-lg sm:rounded-xl bg-[#e4f2fe]  p-1 xl:hidden dark:bg-white/10">
+            <div className="flex items-center gap-1 rounded-lg sm:rounded-xl bg-muted/50 border border-border p-1 xl:hidden dark:bg-white/10">
               {VIEWS.map(({ id, label, icon: Icon }) => {
                 const active = view === id;
                 return (
@@ -41,13 +41,13 @@ function OfferBuilder() {
                     onClick={() => setView(id)}
                     aria-pressed={active}
                     className={cn(
-                      "flex  items-center gap-2 rounded-md sm:rounded-lg px-3 sm:px-5 py-1.5 sm:py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe]",
+                      "flex shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors sm:px-4 ",
                       active
-                        ? "bg-white text-gray-900 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none"
-                        : "text-gray-500 hover:text-gray-700 dark:hover:text-[#e8ecf4] dark:text-[#9aa6bd]",
+                        ? "bg-background text-foreground shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none"
+                        : "text-muted-foreground hover:text-foreground",
                     )}
                   >
-                    <Icon size={15} />
+                    <Icon className="h-4 w-4" />
                     <span className="hidden sm:block"> {label}</span>
                   </button>
                 );

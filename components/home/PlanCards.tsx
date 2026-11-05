@@ -7,7 +7,15 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import type { Plan, PlanId } from "@/lib/config/plans";
+interface DisplayPlan {
+  id: string;
+  name: string;
+  tagline: string;
+  price: string;
+  period: string;
+  badge?: string;
+  features: string[];
+}
 
 /**
  * How many features a card shows before it asks to be opened.
@@ -33,14 +41,14 @@ const SHOWN = 4;
  * card at a time with a pager: three full-height cards stacked is a long
  * scroll through things a reader is trying to compare, not read in order.
  */
-export default function PlanCards({ plans }: { plans: Plan[] }) {
-  const [expanded, setExpanded] = useState<ReadonlySet<PlanId>>(new Set());
+export default function PlanCards({ plans }: { plans: DisplayPlan[] }) {
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
   /** Which plan the small-screen pager is showing. */
   const [index, setIndex] = useState(0);
   const area = useRef<HTMLDivElement | null>(null);
   const inView = useSectionInView(area);
 
-  const toggle = (id: PlanId) =>
+  const toggle = (id: string) =>
     setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -178,20 +186,6 @@ export default function PlanCards({ plans }: { plans: Plan[] }) {
                   </>
                 )}
 
-                {plan.printerAddon && (
-                  // `mt-auto`, so the add-on sits at the foot of the card however
-                  // long the list above it runs.
-                  <p
-                    className={`mt-auto rounded-lg  px-3 py-2.5 text-xs leading-relaxed ${
-                      featured
-                        ? "bg-white/5 text-white/60"
-                        : "bg-gray-50 text-gray-500 dark:bg-white/5 dark:text-[#9aa6bd]"
-                    } ${plan.features.length ? "mt-6" : ""}`}
-                  >
-                    Thermal printer {plan.printerAddon.price},{" "}
-                    {plan.printerAddon.note}
-                  </p>
-                )}
               </div>
             );
           })}

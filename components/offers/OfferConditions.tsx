@@ -6,7 +6,7 @@ import { Lock, SlidersHorizontal } from "lucide-react";
 import OfferStepCard from "./OfferStepCard";
 
 const FIELD =
-  "h-11 w-full rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 text-sm tabular-nums outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-white/15";
+  "h-11 w-full rounded-xl border border-blue-600/25 bg-white/90 px-3.5 text-sm tabular-nums text-[#3c4043] outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 dark:border-blue-400/20 dark:bg-white/5 dark:text-[#e8ecf4]";
 
 const LABEL =
   "mb-1.5 block text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]";

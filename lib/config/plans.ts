@@ -65,6 +65,81 @@ export interface Plan {
   printerAddon?: PrinterAddon;
 }
 
+/** Homepage pricing is marketing content and uses explicit USD amounts. */
+export interface HomepagePlan {
+  id: "free" | "monthly" | "yearly";
+  name: string;
+  tagline: string;
+  price: { amount: number; currency: "USD" };
+  period: "forever" | "per month" | "per year";
+  badge?: string;
+  features: string[];
+}
+
+/** Plans displayed on the homepage, kept separate from subscription billing. */
+export const HOMEPAGE_PLANS: HomepagePlan[] = [
+  {
+    id: "free",
+    name: "Free",
+    tagline: "The essentials to get your business started",
+    price: { amount: 0, currency: "USD" },
+    period: "forever",
+    features: [
+      `Limited to ${FREE_PRODUCT_LIMIT} products`,
+      "Sales processing with multiple payment options",
+      "Inventory management",
+      "Sales reporting and analytics",
+      "Loyalty program management",
+      "Cloud-based data storage",
+      "Appointment scheduling",
+      "Employee accounts",
+      "QR payments",
+      "Tax management",
+    ],
+  },
+  {
+    id: "monthly",
+    name: "Monthly",
+    tagline: "Flexible access as your business grows",
+    price: { amount: 199, currency: "USD" },
+    period: "per month",
+    features: [
+      "Unlimited products",
+      "Sales processing with multiple payment options",
+      "Advanced inventory management",
+      "Unlimited customer database",
+      "Sales reporting and analytics",
+      "Loyalty program management",
+      "Unlimited cloud-based data storage",
+      "Appointment scheduling",
+      "Unlimited employee accounts",
+      "QR payments and tax management",
+      "Priority support",
+    ],
+  },
+  {
+    id: "yearly",
+    name: "Yearly",
+    tagline: "A full year of tools for a growing business",
+    price: { amount: 999, currency: "USD" },
+    period: "per year",
+    badge: "Best value",
+    features: [
+      "Unlimited products",
+      "Sales processing with multiple payment options",
+      "Advanced inventory management",
+      "Unlimited customer database",
+      "Sales reporting and analytics",
+      "Loyalty program management",
+      "Unlimited cloud-based data storage",
+      "Appointment scheduling",
+      "Unlimited employee accounts",
+      "QR payments and tax management",
+      "Priority support",
+    ],
+  },
+];
+
 export const PLANS: Plan[] = [
   {
     id: "free",

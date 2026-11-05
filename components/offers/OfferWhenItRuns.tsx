@@ -3,8 +3,12 @@
 import { useState } from "react";
 import {
   ArrowRight,
+  Check,
   CalendarClock,
   CalendarDays,
+  Clock3,
+  Globe,
+  Languages,
   Loader2,
   Lock,
   PartyPopper,
@@ -24,6 +28,7 @@ import { lockFor, unlockLabel, useAiFillLock } from "./useAiFillLock";
 import { festivalDatesUnknown, festivalOccurrence } from "./festivalDates";
 import { FESTIVALS } from "./festivals";
 import { toBsLabel } from "@/lib/nepaliDate";
+import { GEMINI_GRADIENT } from "@/components/settingsComponents/apiKeys/googlePalette";
 import type { HolidayEvent } from "@/lib/holidayCalendar";
 import { useHolidayEvents } from "@/hooks/useHolidayEvents";
 import OfferCalendarModal, { type CalendarSystem } from "./OfferCalendarModal";
@@ -52,7 +57,7 @@ const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 const WEEKEND = ["Sat", "Sun"];
 
 const FIELD =
-  "h-10 w-full rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-3.5 text-sm text-[#3c4043] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-white/15 dark:text-[#e8ecf4]";
+  "h-11 w-full rounded-xl border border-rose-500/20 bg-white/90 px-3.5 text-sm text-[#3c4043] outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20 dark:border-rose-400/20 dark:bg-white/5 dark:text-[#e8ecf4]";
 
 const LABEL =
   "mb-1.5 block text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]";
@@ -315,307 +320,389 @@ export default function OfferWhenItRuns() {
       icon={CalendarClock}
       accent="rose"
     >
-      {/* Occasions */}
-      <div>
-        <label htmlFor="offer-custom-event" className={LABEL}>
-          Occasion / Festival
-        </label>
+      <div className="space-y-5">
+        {/* Occasion: name an event or choose a dated festival. */}
+        <section className="rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/70 via-white to-white p-4 dark:border-rose-400/15 dark:from-rose-400/10 dark:via-[#161d2e] dark:to-[#161d2e] sm:p-5">
+          <div className="mb-3">
+            <label
+              htmlFor="offer-custom-event"
+              className="block text-sm font-semibold text-[#3c4043] dark:text-[#e8ecf4]"
+            >
+              Occasion or festival
+            </label>
+            <p className="mt-1 text-xs leading-5 text-[#7b828c] dark:text-[#9aa6bd]">
+              Name your own event, or choose a festival to fill its dates.
+            </p>
+          </div>
 
-        <div className="flex items-center gap-2">
-          {/* min-w-0: an <input> carries an intrinsic width from its default
+          <div className="flex items-center gap-2">
+            {/* min-w-0: an <input> carries an intrinsic width from its default
               `size`, and a flex item will not shrink below that on its own —
               so this row would hold the card open rather than let the field
               narrow. */}
-          <div className="relative min-w-0 flex-1">
-            <PartyPopper
-              size={15}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9aa0a6] dark:text-[#9aa6bd]"
-            />
-            <input
-              id="offer-custom-event"
-              type="text"
-              value={form.customFestival}
-              onChange={(e) => nameOwnEvent(e.target.value)}
-              placeholder="Name your own event, e.g. Store anniversary"
-              maxLength={60}
-              className={`${FIELD} pl-9 ${form.customFestival ? "pr-9" : ""}`}
-            />
-            {form.customFestival && (
-              <button
-                type="button"
-                onClick={() => updateField("customFestival", "")}
-                aria-label="Clear event name"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer rounded p-0.5 text-[#9aa0a6] transition hover:bg-[#f1f3f4] hover:text-[#5f6368] dark:hover:text-[#e8ecf4] dark:hover:bg-white/10 dark:text-[#9aa6bd]"
-              >
-                <X size={14} />
-              </button>
-            )}
-          </div>
+            <div className="relative min-w-0 flex-1">
+              <PartyPopper
+                size={15}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9aa0a6] dark:text-[#9aa6bd]"
+              />
+              <input
+                id="offer-custom-event"
+                type="text"
+                value={form.customFestival}
+                onChange={(e) => nameOwnEvent(e.target.value)}
+                placeholder="e.g. Store anniversary"
+                maxLength={60}
+                className={`${FIELD} pl-9 ${form.customFestival ? "pr-9" : ""}`}
+              />
+              {form.customFestival && (
+                <button
+                  type="button"
+                  onClick={() => updateField("customFestival", "")}
+                  aria-label="Clear event name"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer rounded p-0.5 text-[#9aa0a6] transition hover:bg-[#f1f3f4] hover:text-[#5f6368] dark:hover:text-[#e8ecf4] dark:hover:bg-white/10 dark:text-[#9aa6bd]"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
 
-          {/* The tooltip sits on a wrapper: a disabled button gets no hover
+            {/* The tooltip sits on a wrapper: a disabled button gets no hover
               events, and the locked state is exactly when it must explain. */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="inline-flex shrink-0" tabIndex={aiLock ? 0 : -1}>
-                <button
-                  type="button"
-                  onClick={aiFill}
-                  disabled={!customEvent || aiFilling || !!aiLock}
-                  aria-label={aiLock ? "AI fill is locked" : "AI fill"}
-                  className={`inline-flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 text-[13px] font-semibold transition disabled:cursor-not-allowed ${
-                    aiLock
-                      ? "border-[#dadce0] bg-[#f1f3f4] text-[#9aa0a6] disabled:pointer-events-none dark:border-white/15 dark:text-[#9aa6bd] dark:bg-white/10"
-                      : "border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 disabled:pointer-events-none disabled:opacity-50 dark:hover:bg-violet-400/20 dark:border-violet-400/25 dark:text-violet-300 dark:bg-violet-400/10"
-                  }`}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  className="inline-flex shrink-0"
+                  tabIndex={aiLock ? 0 : -1}
                 >
-                  {aiFilling ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : aiLock ? (
-                    <Lock size={14} />
-                  ) : (
-                    <Sparkles size={14} />
-                  )}
-                  AI fill
-                </button>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-64 text-center">
-              {aiLock
-                ? `${aiLock.reason} AI fill unlocks ${unlockLabel(aiLock.until)}. Festival tabs and the calendars still work.`
-                : customEvent
-                  ? "Fill this step, dates included, from what you typed"
-                  : "Name or describe the event first"}
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-        <p className="mt-3 text-[12px] text-[#5f6368] dark:text-[#a9b4c7]">
-          Or pick a festival
-        </p>
-
-        {/* One scrolling row rather than a wrapping block: the list only grows
-            as festivals are added, and a wrap would push the dates further
-            down the step every time one was. */}
-        <div className="mt-1.5 rounded-xl border border-[#dadce0] bg-[#ffffff]  p-2 sm:p-3  dark:border-white/15 dark:bg-white/5">
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {FESTIVALS.map((f) => {
-              const active = form.festival === f.id;
-              return (
-                <button
-                  key={f.id}
-                  type="button"
-                  // Clicking the chosen one again clears it — an occasion is
-                  // a label, and there has to be a way to take it back off.
-                  onClick={() => chooseFestival(f.id)}
-                  aria-pressed={active}
-                  className={`inline-flex h-8 shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border px-3 text-[12px] font-medium transition-colors ${
-                    active
-                      ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:text-emerald-200 dark:bg-emerald-400/10"
-                      : "border-[#dadce0] bg-[#FAF9FF] text-[#5f6368] hover:bg-[#f8f9fa] dark:hover:bg-white/5 dark:bg-[#1D2239] dark:border-white/15 dark:text-[#a9b4c7]"
-                  }`}
-                >
-                  <span className="text-base leading-none">{f.icon}</span>
-                  {f.label}
-                </button>
-              );
-            })}
+                  <button
+                    type="button"
+                    onClick={aiFill}
+                    disabled={!customEvent || aiFilling || !!aiLock}
+                    aria-label={aiLock ? "AI fill is locked" : "AI fill"}
+                    style={aiLock ? undefined : { background: GEMINI_GRADIENT }}
+                    className={`inline-flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 text-[13px] font-bold text-white transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9177c7] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-50 dark:focus-visible:ring-offset-[#161d2e] ${
+                      aiLock
+                        ? "border-[#dadce0] bg-[#f1f3f4] text-[#9aa0a6] dark:border-white/15 dark:text-[#9aa6bd] dark:bg-white/10"
+                        : "border-transparent"
+                    }`}
+                  >
+                    {aiFilling ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : aiLock ? (
+                      <Lock size={14} />
+                    ) : (
+                      <Sparkles size={14} />
+                    )}
+                    AI fill
+                  </button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-64 text-center">
+                {aiLock
+                  ? `${aiLock.reason} AI fill unlocks ${unlockLabel(aiLock.until)}. Festival tabs and the calendars still work.`
+                  : customEvent
+                    ? "Fill this step, dates included, from what you typed"
+                    : "Name or describe the event first"}
+              </TooltipContent>
+            </Tooltip>
           </div>
-        </div>
-      </div>
 
-      {/* Dates: one card for everything about when the offer starts and
+          <div className="mt-4 border-t border-rose-100 pt-3 dark:border-rose-400/15">
+            <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+              <div>
+                <p className="text-xs font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
+                  Choose a festival
+                </p>
+                <p className="mt-0.5 text-[11px] text-[#7b828c] dark:text-[#9aa6bd]">
+                  Select one to set its dates. Select it again to clear.
+                </p>
+              </div>
+              <span className="rounded-full border border-rose-100 bg-white/80 px-2.5 py-1 text-[10px] font-medium text-rose-700 dark:border-rose-400/20 dark:bg-rose-400/10 dark:text-rose-200">
+                {FESTIVALS.length} occasions
+              </span>
+            </div>
+
+            <div className="rounded-2xl max-h-[10rem] overflow-y-auto scrollbar-hide border border-rose-100/80 bg-white/70 p-2.5 shadow-sm shadow-rose-900/[0.03] dark:border-rose-400/15 dark:bg-black/10 sm:p-3">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4 sm:gap-2.5">
+                {FESTIVALS.map((f) => {
+                  const active = form.festival === f.id;
+                  return (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => chooseFestival(f.id)}
+                      aria-pressed={active}
+                      className={`group flex min-h-[3.75rem] min-w-0 cursor-pointer items-center gap-2 rounded-xl border px-2.5 py-2 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 sm:gap-2.5 sm:px-3 ${
+                        active
+                          ? "border-rose-300 bg-rose-50 text-rose-800 shadow-sm shadow-rose-900/[0.06] ring-1 ring-rose-200 dark:border-rose-400/40 dark:bg-rose-400/10 dark:text-rose-100 dark:ring-rose-400/20"
+                          : "border-[#e8eaed] bg-white/80 text-[#5f6368] hover:-translate-y-0.5 hover:border-rose-200 hover:bg-rose-50/60 hover:shadow-sm dark:border-white/10 dark:bg-white/[0.03] dark:text-[#a9b4c7] dark:hover:border-rose-400/30 dark:hover:bg-rose-400/[0.06]"
+                      }`}
+                    >
+                      <span
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-lg transition-colors ${
+                          active
+                            ? "bg-white/80 dark:bg-rose-400/15"
+                            : "bg-rose-50 group-hover:bg-rose-100/80 dark:bg-white/5 dark:group-hover:bg-rose-400/10"
+                        }`}
+                        aria-hidden="true"
+                      >
+                        {f.icon}
+                      </span>
+                      <span className="min-w-0 flex-1 text-[11px] font-semibold leading-tight sm:text-xs">
+                        {f.label}
+                      </span>
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center">
+                        {active && (
+                          <Check
+                            className="h-4 w-4 text-rose-600 dark:text-rose-300"
+                            aria-hidden="true"
+                          />
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Dates: one card for everything about when the offer starts and
           ends — the fields, the calendars to pick them from, and the note
           when they are the merchant's to set. */}
-      <div className="mt-6 overflow-hidden rounded-xl border border-[#dadce0] dark:border-white/15">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#e8eaed] bg-[#f8f9fa] px-4 py-2.5 dark:border-white/10 dark:bg-white/5">
-          <div className="flex items-center gap-2">
-            <CalendarDays
-              size={15}
-              className="text-[#5f6368] dark:text-[#a9b4c7]"
-            />
-            <p className="text-[13px] font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
-              Dates
-            </p>
-            {runDays !== null && (
-              <span className="rounded-full bg-white dark:bg-white/5 px-2 py-0.5 text-[11px] font-medium text-[#5f6368] ring-1 ring-[#dadce0] dark:text-[#a9b4c7] dark:ring-white/15">
-                {runDays} {runDays === 1 ? "day" : "days"}
+        <section className="overflow-hidden rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/70 via-white to-white dark:border-rose-400/15 dark:from-rose-400/10 dark:via-[#161d2e] dark:to-[#161d2e]">
+          <div className="flex flex-col items-start justify-between gap-3 bg-white/50 px-4 py-4 dark:bg-white/[0.02] sm:flex-row sm:items-center sm:px-5">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
+                Dates
+              </p>
+              {runDays !== null && (
+                <span className="rounded-full bg-white dark:bg-white/5 px-2 py-0.5 text-[11px] font-medium text-[#5f6368] ring-1 ring-[#dadce0] dark:text-[#a9b4c7] dark:ring-white/15">
+                  {runDays} {runDays === 1 ? "day" : "days"}
+                </span>
+              )}
+            </div>
+
+            {/* The calendars in their own colours, matching the popups. */}
+            <div className="w-full flex flex-row items-center justify-end gap-1">
+              {" "}
+              <span className="px-2 text-[11px] text-right w-full max-sm:hidden text-rose-700/75 dark:text-rose-200/75">
+                Browse holiday dates
               </span>
-            )}
-          </div>
+              <div className="w-full  flex items-center gap-0.5 rounded-lg bg-white dark:bg-white/5 p-0.5 border border-border dark:ring-white/15">
+                <button
+                  type="button"
+                  onClick={() => setCalendar("bs")}
+                  aria-haspopup="dialog"
+                  className="inline-flex h-8 sm:h-7 w-full cursor-pointer items-center justify-center gap-2.5 rounded-md px-2.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-400/15 dark:text-[#e8ecf4]"
+                >
+                  <div className="relative inline-flex">
+                    <CalendarDays
+                      size={15}
+                      className="text-rose-500 dark:text-rose-400"
+                    />
 
-          {/* The calendars in their own colours, matching the popups. */}
-          <div className="w-full flex flex-row items-center justify-end gap-1">
-            {" "}
-            <span className="px-2 text-[11px] text-right w-full text-[#9aa0a6] max-sm:hidden dark:text-[#9aa6bd]">
-              Browse Holidays:
-            </span>
-            <div className="w-full  flex items-center gap-0.5 rounded-lg bg-white dark:bg-white/5 p-0.5 ring-1 ring-[#dadce0] dark:ring-white/15">
-              <button
-                type="button"
-                onClick={() => setCalendar("bs")}
-                aria-haspopup="dialog"
-                className="inline-flex h-7 w-full cursor-pointer items-center justify-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-400/15 dark:text-[#e8ecf4]"
-              >
-                <CalendarDays
-                  size={13}
-                  className="text-rose-500 dark:text-rose-300"
-                />
-                Nepali calendar
-              </button>
+                    <span className="absolute -right-1.5 -bottom-2 flex h-3.5 min-w-3.5 items-center justify-center rounded-full border border-white bg-rose-100 px-0.5 text-[9px] font-bold leading-none text-rose-700 shadow-sm dark:border-[#1e293b] dark:bg-rose-950 dark:text-rose-300">
+                      अ
+                    </span>
+                  </div>
+                  Nepali calendar
+                </button>
 
-              <div className="mx-0.5 h-5 w-px bg-[#dadce0] dark:bg-white/20" />
+                <div className="mx-0.5 h-5 w-px bg-[#dadce0] dark:bg-white/20" />
 
-              <button
-                type="button"
-                onClick={() => setCalendar("ad")}
-                aria-haspopup="dialog"
-                className="inline-flex h-7 w-full cursor-pointer items-center justify-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-400/15 dark:text-[#e8ecf4]"
-              >
-                <CalendarDays
-                  size={13}
-                  className="text-teal-500 dark:text-teal-300"
-                />
-                English calendar
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setCalendar("ad")}
+                  aria-haspopup="dialog"
+                  className="inline-flex h-7 w-full cursor-pointer items-center justify-center gap-2.5 rounded-md px-2.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-400/15 dark:text-[#e8ecf4]"
+                >
+                  <div className="relative inline-flex">
+                    <CalendarDays
+                      size={15}
+                      className="text-teal-500 dark:text-teal-400"
+                    />
+
+                    <span className="absolute -right-1.5 -bottom-2 flex h-3.5 min-w-3.5 items-center justify-center rounded-full border border-white bg-teal-100 px-0.5 text-[9px] font-bold leading-none text-teal-700 shadow-sm dark:border-[#1e293b] dark:bg-teal-950 dark:text-teal-300">
+                      A
+                    </span>
+                  </div>
+                  English calendar
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="p-4">
-          {/* An occasion whose dates this app cannot compute still labels the
+          <div className="py-4 mx-4 sm:py-5  border-t border-rose-100 pt-3 dark:border-rose-400/15">
+            {/* An occasion whose dates this app cannot compute still labels the
               offer, so the card says plainly that the dates are the
               merchant's to set rather than leaving them looking broken. */}
-          {(needsManualDates || customEvent) && (
-            <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-2.5 dark:border-amber-400/25 dark:bg-amber-400/10">
-              <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
-              <p className="text-[12px] leading-relaxed text-amber-800 dark:text-amber-200">
-                {customEvent
-                  ? "Set the start and end dates for your event, or pick them from a calendar."
-                  : "This year's dates for this occasion aren't in the holiday calendar yet, so set the start and end dates yourself."}
+            {(needsManualDates || customEvent) && (
+              <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-2.5 dark:border-amber-400/25 dark:bg-amber-400/10">
+                <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
+                <p className="text-[12px] leading-relaxed text-amber-800 dark:text-amber-200">
+                  {customEvent
+                    ? "Set the start and end dates for your event, or pick them from a calendar."
+                    : "This year's dates for this occasion aren't in the holiday calendar yet, so set the start and end dates yourself."}
+                </p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 gap-4 rounded-xl  px-3 pb-3 pt-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-start sm:gap-3 sm:px-4 sm:pb-4 sm:pt-1">
+              <div>
+                <label htmlFor="offer-start-date" className={LABEL}>
+                  Start date
+                </label>
+                <input
+                  id="offer-start-date"
+                  type="date"
+                  value={form.startDate}
+                  onChange={(e) => updateField("startDate", e.target.value)}
+                  className={FIELD}
+                />
+                <BsDate value={form.startDate} />
+              </div>
+
+              <ArrowRight
+                size={16}
+                className="mt-10 hidden text-[#dadce0] sm:block dark:text-[#3d4657]"
+                aria-hidden
+              />
+
+              <div>
+                <label htmlFor="offer-end-date" className={LABEL}>
+                  End date
+                </label>
+                <input
+                  id="offer-end-date"
+                  type="date"
+                  value={form.endDate}
+                  // An end before the start would run an offer for negative
+                  // days; the browser's own picker enforces it once a start
+                  // exists.
+                  min={form.startDate || undefined}
+                  onChange={(e) => updateField("endDate", e.target.value)}
+                  className={FIELD}
+                />
+                <BsDate value={form.endDate} />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {calendar && (
+          <OfferCalendarModal
+            system={calendar}
+            rangeStart={form.startDate}
+            rangeEnd={form.endDate}
+            events={holidays}
+            onClose={() => setCalendar(null)}
+            onUseDates={applyHolidayDates}
+          />
+        )}
+
+        {/* Days of week */}
+        <section className="rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/70 via-white to-white p-4 dark:border-rose-400/15 dark:from-rose-400/10 dark:via-[#161d2e] dark:to-[#161d2e] sm:p-5">
+          <div className="mb-4 flex flex-col gap-4">
+            <div>
+              <h3 className="text-sm font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
+                Days of the week
+              </h3>
+              <p className="mt-1 text-xs leading-5 text-[#7b828c] dark:text-[#9aa6bd]">
+                Optional · leave unselected to run every day in the date range.
               </p>
             </div>
-          )}
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-start">
-            <div>
-              <label htmlFor="offer-start-date" className={LABEL}>
-                Start date
-              </label>
-              <input
-                id="offer-start-date"
-                type="date"
-                value={form.startDate}
-                onChange={(e) => updateField("startDate", e.target.value)}
-                className={FIELD}
-              />
-              <BsDate value={form.startDate} />
+            <div className="space-y-2.5 border-t border-rose-100 pt-3 dark:border-rose-400/15">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-rose-700/75 dark:text-rose-200/75">
+                Quick select
+              </p>
+              <div className="grid grid-cols-2 gap-1.5 rounded-xl border border-rose-100 p-1.5 dark:border-rose-400/15 dark:bg-rose-400/[0.06] sm:flex sm:flex-wrap">
+                {quickPicks.map((pick) => {
+                  const active =
+                    pick.days.length > 0 &&
+                    pick.days.length === form.repeatingDays.length &&
+                    pick.days.every((day) => form.repeatingDays.includes(day));
+                  return (
+                    <button
+                      key={pick.label}
+                      type="button"
+                      onClick={() => updateField("repeatingDays", pick.days)}
+                      aria-pressed={active}
+                      className={`min-h-10 cursor-pointer rounded-lg border px-3 py-2 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-1 focus-visible:ring-offset-rose-50 sm:min-h-9 dark:focus-visible:ring-offset-[#161d2e] ${
+                        active
+                          ? "border-rose-200 bg-rose-600 text-white shadow-sm shadow-rose-600/15 dark:border-rose-400 dark:bg-rose-500"
+                          : "border-transparent bg-rose-100/70 text-rose-800 hover:border-rose-200 hover:bg-white dark:bg-white/[0.04] dark:text-rose-200 dark:hover:border-rose-400/25 dark:hover:bg-rose-400/10"
+                      }`}
+                    >
+                      {pick.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            <ArrowRight
-              size={16}
-              className="mt-10 hidden text-[#dadce0] sm:block dark:text-[#3d4657]"
-              aria-hidden
-            />
-
-            <div>
-              <label htmlFor="offer-end-date" className={LABEL}>
-                End date
-              </label>
-              <input
-                id="offer-end-date"
-                type="date"
-                value={form.endDate}
-                // An end before the start would run an offer for negative
-                // days; the browser's own picker enforces it once a start
-                // exists.
-                min={form.startDate || undefined}
-                onChange={(e) => updateField("endDate", e.target.value)}
-                className={FIELD}
-              />
-              <BsDate value={form.endDate} />
+            <div className="grid grid-cols-4 gap-2 sm:flex sm:flex-wrap sm:gap-2">
+              {DAYS.map((day) => {
+                const active = form.repeatingDays.includes(day);
+                return (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => toggleDay(day)}
+                    aria-pressed={active}
+                    className={`h-10 w-full cursor-pointer rounded-lg text-[12px] font-medium transition-colors sm:w-16 sm:text-[13px] ${
+                      active
+                        ? "border border-rose-600 bg-rose-600 text-white shadow-sm shadow-rose-600/20 dark:border-rose-400 dark:bg-rose-500"
+                        : "border border-rose-100 bg-white/80 text-rose-800 hover:border-rose-300 hover:bg-rose-50 dark:border-rose-400/20 dark:bg-rose-400/[0.04] dark:text-rose-200 dark:hover:border-rose-400/40 dark:hover:bg-rose-400/10"
+                    }`}
+                  >
+                    {day}
+                  </button>
+                );
+              })}
             </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      {calendar && (
-        <OfferCalendarModal
-          system={calendar}
-          rangeStart={form.startDate}
-          rangeEnd={form.endDate}
-          events={holidays}
-          onClose={() => setCalendar(null)}
-          onUseDates={applyHolidayDates}
-        />
-      )}
-
-      {/* Days of week */}
-      <div className="mt-6">
-        <div className="mb-2.5 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
-            Specific days of week (optional)
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {quickPicks.map((pick) => (
-              <button
-                key={pick.label}
-                type="button"
-                onClick={() => updateField("repeatingDays", pick.days)}
-                className="cursor-pointer rounded-full border border-[#dadce0] bg-white dark:bg-white/5 px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#e8ecf4]"
-              >
-                {pick.label}
-              </button>
-            ))}
+        {/* Hours */}
+        <section className="rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/70 via-white to-white p-4 dark:border-rose-400/15 dark:from-rose-400/10 dark:via-[#161d2e] dark:to-[#161d2e] sm:p-5">
+          <div className="mb-4 flex items-start gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
+                Active hours
+              </h3>
+              <p className="mt-1 text-xs leading-5 text-[#7b828c] dark:text-[#9aa6bd]">
+                Optional · limit the offer to a time window each selected day.
+              </p>
+            </div>
           </div>
-        </div>
-
-        {/* Seven across on a phone. At a fixed `w-16` they wrapped into two
-            ragged rows, and a week reads as a week when it is one line. */}
-        <div className="grid grid-cols-7 gap-1.5 sm:flex sm:flex-wrap sm:gap-2">
-          {DAYS.map((day) => {
-            const active = form.repeatingDays.includes(day);
-            return (
-              <button
-                key={day}
-                type="button"
-                onClick={() => toggleDay(day)}
-                aria-pressed={active}
-                className={`h-10 w-full cursor-pointer rounded-lg text-[12px] font-medium transition-colors sm:w-16 sm:text-[13px] ${
-                  active
-                    ? "bg-gray-800 text-white dark:bg-[#124142]"
-                    : "border border-[#dadce0] bg-white dark:bg-[#1D2239] text-[#5f6368] hover:bg-[#f8f9fa] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
-                }`}
-              >
-                {day}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Hours */}
-      <div className="mt-6 border-t border-[#e8eaed] pt-5 dark:border-white/10">
-        <p className={LABEL}>Active hours window (optional)</p>
-        {/* Wraps, and the fields share what room there is: two native time
-            pickers plus the word between them need about 300px, which a phone
-            does not have inside the card. */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <input
-            type="time"
-            value={form.startTime}
-            onChange={(e) => updateField("startTime", e.target.value)}
-            className={`${FIELD} min-w-[7.5rem] flex-1 sm:w-auto sm:flex-none`}
-          />
-          <span className="text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
-            to
-          </span>
-          <input
-            type="time"
-            value={form.endTime}
-            onChange={(e) => updateField("endTime", e.target.value)}
-            className={`${FIELD} min-w-[7.5rem] flex-1 sm:w-auto sm:flex-none`}
-          />
-        </div>
+          {/* Stack on phones and align the time range in one row on wider
+              screens. */}
+          <div className="grid grid-cols-1 items-end gap-3  p-3 mt-1   sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:p-4 mt-4 border-t border-rose-100 pt-3 dark:border-rose-400/15">
+            <label className={LABEL}>
+              Start time
+              <input
+                type="time"
+                value={form.startTime}
+                onChange={(e) => updateField("startTime", e.target.value)}
+                className={`${FIELD} mt-1.5 min-w-0`}
+              />
+            </label>
+            <span className="hidden pb-3 text-xs font-medium text-rose-400 sm:block dark:text-rose-300">
+              to
+            </span>
+            <label className={LABEL}>
+              End time
+              <input
+                type="time"
+                value={form.endTime}
+                onChange={(e) => updateField("endTime", e.target.value)}
+                className={`${FIELD} mt-1.5 min-w-0`}
+              />
+            </label>
+          </div>
+        </section>
       </div>
     </OfferStepCard>
   );

@@ -9,13 +9,19 @@ import {
   ExternalLink,
   Lightbulb,
   LockKeyhole,
+  Power,
   RefreshCw,
+  ShieldCheck,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 
 import { AISettings } from "@/app/(app)/ai-design/page";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { DesignTabHeader } from "./DesignTabHeader";
 import { formatAiDesignError } from "./formatAiDesignError";
+
+type ConfirmationAction = "toggle" | "remove" | null;
 
 export function AISettingsTab() {
   const [accountId, setAccountId] = useState("");
@@ -29,6 +35,8 @@ export function AISettingsTab() {
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [confirmationAction, setConfirmationAction] =
+    useState<ConfirmationAction>(null);
 
   const fetchSettings = async () => {
     try {
@@ -191,18 +199,11 @@ export function AISettingsTab() {
       );
     } finally {
       setUpdating(false);
+      setConfirmationAction(null);
     }
   };
 
   const handleRemoveConnection = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to remove the Cloudflare connection?",
-      )
-    ) {
-      return;
-    }
-
     try {
       setRemoving(true);
       setError("");
@@ -235,6 +236,7 @@ export function AISettingsTab() {
       );
     } finally {
       setRemoving(false);
+      setConfirmationAction(null);
     }
   };
 
@@ -466,9 +468,19 @@ export function AISettingsTab() {
                       !apiToken.trim() &&
                       !settings?.configured)
                   }
-                  className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                  className="group flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-600/20 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-600/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-md sm:w-auto"
                 >
-                  {verifying && <RefreshCw className="h-4 w-4 animate-spin" />}
+                  {verifying ? (
+                    <RefreshCw
+                      className="h-4 w-4 animate-spin"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <ShieldCheck
+                      className="h-4 w-4 transition-transform group-hover:scale-110"
+                      aria-hidden="true"
+                    />
+                  )}
 
                   {verifying
                     ? "Verifying..."
@@ -483,10 +495,30 @@ export function AISettingsTab() {
                   <>
                     <button
                       type="button"
-                      onClick={handleToggleEnabled}
+                      onClick={() => setConfirmationAction("toggle")}
                       disabled={loading || updating || removing}
-                      className="min-h-11 rounded-xl border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                      className={`group inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold shadow-sm transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ${
+                        settings.enabled
+                          ? "border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 text-amber-800 shadow-amber-500/10 hover:border-amber-300 hover:shadow-md focus-visible:ring-amber-500 dark:border-amber-900 dark:from-amber-950/50 dark:to-orange-950/30 dark:text-amber-200"
+                          : "border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-800 shadow-emerald-500/10 hover:border-emerald-300 hover:shadow-md focus-visible:ring-emerald-500 dark:border-emerald-900 dark:from-emerald-950/50 dark:to-teal-950/30 dark:text-emerald-200"
+                      }`}
                     >
+                      {updating ? (
+                        <RefreshCw
+                          className="h-4 w-4 animate-spin"
+                          aria-hidden="true"
+                        />
+                      ) : settings.enabled ? (
+                        <Power
+                          className="h-4 w-4 transition-transform group-hover:rotate-12"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <Sparkles
+                          className="h-4 w-4 transition-transform group-hover:scale-110"
+                          aria-hidden="true"
+                        />
+                      )}
                       {updating
                         ? "Updating..."
                         : settings.enabled
@@ -496,11 +528,22 @@ export function AISettingsTab() {
 
                     <button
                       type="button"
-                      onClick={handleRemoveConnection}
+                      onClick={() => setConfirmationAction("remove")}
                       disabled={loading || removing || updating}
-                      className="min-h-11 rounded-xl border border-red-200 px-4 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900 dark:hover:bg-red-950/30"
+                      className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 bg-gradient-to-r from-white to-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 shadow-sm shadow-red-500/5 transition-all hover:-translate-y-0.5 hover:border-red-300 hover:shadow-md hover:shadow-red-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 dark:border-red-900 dark:from-red-950/30 dark:to-red-950/60 dark:text-red-300 dark:hover:border-red-800"
                     >
-                      {removing ? "Removing..." : "Remove connection"}
+                      {removing ? (
+                        <RefreshCw
+                          className="h-4 w-4 animate-spin"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <Trash2
+                          className="h-4 w-4 transition-transform group-hover:scale-110"
+                          aria-hidden="true"
+                        />
+                      )}
+                      {removing ? "Removing..." : "Remove Connection"}
                     </button>
                   </>
                 )}
@@ -635,6 +678,77 @@ export function AISettingsTab() {
           </section>
         </aside>
       </div>
+
+      <ConfirmDialog
+        open={confirmationAction !== null}
+        onClose={() => setConfirmationAction(null)}
+        icon={
+          confirmationAction === "remove"
+            ? Trash2
+            : settings?.enabled
+              ? Power
+              : Sparkles
+        }
+        iconColor={
+          confirmationAction === "remove"
+            ? "text-red-500"
+            : settings?.enabled
+              ? "text-amber-600 dark:text-amber-300"
+              : "text-emerald-600 dark:text-emerald-300"
+        }
+        iconBgColor={
+          confirmationAction === "remove"
+            ? "bg-red-50 dark:bg-red-400/15"
+            : settings?.enabled
+              ? "bg-amber-50 dark:bg-amber-400/10"
+              : "bg-emerald-50 dark:bg-emerald-400/10"
+        }
+        title={
+          confirmationAction === "remove"
+            ? "Remove Cloudflare connection?"
+            : settings?.enabled
+              ? "Disable AI Design?"
+              : "Enable AI Design?"
+        }
+        description={
+          confirmationAction === "remove"
+            ? "This removes the saved Cloudflare credentials from this business."
+            : settings?.enabled
+              ? "AI graphic generation will be turned off. Your Cloudflare credentials will remain saved."
+              : "AI graphic generation will be turned on using your saved Cloudflare credentials."
+        }
+        warning={
+          confirmationAction === "remove"
+            ? "You will need to reconnect Cloudflare before generating graphics again."
+            : undefined
+        }
+        tone={
+          confirmationAction === "remove"
+            ? "danger"
+            : settings?.enabled
+              ? "warning"
+              : "primary"
+        }
+        confirmLabel={
+          confirmationAction === "remove"
+            ? "Remove connection"
+            : settings?.enabled
+              ? "Disable AI"
+              : "Enable AI"
+        }
+        pendingLabel={
+          confirmationAction === "remove" ? "Removing..." : "Updating..."
+        }
+        confirmIcon={confirmationAction === "remove" ? Trash2 : Power}
+        onConfirm={() => {
+          if (confirmationAction === "remove") {
+            void handleRemoveConnection();
+          } else if (confirmationAction === "toggle") {
+            void handleToggleEnabled();
+          }
+        }}
+        isPending={confirmationAction === "remove" ? removing : updating}
+      />
     </div>
   );
 }

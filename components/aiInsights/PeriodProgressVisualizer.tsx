@@ -230,24 +230,113 @@ export default function PeriodProgressVisualizer({
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
-          <span className="text-[13px] font-medium text-gray-600 dark:text-gray-300">
-            {completedCount}/{PERIOD_CHECKPOINTS.length}
-          </span>
-          <button
-            type="button"
-            onClick={() => setExpanded((prev) => !prev)}
-            aria-expanded={expanded}
-            aria-label={
-              expanded ? "Collapse progress details" : "Expand progress details"
-            }
-            className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-          >
-            <ChevronDown
-              className={`h-4 w-4 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
-              aria-hidden
-            />
-          </button>
+        <div className="flex shrink-0 items-center gap-4">
+          {canGenerate && !isLoading && missingSections.length > 0 && (
+            <button
+              type="button"
+              onClick={onGenerate}
+              disabled={isGenerating}
+              aria-label={
+                isGenerating
+                  ? "Generating AI insights"
+                  : `Generate ${missingSections.length} missing AI insight sections`
+              }
+              className=" 
+                group relative inline-flex min-h-9 cursor-pointer
+                rounded-lg border border-violet-600/20
+                items-center justify-center gap-2 overflow-hidden
+                px-3.5 py-2 text-xs font-semibold text-white
+                bg-gradient-to-r from-violet-600 to-indigo-600
+                transition-all duration-200 ease-out
+                shadow-md shadow-violet-600/15
+                hover:border-violet-500
+                hover:-translate-y-0.5
+                hover:shadow-lg hover:shadow-violet-600/25
+                hover:from-violet-700 hover:to-indigo-700
+                focus-visible:outline-none
+                active:translate-y-0 active:scale-[0.98]
+                focus-visible:ring-offset-2
+                focus-visible:ring-2 focus-visible:ring-violet-500
+                disabled:cursor-wait disabled:opacity-70
+                focus-visible:ring-offset-white
+                disabled:hover:shadow-md
+                disabled:hover:translate-y-0
+                dark:from-violet-500 dark:to-indigo-500
+                dark:border-violet-400/25
+                dark:hover:from-violet-400 dark:hover:to-indigo-400
+                dark:shadow-violet-500/10
+                dark:focus-visible:ring-offset-[#161d2e]
+                dark:hover:shadow-violet-400/20
+              "
+            >
+              {/* Subtle shine effect */}
+              <span
+                aria-hidden="true"
+                className="
+                group-hover:opacity-100
+                pointer-events-none absolute inset-0
+                bg-gradient-to-r from-transparent
+                via-white/10 to-transparent
+                opacity-0 transition-opacity duration-200
+                "
+              />
+
+              {isGenerating ? (
+                <LoaderCircle
+                  className="relative h-4 w-4 animate-spin"
+                  aria-hidden="true"
+                />
+              ) : (
+                <span className="relative hidden sm:flex h-5 w-5 items-center justify-center rounded-md bg-gray-100/95 dark:bg-gray-100 text-gray-600 shadow-sm shadow-gray-400/10 ring-1 ring-gray-300  dark:text-[#9aa6bd] dark:ring-white/10">
+                  <ProviderLogo provider="gemini" size={14} />
+                </span>
+              )}
+
+              <span className="relative hidden sm:inline">
+                {isGenerating ? "Generating insights…" : "Generate insights"}
+              </span>
+
+              <span className="relative sm:hidden">
+                {isGenerating ? "Generating…" : "Generate"}
+              </span>
+
+              {!isGenerating && missingSections.length > 0 && (
+                <span
+                  className="
+                  tabular-nums text-white
+                  relative inline-flex min-w-5 h-5 items-center
+                  justify-center rounded-md border border-white/20
+                  bg-white/15 px-1 text-[10px] font-bold
+                  "
+                >
+                  {missingSections.length}
+                </span>
+              )}
+            </button>
+          )}
+
+          <div className="flex items-center gap-2">
+            {" "}
+            <span className="text-[13px] font-medium text-gray-600 dark:text-gray-300">
+              {completedCount}/{PERIOD_CHECKPOINTS.length}
+            </span>
+            <button
+              type="button"
+              onClick={() => setExpanded((prev) => !prev)}
+              aria-expanded={expanded}
+              aria-label={
+                expanded
+                  ? "Collapse progress details"
+                  : "Expand progress details"
+              }
+              className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+            >
+              <ChevronDown
+                className={`h-4 w-4 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+                aria-hidden
+              />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -340,76 +429,6 @@ export default function PeriodProgressVisualizer({
               {progress.failed.length > 0 &&
                 ` · ${progress.failed.length} failed`}
             </p>
-          )}
-
-          {/* The generate action, at the foot of the card: it only shows when
-              there is actually something missing to generate, which is exactly
-              when this card's checklist has pending rows — no separate banner
-              needed. Hidden while the page is still reading, so the button
-              cannot fire before the page knows what is missing. */}
-          {canGenerate && !isLoading && missingSections.length > 0 && (
-            <div className="mt-3 border-t border-gray-200 pt-3 dark:border-gray-800">
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 sm:text-xs">
-                {isGenerating
-                  ? `Generating ${missingSections.length} missing section${missingSections.length === 1 ? "" : "s"} — the checklist above fills in as each one lands.`
-                  : `${missingSections.length} section${missingSections.length === 1 ? " is" : "s are"} not generated yet for ${periodLabel ?? "this period"}. Generating uses your saved AI key and runs two sections at a time.`}
-              </p>
-              <div className="flex w-full justify-end">
-                <button
-                  type="button"
-                  onClick={onGenerate}
-                  disabled={isGenerating}
-                  className="
-    mt-2 inline-flex w-full sm:w-auto
-    items-center justify-center gap-2
-    rounded-xl border border-blue-200
-    bg-blue-50 px-5 py-2.5
-    text-[13px] font-semibold tracking-wide
-    text-blue-700
-    shadow-sm
-    transition-all duration-200
-    hover:border-blue-400 hover:bg-blue-100
-    hover:shadow-md hover:shadow-blue-500/10
-    active:scale-[0.98]
-    focus-visible:outline-none
-    focus-visible:ring-2 focus-visible:ring-blue-500
-    focus-visible:ring-offset-2
-    focus-visible:ring-offset-white
-    disabled:cursor-not-allowed
-    disabled:opacity-50 disabled:hover:shadow-sm
-    dark:border-blue-400/30
-    dark:bg-blue-500/10 dark:text-blue-300
-    dark:hover:border-blue-400/60
-    dark:hover:bg-blue-500/20
-    dark:hover:shadow-blue-400/5
-    dark:focus-visible:ring-offset-gray-900
-  "
-                  //   style={{
-                  //     background: geminiButton.bg,
-                  //     color: geminiButton.ink,
-                  //   }}
-                  onMouseEnter={(event) => {
-                    if (!isGenerating)
-                      event.currentTarget.style.background = geminiButton.hover;
-                  }}
-                  onMouseLeave={(event) => {
-                    event.currentTarget.style.background = geminiButton.bg;
-                  }}
-                >
-                  {isGenerating ? (
-                    <LoaderCircle
-                      className="h-4 w-4 animate-spin"
-                      aria-hidden
-                    />
-                  ) : (
-                    <ProviderLogo provider="gemini" size={16} />
-                  )}
-                  {isGenerating
-                    ? `Generating…${progress ? ` ${progress.done} of ${progress.total}` : ""}`
-                    : `Generate Insights  ( ${missingSections.length} missing )`}
-                </button>
-              </div>
-            </div>
           )}
         </>
       )}

@@ -62,17 +62,17 @@ export default function PeriodSelector({
   });
 
   return (
-    <div className="rounded-2xl border border-[#e3e3e3] bg-white p-4 dark:border-white/10 dark:bg-[#161d2e]">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="sticky top-0 z-30 -mx-2 rounded-2xl border border-[#e3e3e3]/90 bg-white/95 p-3 shadow-md shadow-slate-900/[0.04] backdrop-blur-xl sm:-mx-3 sm:p-4 dark:border-white/10 dark:bg-[#161d2e]/95 dark:shadow-black/20">
+      <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
         <div className="min-w-0">
-          <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6] dark:text-[#9aa6bd]">
-            <CalendarRange className="h-3.5 w-3.5" aria-hidden />
+          <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#7b8494] dark:text-[#9aa6bd]">
+            <CalendarRange className="h-3.5 w-3.5 text-[#E26924]" aria-hidden />
             Analytics period
           </p>
 
           {/* The kinds. A row rather than a dropdown: there are three, they
               never change, and seeing all three explains what the page offers. */}
-          <div className="mt-2 inline-flex rounded-lg border border-[#dadce0] bg-[#f8f9fa] p-0.5 dark:border-white/15 dark:bg-white/5">
+          <div className="mt-2 inline-flex max-w-full overflow-x-auto rounded-xl border border-[#e3e7ef] bg-[#f4f6fa] p-1 dark:border-white/10 dark:bg-[#0f1420]/70">
             {(
               data?.kinds ?? [{ kind: "month" as PeriodKind, label: "Monthly" }]
             ).map((option) => {
@@ -90,8 +90,8 @@ export default function PeriodSelector({
                   }
                   className={`cursor-pointer rounded-md px-3 py-1.5 text-[12px] font-medium transition ${
                     active
-                      ? "bg-white text-[#3c4043] shadow-sm dark:bg-white/10 dark:text-[#e8ecf4]"
-                      : "text-[#5f6368] hover:text-[#3c4043] dark:text-[#a9b4c7] dark:hover:text-[#e8ecf4]"
+                      ? "bg-white text-[#1b2537] shadow-sm ring-1 ring-black/[0.04] dark:bg-[#26334b] dark:text-[#f0f3f8] dark:ring-white/[0.06]"
+                      : "text-[#697386] hover:bg-white/70 hover:text-[#27364e] dark:text-[#a9b4c7] dark:hover:bg-white/5 dark:hover:text-[#e8ecf4]"
                   }`}
                 >
                   {option.label}
@@ -101,7 +101,7 @@ export default function PeriodSelector({
           </div>
         </div>
 
-        <div className="flex min-w-0 w-full flex-col items-stretch gap-1.5 sm:w-[260px]">
+        <div className="flex min-w-0 w-full flex-col items-stretch gap-1.5 sm:w-[280px]">
           <FilterSelect
             value={current?.id ?? ""}
             options={options}
@@ -115,7 +115,7 @@ export default function PeriodSelector({
 
           {/* The exact dates, because "September 2026" is not the same thing as
               1–30 September to someone checking a figure against a report. */}
-          <p className="flex items-center justify-end pr-1   gap-1.5 text-right text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
+          <p className="flex flex-wrap items-center justify-end gap-1.5 pr-1 text-right text-[10px] text-[#858d9b] dark:text-[#9aa6bd]">
             {isLoading && (
               <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
             )}

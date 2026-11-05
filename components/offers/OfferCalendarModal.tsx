@@ -189,7 +189,7 @@ function EventRow({
       <button
         type="button"
         onClick={() => onUseDates(event)}
-        className="w-full shrink-0 cursor-pointer rounded-lg px-2.5 py-1.5 sm:w-auto text-[11px] font-semibold text-(color:--cal-600) ring-1 ring-(color:--cal-200) transition hover:bg-(color:--cal-600) hover:text-white hover:ring-(color:--cal-600)"
+        className="ml-auto flex shrink-0 cursor-pointer items-center justify-center rounded-lg bg-(color:--cal-50) px-3 py-2 text-[11px] font-semibold text-(color:--cal-700) ring-1 ring-(color:--cal-200) transition hover:bg-(color:--cal-600) hover:text-white hover:ring-(color:--cal-600) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(color:--cal-400) focus-visible:ring-offset-2 dark:bg-(color:--cal-600) dark:text-white dark:ring-(color:--cal-500) dark:hover:bg-(color:--cal-500) dark:hover:ring-(color:--cal-500)"
       >
         Use these dates
       </button>

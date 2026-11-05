@@ -145,7 +145,7 @@ export default function OfferPromoCode() {
             // worth letting a customer make.
             onChange={(e) => updateField("code", e.target.value.toUpperCase())}
             placeholder="NEWYEARS23"
-            className="h-10 sm:h-11 w-full min-w-0 rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-3.5 font-mono text-sm tracking-wider text-[#3c4043] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20  dark:border-white/15 dark:text-[#e8ecf4]"
+            className="h-10 sm:h-11 w-full min-w-0 rounded-xl border border-amber-600/25 bg-white/90 px-3.5 font-mono text-sm tracking-wider text-[#3c4043] outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 dark:border-amber-400/20 dark:bg-white/5 dark:text-[#e8ecf4]"
           />
 
           {/* Their own row, splitting it evenly — a 44px-tall target that
@@ -197,7 +197,7 @@ export default function OfferPromoCode() {
                     readOnly
                     value={offerUrl}
                     onFocus={(e) => e.currentTarget.select()}
-                    className="h-10 sm:h-11 w-full min-w-0 rounded-xl border border-[#dadce0] bg-[#f8f9fa] px-3.5 text-[13px] text-[#5f6368] outline-none dark:border-white/15 dark:text-[#a9b4c7] dark:bg-white/5"
+                    className="h-10 sm:h-11 w-full min-w-0 rounded-xl border border-amber-100 bg-[#f8f9fa] px-3.5 text-[13px] text-[#5f6368] outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 dark:border-amber-400/20 dark:bg-white/5 dark:text-[#a9b4c7]"
                   />
                   <button
                     type="button"
