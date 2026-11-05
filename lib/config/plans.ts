@@ -74,6 +74,7 @@ export interface HomepagePlan {
   period: "forever" | "per month" | "per year";
   badge?: string;
   features: string[];
+  discount?: { originalPrice: number; saving: number; currency: "USD" };
 }
 
 /** Plans displayed on the homepage, kept separate from subscription billing. */
@@ -102,6 +103,7 @@ export const HOMEPAGE_PLANS: HomepagePlan[] = [
     name: "Monthly",
     tagline: "Flexible access as your business grows",
     price: { amount: 199, currency: "USD" },
+    discount: { originalPrice: 229, saving: 30, currency: "USD" },
     period: "per month",
     features: [
       "Unlimited products",

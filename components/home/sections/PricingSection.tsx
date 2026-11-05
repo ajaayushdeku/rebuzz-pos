@@ -1,15 +1,6 @@
 import { HOMEPAGE_PLANS } from "@/lib/config/plans";
 import PlanCards from "../PlanCards";
 
-const HOMEPAGE_DISPLAY_PLANS = HOMEPAGE_PLANS.map((plan) => ({
-  ...plan,
-  price: new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: plan.price.currency,
-    maximumFractionDigits: 0,
-  }).format(plan.price.amount),
-}));
-
 /**
  * * ── Pricing ──
  * Homepage pricing uses its own USD list, separate from subscription billing.
@@ -34,7 +25,7 @@ export default function PricingSection() {
           </p>
         </div>
 
-        <PlanCards plans={HOMEPAGE_DISPLAY_PLANS} />
+        <PlanCards plans={HOMEPAGE_PLANS} />
         <p className="mt-8 text-center text-sm text-gray-500 dark:text-[#9aa6bd]">
           Prices are shown in USD. The Free plan is available indefinitely; you
           can move to a paid plan as your business grows.

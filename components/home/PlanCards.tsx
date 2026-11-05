@@ -7,15 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-interface DisplayPlan {
-  id: string;
-  name: string;
-  tagline: string;
-  price: string;
-  period: string;
-  badge?: string;
-  features: string[];
-}
+import type { HomepagePlan } from "@/lib/config/plans";
 
 /**
  * How many features a card shows before it asks to be opened.
@@ -41,7 +33,7 @@ const SHOWN = 4;
  * card at a time with a pager: three full-height cards stacked is a long
  * scroll through things a reader is trying to compare, not read in order.
  */
-export default function PlanCards({ plans }: { plans: DisplayPlan[] }) {
+export default function PlanCards({ plans }: { plans: HomepagePlan[] }) {
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
   /** Which plan the small-screen pager is showing. */
   const [index, setIndex] = useState(0);
@@ -76,6 +68,12 @@ export default function PlanCards({ plans }: { plans: DisplayPlan[] }) {
             const featured = Boolean(plan.badge);
             const open = expanded.has(plan.id);
             const rest = plan.features.slice(SHOWN);
+            const formatPrice = (amount: number) =>
+              new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: plan.price.currency,
+                maximumFractionDigits: 0,
+              }).format(amount);
 
             return (
               <div
@@ -110,7 +108,7 @@ export default function PlanCards({ plans }: { plans: DisplayPlan[] }) {
                   <span
                     className={`text-3xl font-bold tracking-tight ${featured ? "text-white" : "text-[#1b2537] dark:text-[#e8ecf4]"}`}
                   >
-                    {plan.price}
+                    {formatPrice(plan.price.amount)}
                   </span>
                   <span
                     className={`text-sm ${featured ? "text-white/50" : "text-gray-400"}`}
@@ -124,10 +122,10 @@ export default function PlanCards({ plans }: { plans: DisplayPlan[] }) {
                     <span
                       className={`line-through ${featured ? "text-white/40" : "text-gray-400"}`}
                     >
-                      {plan.discount.originalPrice}
+                      {formatPrice(plan.discount.originalPrice)}
                     </span>
                     <span className="rounded-full bg-[#E26924]/10 px-2 py-0.5 font-semibold text-[#E26924]">
-                      Save {plan.discount.saving}
+                      Save {formatPrice(plan.discount.saving)}
                     </span>
                   </p>
                 )}
@@ -185,7 +183,6 @@ export default function PlanCards({ plans }: { plans: DisplayPlan[] }) {
                     </button>
                   </>
                 )}
-
               </div>
             );
           })}
