@@ -64,14 +64,6 @@ export interface ProviderMeta {
   stepInk?: string;
   /** The square the provider's mark sits in. Defaults to `tint`/`accent`. */
   mark?: { bg: string; ink: string };
-  /**
-   * The selected card in the provider list. Defaults to `accent` on `tint`.
-   *
-   * Given separately because two providers here are orange — Groq and
-   * Mistral — and a tint derived from each of their accents left the cards
-   * near-identical. Each picks the shade of its own ramp that
-   * separates it from the other two, rather than the one nearest its ink.
-   */
   card?: { border: string; bg: string };
   /**
    * Stops for the mark's stroke, corner to corner.
@@ -406,6 +398,72 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
         icon: "zap",
         title: "Only some of its models are offered",
         body: "NVIDIA hosts embedding, vision, safety, translation and parsing models beside the chat ones, and only some can answer in the fixed format insights need. The selector shows just those.",
+      },
+      ...SHARED_FACTS,
+    ],
+  },
+  zai: {
+    // Z.AI-inspired blue identity. These are UI colours chosen for
+    // contrast and consistency, not a claim about an official brand palette.
+    accent: "#3156A3",
+    darkAccent: "#8EAFFF",
+    link: "#3156A3",
+    tint: "#EAF0FF",
+    mark: { bg: "#EAF0FF", ink: "#3156A3" },
+    gradient: ["#8AB4FF", "#5279D5", "#3156A3"],
+    darkGradient: ["#B4D0FF", "#8AB4FF", "#6E91E8"],
+    button: {
+      bg: "#3156A3",
+      ink: "#FFFFFF",
+      hover: "#264785",
+    },
+
+    blurb: "GLM models for business insights",
+    tagline: "GLM models · BYOK",
+    placeholder: "Paste your Z.AI API key…",
+
+    steps: [
+      {
+        title: "Create a Z.AI account",
+        body: "Sign up or log in to the Z.AI platform.",
+        link: {
+          label: "z.ai",
+          href: "https://z.ai",
+        },
+      },
+      {
+        title: "Open the API Keys page",
+        body: "Go to your API key management page. You may need to sign in again before accessing it.",
+        link: {
+          label: "Manage API keys",
+          href: "https://z.ai/manage-apikey/apikey-list",
+        },
+      },
+      {
+        title: "Create and copy an API key",
+        body: "Generate a new API key and copy the complete value. Keep it private; Z.AI advises against exposing API keys in client-side code.",
+      },
+      {
+        title: "Paste it here and save",
+        body: "Paste the key into the field above, then save. Your key is checked with Z.AI before it is stored.",
+      },
+    ],
+
+    facts: [
+      {
+        icon: "zap",
+        title: "Powered by GLM",
+        body: "Z.AI provides the GLM model family. The model selector only offers compatible text models that can generate the structured responses AI Insights requires.",
+      },
+      {
+        icon: "wallet",
+        title: "Uses your Z.AI quota",
+        body: "API usage depends on your account's available resources, model access and applicable pricing. Check your Z.AI account for current usage and billing details before generating insights.",
+      },
+      {
+        icon: "shield",
+        title: "Check your model access",
+        body: "Available models and quotas can vary by account. If a model is unavailable or your quota is exhausted, check your Z.AI platform settings.",
       },
       ...SHARED_FACTS,
     ],

@@ -28,6 +28,7 @@ import {
   useRemoveAiKey,
   useSaveAiKey,
   useSwitchAiProvider,
+  useUpdateAiFallbackPreference,
   useUpdateAiModel,
 } from "@/hooks/useAiKey";
 import type { AiProvider } from "@/services/apiAiKey.client";
@@ -48,6 +49,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
   const save = useSaveAiKey();
   const remove = useRemoveAiKey();
   const switchProvider = useSwitchAiProvider();
+  const updateFallback = useUpdateAiFallbackPreference();
 
   const [apiKey, setApiKey] = useState("");
   const [revealed, setRevealed] = useState(false);
@@ -67,6 +69,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
   const configuredProviders =
     status?.configuredProviders ?? (status?.configured ? [activeProvider] : []);
   const hasKey = configuredProviders.includes(selected);
+  const fallbackEnabled = provider.allowAutomaticFallback ?? false;
   const configured = isActive && (status?.configured ?? false);
   const connectionLabel = configured
     ? "Connected · In use"
@@ -302,6 +305,83 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
                 <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 Remove
               </button>
+            )}
+          </div>
+        )}
+        {hasKey && (
+          <div className="rounded-xl border border-[#dadce0] bg-[#f8f9fa] px-3.5 py-3 dark:border-white/15 dark:bg-white/5">
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-[12px] font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
+                    Allow automatic fallback
+                  </p>
+
+                  {fallbackEnabled && (
+                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300">
+                      Enabled
+                    </span>
+                  )}
+                </div>
+
+                <p className="mt-1 text-[11px] leading-relaxed text-[#80868b] dark:text-[#9aa6bd]">
+                  Allow AI features to use {provider.label} automatically when
+                  your preferred AI provider becomes unavailable.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                role="switch"
+                aria-checked={fallbackEnabled}
+                aria-label={`Allow ${provider.label} as an automatic fallback`}
+                disabled={updateFallback.isPending}
+                onClick={() =>
+                  updateFallback.mutate({
+                    providerId: selected,
+                    allowAutomaticFallback: !fallbackEnabled,
+                  })
+                }
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${
+                  fallbackEnabled
+                    ? "bg-blue-600"
+                    : "bg-gray-300 dark:bg-gray-600"
+                }`}
+              >
+                {updateFallback.isPending ? (
+                  <Loader2 className="absolute left-1/2 h-3.5 w-3.5 -translate-x-1/2 animate-spin text-white" />
+                ) : (
+                  <span
+                    className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                      fallbackEnabled ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                )}
+              </button>
+            </div>
+
+            <div className="mt-3 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 dark:bg-amber-400/10">
+              <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-300" />
+
+              <p className="text-[11px] leading-relaxed text-amber-800 dark:text-amber-200">
+                When enabled, requests may use this provider&lsquo;s API quota
+                or paid credits. Only enable providers you are comfortable using
+                automatically.
+              </p>
+            </div>
+
+            {updateFallback.error && (
+              <p className="mt-2 flex items-start gap-1.5 text-xs text-red-500 dark:text-red-300">
+                <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" />
+                <span>{(updateFallback.error as Error).message}</span>
+              </p>
+            )}
+
+            {updateFallback.isSuccess && (
+              <p className="mt-2 flex items-center gap-1.5 text-xs text-green-600 dark:text-emerald-300">
+                <Check className="h-3.5 w-3.5 shrink-0" />
+                Fallback preference updated.
+              </p>
             )}
           </div>
         )}

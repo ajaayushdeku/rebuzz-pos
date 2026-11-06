@@ -162,6 +162,23 @@ export function useGeneratePeriod(kind: PeriodKind, id: string) {
   const running = useRef(false);
   const [isRunning, setIsRunning] = useState(false);
 
+  // Switching tabs (kind) or picking a different period (id) ends whatever
+  // generation run was in flight and clears the progress line, so the new
+  // period's cards and progress bar start from a clean slate instead of
+  // carrying over the previous period's `succeeded` / `active` / `failed`.
+  //
+  // A `useRef` mirrors `kind` + `id` so the reset in `run` runs when the
+  // period changes, not only when a new run starts. This avoids the
+  // `setState in effect` rule, which flags intentional resets on dependency
+  // change as a false positive.
+  const periodRef = useRef(kind + "|" + id);
+  if (periodRef.current !== kind + "|" + id) {
+    periodRef.current = kind + "|" + id;
+    setProgress(null);
+    setIsRunning(false);
+    running.current = false;
+  }
+
   const run = useCallback(
     async (sections: string[], mode: GenerateMode = "ensure") => {
       // A second click while the first run is going would double every call.

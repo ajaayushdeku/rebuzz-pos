@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
-import Link from "next/link";
+
 import {
   Sparkles,
   ChevronUp,
@@ -9,7 +9,6 @@ import {
   Hourglass,
   Flag,
   RefreshCw,
-  ArrowUpRight,
 } from "lucide-react";
 import { useAiInsightsResult } from "@/components/aiInsights/AiInsightsProvider";
 import AiInsightsErrorState from "@/components/aiInsights/AiInsightsErrorState";

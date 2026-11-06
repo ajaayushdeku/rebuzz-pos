@@ -17,6 +17,54 @@ const highlights = [
   "Customer retention message drafts",
 ];
 
+const getPreviewStyle = (id: number, activePreview: number) => {
+  const slot = (id - activePreview + 3) % 3;
+
+  const positions = [
+    {
+      left: "0%",
+      top: "0%",
+      width: "88%",
+      zIndex: 30,
+      opacity: 1,
+      scale: 1,
+    },
+    {
+      left: "38%",
+      top: "27%",
+      width: "62%",
+      zIndex: 20,
+      opacity: 0.96,
+      scale: 0.96,
+    },
+    {
+      left: "0%",
+      top: "60%",
+      width: "34%",
+      zIndex: 10,
+      opacity: 0.88,
+      scale: 0.92,
+    },
+  ];
+
+  const position = positions[slot];
+
+  return {
+    left: position.left,
+    top: position.top,
+    width: position.width,
+    zIndex: position.zIndex,
+    opacity: position.opacity,
+    transform: `translate3d(0, 0, 0) scale(${position.scale})`,
+    transformOrigin: "top left",
+
+    transition:
+      "left 1500ms cubic-bezier(0.22, 1, 0.36, 1), top 1500ms cubic-bezier(0.22, 1, 0.36, 1), width 1500ms cubic-bezier(0.22, 1, 0.36, 1), transform 1500ms cubic-bezier(0.22, 1, 0.36, 1), opacity 1500ms ease, box-shadow 500ms ease, border-color 500ms ease",
+
+    transitionDelay: "80ms",
+  };
+};
+
 export default function InvoiceAiHero({ token }: { token?: string }) {
   const [activePreview, setActivePreview] = useState(0);
 
@@ -113,89 +161,6 @@ export default function InvoiceAiHero({ token }: { token?: string }) {
             ))}
           </ul>
         </div>
-        {/* 
-        <div className="relative lg:col-span-6 lg:-mr-10 xl:-mr-16">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -inset-4 rounded-[2rem] bg-[#244074]/10 blur-2xl"
-          />
-
-          <div className="relative mx-auto w-full max-w-3xl pb-2 pt-2">
-            <div className="relative z-0 w-[94%] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl shadow-gray-900/10 ring-1 ring-gray-900/5 dark:border-white/10 dark:bg-[#0f1420]">
-              <div className="flex items-center gap-1.5 border-b border-gray-200 bg-gray-50 px-3 py-2 dark:border-white/10 dark:bg-white/5 sm:px-4 sm:py-2.5">
-                <span className="h-2 w-2 rounded-full bg-red-400 sm:h-2.5 sm:w-2.5" />
-                <span className="h-2 w-2 rounded-full bg-yellow-400 sm:h-2.5 sm:w-2.5" />
-                <span className="h-2 w-2 rounded-full bg-green-400 sm:h-2.5 sm:w-2.5" />
-                <span className="ml-2 truncate rounded-md bg-white px-2 py-0.5 text-[10px] font-medium text-gray-500 ring-1 ring-gray-200 dark:bg-[#0f1420] dark:text-[#a9b4c7] dark:ring-white/20 sm:ml-3 sm:text-[11px]">
-                  Business POS overview
-                </span>
-              </div>
-              <Image
-                src={InvoiceScreenshot}
-                placeholder="blur"
-                quality={85}
-                alt="Rebuzz POS sales dashboard with sales and order overview"
-                className="h-auto w-full"
-                priority
-                sizes="(max-width: 1024px) 90vw, 48vw"
-              />
-            </div>
-
-            <div className="absolute bottom-0 right-0 z-10 w-[61%] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl shadow-gray-900/20 ring-1 ring-gray-900/5 dark:border-white/10 dark:bg-[#0f1420] sm:w-[62%] sm:rounded-2xl">
-              <div className="flex items-center justify-between gap-2 border-b border-gray-200 bg-white px-3 py-2 dark:border-white/10 dark:bg-[#0f1420] sm:px-4">
-                <span className="flex min-w-0 items-center gap-1.5 text-[9px] font-semibold uppercase tracking-wider text-[#244074] dark:text-[#7ba2e3] sm:text-[10px]">
-                  <Sparkles size={13} aria-hidden="true" />
-                  <span className="truncate">AI business insights</span>
-                </span>
-                <span className="shrink-0 rounded-full bg-violet-50 px-2 py-0.5 text-[9px] font-medium text-violet-700 dark:bg-violet-400/10 dark:text-violet-300">
-                  Sample data
-                </span>
-              </div>
-              <Image
-                src={AiBusinessStory}
-                alt="Sample Rebuzz POS AI insights showing business trends and a suggested action"
-                className="h-auto w-full"
-                quality={85}
-                sizes="(max-width: 1024px) 70vw, 34vw"
-              />
-            </div>
-
-            <Link
-              href={COMPANY.socials.youtube}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Browse Rebuzz on YouTube"
-              className="group absolute bottom-0 left-0 z-10 flex aspect-[4/3] w-[34%] flex-col justify-between overflow-hidden rounded-xl border border-white/20 bg-[#102447] p-3 text-white shadow-2xl shadow-gray-900/20 ring-1 ring-gray-900/5 sm:rounded-2xl sm:p-4"
-            >
-              <Image
-                src={AiBusinessStory}
-                alt=""
-                fill
-                sizes="(max-width: 1024px) 35vw, 20vw"
-                className="object-cover opacity-45 transition-transform duration-500 group-hover:scale-105"
-              />
-              <span
-                aria-hidden="true"
-                className="absolute inset-0 bg-gradient-to-t from-[#102447] via-[#102447]/45 to-[#102447]/10"
-              />
-              <span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#244074] shadow-lg transition-transform group-hover:scale-110 sm:h-10 sm:w-10">
-                <Play size={15} fill="currentColor" aria-hidden="true" />
-              </span>
-              <span className="relative">
-                <span className="block text-[9px] font-semibold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]">
-                  Rebuzz on YouTube
-                </span>
-                <span className="mt-1 block text-xs font-semibold leading-tight sm:text-sm">
-                  Browse videos
-                </span>
-              </span>
-            </Link>
-          </div>
-
-          <p className="mt-3 text-center text-xs text-gray-500 dark:text-[#9aa6bd]">
-            Product previews shown with sample business data.
-          </p>
-        </div> */}
 
         <div className="relative lg:col-span-6 lg:-mr-10 xl:-mr-16">
           <div
@@ -203,7 +168,7 @@ export default function InvoiceAiHero({ token }: { token?: string }) {
             className="pointer-events-none absolute -inset-4 rounded-[2rem] bg-[#244074]/10 blur-2xl"
           />
 
-          {(() => {
+          {/* {(() => {
             const previews = [
               {
                 id: 0,
@@ -220,13 +185,9 @@ export default function InvoiceAiHero({ token }: { token?: string }) {
             ];
 
             return null;
-          })()}
+          })()} */}
 
           <div className="relative mx-auto w-full max-w-3xl">
-            {/*
-      The three previews rotate through these positions.
-      The container maintains a stable size during transitions.
-    */}
             <div className="relative aspect-[1.18] w-full sm:aspect-[1.2]">
               {/* POS Dashboard */}
               <div
@@ -240,37 +201,12 @@ export default function InvoiceAiHero({ token }: { token?: string }) {
                   }
                 }}
                 aria-label="Focus POS dashboard preview"
-                className={`absolute cursor-pointer overflow-hidden rounded-2xl border bg-white shadow-xl ring-1 ring-gray-900/5 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] dark:bg-[#0f1420] ${
+                className={`absolute cursor-pointer overflow-hidden rounded-2xl border bg-white shadow-xl ring-1 ring-gray-900/5  dark:bg-[#0f1420] ${
                   activePreview === 0
                     ? "border-[#244074]/50 shadow-2xl shadow-[#244074]/20 ring-2 ring-[#244074]/20"
                     : "border-gray-200 shadow-lg dark:border-white/10"
                 }`}
-                style={{
-                  left:
-                    [0, 1, 2][(0 - activePreview + 3) % 3] === 0
-                      ? "0%"
-                      : [0, 1, 2][(0 - activePreview + 3) % 3] === 1
-                        ? "38%"
-                        : "0%",
-                  top:
-                    [0, 1, 2][(0 - activePreview + 3) % 3] === 0
-                      ? "0%"
-                      : [0, 1, 2][(0 - activePreview + 3) % 3] === 1
-                        ? "auto"
-                        : "auto",
-                  bottom:
-                    [0, 1, 2][(0 - activePreview + 3) % 3] === 0
-                      ? "auto"
-                      : [0, 1, 2][(0 - activePreview + 3) % 3] === 1
-                        ? "7%"
-                        : "0%",
-                  width: [88, 62, 34][(0 - activePreview + 3) % 3] + "%",
-                  zIndex: [30, 20, 10][(0 - activePreview + 3) % 3],
-                  opacity: [1, 0.94, 0.85][(0 - activePreview + 3) % 3],
-                  transform: `scale(${
-                    [1, 0.94, 0.88][(0 - activePreview + 3) % 3]
-                  })`,
-                }}
+                style={getPreviewStyle(0, activePreview)}
               >
                 <div className="flex items-center gap-1.5 border-b border-gray-200 bg-gray-50 px-3 py-2 dark:border-white/10 dark:bg-white/5 sm:px-4 sm:py-2.5">
                   <span className="h-2 w-2 rounded-full bg-red-400" />
@@ -304,39 +240,12 @@ export default function InvoiceAiHero({ token }: { token?: string }) {
                   }
                 }}
                 aria-label="Focus AI business insights preview"
-                className={`absolute cursor-pointer overflow-hidden rounded-xl border bg-white shadow-2xl ring-1 ring-gray-900/5 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] dark:bg-[#0f1420] sm:rounded-2xl ${
+                className={`absolute cursor-pointer overflow-hidden rounded-xl border bg-white shadow-2xl ring-1 ring-gray-900/5  dark:bg-[#0f1420] sm:rounded-2xl ${
                   activePreview === 1
                     ? "border-[#244074]/50 shadow-2xl shadow-[#244074]/20 ring-2 ring-[#244074]/20"
                     : "border-gray-200 dark:border-white/10"
                 }`}
-                style={{
-                  left:
-                    [0, 1, 2][(1 - activePreview + 3) % 3] === 0
-                      ? "0%"
-                      : [0, 1, 2][(1 - activePreview + 3) % 3] === 1
-                        ? "38%"
-                        : "0%",
-                  top:
-                    [0, 1, 2][(1 - activePreview + 3) % 3] === 0
-                      ? "0%"
-                      : "auto",
-                  right:
-                    [0, 1, 2][(1 - activePreview + 3) % 3] === 1
-                      ? "0%"
-                      : "auto",
-                  bottom:
-                    [0, 1, 2][(1 - activePreview + 3) % 3] === 0
-                      ? "auto"
-                      : [0, 1, 2][(1 - activePreview + 3) % 3] === 1
-                        ? "7%"
-                        : "0%",
-                  width: [88, 62, 34][(1 - activePreview + 3) % 3] + "%",
-                  zIndex: [30, 20, 10][(1 - activePreview + 3) % 3],
-                  opacity: [1, 0.94, 0.85][(1 - activePreview + 3) % 3],
-                  transform: `scale(${
-                    [1, 0.94, 0.88][(1 - activePreview + 3) % 3]
-                  })`,
-                }}
+                style={getPreviewStyle(1, activePreview)}
               >
                 <div className="flex items-center justify-between gap-2 border-b border-gray-200 bg-white px-3 py-2 dark:border-white/10 dark:bg-[#0f1420] sm:px-4">
                   <span className="flex min-w-0 items-center gap-1.5 text-[9px] font-semibold uppercase tracking-wider text-[#244074] dark:text-[#7ba2e3] sm:text-[10px]">
@@ -360,39 +269,12 @@ export default function InvoiceAiHero({ token }: { token?: string }) {
 
               {/* YouTube Preview */}
               <div
-                className={`absolute aspect-[4/3] overflow-hidden rounded-xl border border-white/20 bg-[#102447] shadow-2xl ring-1 ring-gray-900/5 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] sm:rounded-2xl ${
+                className={`absolute aspect-[4/3] overflow-hidden rounded-xl border border-white/20 bg-[#102447] shadow-2xl ring-1 ring-gray-900/5  sm:rounded-2xl ${
                   activePreview === 2
                     ? "shadow-2xl shadow-[#244074]/30 ring-2 ring-[#244074]/30"
                     : ""
                 }`}
-                style={{
-                  left:
-                    [0, 1, 2][(2 - activePreview + 3) % 3] === 0
-                      ? "0%"
-                      : [0, 1, 2][(2 - activePreview + 3) % 3] === 1
-                        ? "38%"
-                        : "0%",
-                  top:
-                    [0, 1, 2][(2 - activePreview + 3) % 3] === 0
-                      ? "0%"
-                      : "auto",
-                  right:
-                    [0, 1, 2][(2 - activePreview + 3) % 3] === 1
-                      ? "0%"
-                      : "auto",
-                  bottom:
-                    [0, 1, 2][(2 - activePreview + 3) % 3] === 0
-                      ? "auto"
-                      : [0, 1, 2][(2 - activePreview + 3) % 3] === 1
-                        ? "7%"
-                        : "0%",
-                  width: [88, 62, 34][(2 - activePreview + 3) % 3] + "%",
-                  zIndex: [30, 20, 10][(2 - activePreview + 3) % 3],
-                  opacity: [1, 0.94, 0.85][(2 - activePreview + 3) % 3],
-                  transform: `scale(${
-                    [1, 0.94, 0.88][(2 - activePreview + 3) % 3]
-                  })`,
-                }}
+                style={getPreviewStyle(2, activePreview)}
               >
                 <Link
                   href={COMPANY.socials.youtube}
@@ -439,7 +321,7 @@ export default function InvoiceAiHero({ token }: { token?: string }) {
             </div>
 
             {/* Circular focus selector */}
-            <div className="relative z-40 mt-5 flex flex-col items-center gap-3">
+            <div className="relative z-40  flex flex-col items-center gap-3">
               <div className="flex items-center gap-2">
                 {[
                   { id: 0, label: "POS dashboard" },
@@ -452,7 +334,7 @@ export default function InvoiceAiHero({ token }: { token?: string }) {
                     onClick={() => setActivePreview(item.id)}
                     aria-label={`Focus ${item.label}`}
                     aria-pressed={activePreview === item.id}
-                    className={`group flex h-9 items-center justify-center rounded-full transition-all duration-500 ${
+                    className={`group flex h-9 items-center justify-center rounded-full transition-all duration-700 ease-in-out motion-reduce:duration-0 ${
                       activePreview === item.id
                         ? "bg-[#244074] px-4 shadow-lg shadow-[#244074]/20"
                         : "w-9 border border-gray-200 bg-white hover:border-[#244074]/40 hover:bg-[#244074]/5 dark:border-white/10 dark:bg-white/5"

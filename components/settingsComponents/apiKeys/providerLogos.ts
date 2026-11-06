@@ -65,6 +65,15 @@ export const PROVIDER_LOGOS: Record<string, ProviderLogo> = {
     ],
     fillRule: "evenodd",
   },
+  zai: {
+    viewBox: "0 0 24 24",
+    fillRule: "evenodd",
+    paths: [
+      "M12.105 2L9.927 4.953H.653L2.83 2h9.276z",
+      "M23.254 19.048L21.078 22h-9.242l2.174-2.952h9.244z",
+      "M24 2L9.264 22H0L14.736 2H24z",
+    ],
+  },
 };
 
 export const logoFor = (providerId: string): ProviderLogo | null =>

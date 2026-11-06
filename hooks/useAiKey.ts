@@ -8,6 +8,7 @@ import {
   removeAiKey,
   saveAiKey,
   switchAiProvider,
+  updateAiFallbackPreference,
   updateAiModel,
   type AiKeyStatus,
   type AiModelList,
@@ -164,5 +165,25 @@ export function useAiModels(enabled: boolean, provider?: string) {
     enabled,
     staleTime: 5 * 60 * 1000,
     retry: false,
+  });
+}
+
+export function useUpdateAiFallbackPreference() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      providerId,
+      allowAutomaticFallback,
+    }: {
+      providerId: string;
+      allowAutomaticFallback: boolean;
+    }) => updateAiFallbackPreference(providerId, allowAutomaticFallback),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: AI_KEY_QUERY,
+      });
+    },
   });
 }

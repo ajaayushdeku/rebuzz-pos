@@ -103,7 +103,7 @@ export default async function RootLayout({
          */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var s=null;try{var m=document.cookie.match(/(?:^|;\\s*)rebuzz-theme=(dark|light)(?:;|$)/);s=m?m[1]:localStorage.getItem("rebuzz-theme")}catch(e){try{s=localStorage.getItem("rebuzz-theme")}catch(e){}}var d=s?s==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.classList.toggle("dark",d)})()`,
+            __html: `(function(){var cookieTheme=null;var localTheme=null;try{var match=document.cookie.match(/(?:^|;\\s*)rebuzz-theme=(dark|light)(?:;|$)/);cookieTheme=match?match[1]:null}catch(e){}try{localTheme=localStorage.getItem("rebuzz-theme")}catch(e){}var savedTheme=localTheme==="dark"||localTheme==="light"?localTheme:cookieTheme;var dark=savedTheme?savedTheme==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.classList.toggle("dark",dark);if(savedTheme){try{localStorage.setItem("rebuzz-theme",savedTheme)}catch(e){}try{var secure=window.location.protocol==="https:"?"; Secure":"";document.cookie="rebuzz-theme="+savedTheme+"; Path=/; Max-Age=31536000; SameSite=Lax"+secure}catch(e){}}})()`,
           }}
         />
       </head>

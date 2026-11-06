@@ -127,7 +127,13 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const body = await req.json().catch(() => null);
 
-  const payload: { enabled?: boolean; model?: string; provider?: string } = {};
+  const payload: {
+    enabled?: boolean;
+    model?: string;
+    provider?: string;
+    providerId?: string;
+    allowAutomaticFallback?: boolean;
+  } = {};
 
   if (typeof body?.enabled === "boolean") {
     payload.enabled = body.enabled;
@@ -137,6 +143,14 @@ export async function PATCH(req: NextRequest) {
   }
   if (typeof body?.provider === "string" && body.provider.trim()) {
     payload.provider = body.provider.trim();
+  }
+
+  if (typeof body?.providerId === "string" && body.providerId.trim()) {
+    payload.providerId = body.providerId.trim();
+  }
+
+  if (typeof body?.allowAutomaticFallback === "boolean") {
+    payload.allowAutomaticFallback = body.allowAutomaticFallback;
   }
 
   if (Object.keys(payload).length === 0) {

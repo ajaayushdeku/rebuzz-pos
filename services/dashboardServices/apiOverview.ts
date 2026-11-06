@@ -77,9 +77,9 @@ export const getStatsData = async (
   const compareJson = await safeJson<{
     data?: { totalSales: number; totalRevenue: number }[];
   }>(compareRes);
-  console.log("COMPARE API RESPONSE:", compareJson);
-  console.log("COMPARE DATA:", compareJson?.data);
-  console.log("IS DATA ARRAY:", Array.isArray(compareJson?.data));
+  // console.log("COMPARE API RESPONSE:", compareJson);
+  // console.log("COMPARE DATA:", compareJson?.data);
+  // console.log("IS DATA ARRAY:", Array.isArray(compareJson?.data));
   const dataPoints: { totalSales: number; totalRevenue: number }[] =
     compareJson?.data ?? [];
   const totalOrders = dataPoints.reduce(
@@ -120,9 +120,9 @@ export const getStatsData = async (
     0,
   );
 
-  console.log("SALES BY ITEM RESPONSE:", salesByItemJson);
-  console.log("SALES BY ITEM DATA:", salesByItemJson?.data);
-  console.log("IS SALES DATA ARRAY:", Array.isArray(salesByItemJson?.data));
+  // console.log("SALES BY ITEM RESPONSE:", salesByItemJson);
+  // console.log("SALES BY ITEM DATA:", salesByItemJson?.data);
+  // console.log("IS SALES DATA ARRAY:", Array.isArray(salesByItemJson?.data));
 
   return {
     totalSales: { value: totalRevenue, percent: 0 },

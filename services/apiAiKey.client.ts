@@ -11,8 +11,10 @@ export interface AiProvider {
   id: string;
   label: string;
   defaultModel: string;
-  /** Where to create a key for this provider. */
   keysUrl: string;
+  configured?: boolean;
+  enabled?: boolean;
+  allowAutomaticFallback?: boolean;
 }
 
 export interface AiKeyStatus {
@@ -249,4 +251,26 @@ export const updateAiModel = async (model: string): Promise<AiKeyStatus> => {
       toMessage(json?.error, json?.available, json?.retryAfter, json?.detail),
     );
   return json?.data ?? EMPTY;
+};
+
+export const updateAiFallbackPreference = async (
+  providerId: string,
+  allowAutomaticFallback: boolean,
+): Promise<void> => {
+  const res = await fetch("/api/settings/ai", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      providerId,
+      allowAutomaticFallback,
+    }),
+  });
+
+  const json = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(
+      toMessage(json?.error, json?.available, json?.retryAfter, json?.detail),
+    );
+  }
 };

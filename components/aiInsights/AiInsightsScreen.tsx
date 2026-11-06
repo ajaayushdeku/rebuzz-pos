@@ -35,6 +35,8 @@ import type { SlowItemInsight } from "@/lib/ai-insights/sections/slowItems";
 import type { StaffingInsight } from "@/lib/ai-insights/sections/staffing";
 import type { PeriodKind } from "@/services/apiPeriodInsights.client";
 import PeriodProgressVisualizer from "./PeriodProgressVisualizer";
+import ProviderFallbackStatus from "./ProviderFallbackStatus";
+import ProviderSwitchNotice from "./sections/ProviderSwitchNotice";
 
 /**
  * AI Insights for a completed analytics period.
@@ -161,6 +163,106 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
   const staffing = keep(staffingSection.data?.items ?? []);
   const festivals = keep(festivalPrep.data?.items ?? []);
 
+  // Generated sections lead in the order they were first generated; sections
+  // still working, failed, or not yet generated follow in that order.
+  const periodSections = [
+    {
+      id: "retention",
+      state: retentionSection,
+      view: (
+        <CustomerRetentionSection
+          items={retention}
+          state={retentionSection}
+          onDismiss={dismiss}
+        />
+      ),
+    },
+    {
+      id: "menu-suggestions",
+      state: menuSuggestions,
+      view: (
+        <MenuSuggestionsSection
+          items={menu}
+          state={menuSuggestions}
+          shortlisted={shortlisted}
+          onToggleShortlist={toggleShortlist}
+          onDismiss={dismiss}
+        />
+      ),
+    },
+    {
+      id: "slow-items",
+      state: slowItems,
+      view: (
+        <SlowItemsSection items={slow} state={slowItems} onDismiss={dismiss} />
+      ),
+    },
+    {
+      id: "pricing",
+      state: pricingSection,
+      view: (
+        <PricingSection
+          items={pricing}
+          state={pricingSection}
+          onDismiss={dismiss}
+        />
+      ),
+    },
+    {
+      id: "hour-playbook",
+      state: hourPlaybook,
+      view: (
+        <HourPlaybookSection
+          items={hours}
+          state={hourPlaybook}
+          onDismiss={dismiss}
+        />
+      ),
+    },
+    {
+      id: "sales-recommendations",
+      state: salesRecommendations,
+      view: (
+        <SalesRecommendationsSection
+          items={sales}
+          state={salesRecommendations}
+          onDismiss={dismiss}
+        />
+      ),
+    },
+    {
+      id: "staffing",
+      state: staffingSection,
+      view: (
+        <StaffingSection
+          items={staffing}
+          state={staffingSection}
+          onDismiss={dismiss}
+        />
+      ),
+    },
+  ];
+  const orderedPeriodSections = periodSections.sort((a, b) => {
+    const order = (section: (typeof periodSections)[number]) => {
+      if (section.state.data) {
+        const timestamp = section.state.data.generatedAt
+          ? Date.parse(section.state.data.generatedAt)
+          : Number.POSITIVE_INFINITY;
+        return [
+          0,
+          Number.isNaN(timestamp) ? Number.POSITIVE_INFINITY : timestamp,
+        ];
+      }
+      if (section.state.isFetching) return [1, 0];
+      if (section.state.isError) return [2, 0];
+      return [3, 0];
+    };
+
+    const [aGroup, aTime] = order(a);
+    const [bGroup, bTime] = order(b);
+    return aGroup - bGroup || aTime - bTime;
+  });
+
   /**
    * Generate whatever this period is missing.
    *
@@ -175,7 +277,16 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
     }
     if (!periodId || missing.length === 0) return;
 
-    const result = await generation.run(missing);
+    let result;
+
+    try {
+      result = await generation.run(missing);
+    } finally {
+      // Automatic fallback may have changed the primary provider in the backend.
+      // Fetch the latest provider status after generation.
+      await keyStatus.refetch();
+    }
+
     if (!result) return;
 
     const made = result.total - result.failed.length;
@@ -211,6 +322,12 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
           setDismissed(new Set());
           setShortlisted(new Set());
         }}
+      />
+
+      {/* Automatic provider switch notification */}
+      <ProviderSwitchNotice
+        fallbackFrom={keyStatus.data?.fellBackFrom}
+        providerId={keyStatus.data?.provider}
       />
 
       {/* Said once, above the cards: the sales are historical, the prices are
@@ -254,18 +371,31 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
         </p>
       )}
 
-      <PeriodProgressVisualizer
-        periodLabel={period?.label}
-        isLoading={insights.isLoading || periodList.isLoading}
-        isGenerating={generation.isRunning}
-        storedSections={stored}
-        missingSections={missing}
-        progress={generation.progress}
-        canGenerate={isAdmin && !needsKey}
-        onGenerate={() => void generateMissing()}
-      />
+      <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-10 lg:gap-4">
+        {/* Main progress visualizer - 70% */}
+        <div className="min-w-0 lg:col-span-7">
+          <PeriodProgressVisualizer
+            periodLabel={period?.label}
+            isLoading={insights.isLoading || periodList.isLoading}
+            isGenerating={generation.isRunning}
+            storedSections={stored}
+            missingSections={missing}
+            progress={generation.progress}
+            canGenerate={isAdmin && !needsKey}
+            onGenerate={() => void generateMissing()}
+          />
+        </div>
 
-      <div className="flex flex-col gap-2">
+        {/* Supporting provider status - 30% */}
+        <div className="min-w-0 lg:col-span-3">
+          <ProviderFallbackStatus
+            providers={keyStatus.data?.providers ?? []}
+            primaryProvider={keyStatus.data?.provider ?? ""}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3">
         {/* Everything inside names the period in its own copy — "September 2026"
             rather than "the last 30 days". The festival section below is outside
             on purpose: it is about what is coming, so the rolling wording it
@@ -279,77 +409,14 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
         >
           {/* One boundary per section, so a failure in one cannot blank the rest. */}
           <div className="flex flex-col gap-2">
-            <ChartErrorBoundary>
-              <CustomerRetentionSection
-                items={retention}
-                state={retentionSection}
-                onDismiss={dismiss}
-              />
-            </ChartErrorBoundary>
-
-            <div className="border-t border-gray-200 my-6 dark:border-white/10" />
-
-            <ChartErrorBoundary>
-              <MenuSuggestionsSection
-                items={menu}
-                state={menuSuggestions}
-                shortlisted={shortlisted}
-                onToggleShortlist={toggleShortlist}
-                onDismiss={dismiss}
-              />
-            </ChartErrorBoundary>
-
-            <div className="border-t border-gray-200 my-6 dark:border-white/10" />
-
-            <ChartErrorBoundary>
-              <SlowItemsSection
-                items={slow}
-                state={slowItems}
-                onDismiss={dismiss}
-              />
-            </ChartErrorBoundary>
-
-            <div className="border-t border-gray-200 my-6 dark:border-white/10" />
-
-            <ChartErrorBoundary>
-              <PricingSection
-                items={pricing}
-                state={pricingSection}
-                onDismiss={dismiss}
-              />
-            </ChartErrorBoundary>
-
-            <div className="border-t border-gray-200 my-6 dark:border-white/10" />
-
-            <ChartErrorBoundary>
-              <HourPlaybookSection
-                items={hours}
-                state={hourPlaybook}
-                onDismiss={dismiss}
-              />
-            </ChartErrorBoundary>
-
-            <div className="border-t border-gray-200 my-6 dark:border-white/10" />
-
-            <ChartErrorBoundary>
-              <SalesRecommendationsSection
-                items={sales}
-                state={salesRecommendations}
-                onDismiss={dismiss}
-              />
-            </ChartErrorBoundary>
-
-            <div className="border-t border-gray-200 my-6 dark:border-white/10" />
-
-            <ChartErrorBoundary>
-              <StaffingSection
-                items={staffing}
-                state={staffingSection}
-                onDismiss={dismiss}
-              />
-            </ChartErrorBoundary>
-
-            <div className="border-t border-gray-200 my-6 dark:border-white/10" />
+            {orderedPeriodSections.map(({ id, view }, index) => (
+              <div key={id}>
+                <ChartErrorBoundary>{view}</ChartErrorBoundary>
+                {/* {index < orderedPeriodSections.length - 1 && ( */}
+                <div className="my-6 border-t border-gray-200 dark:border-white/10" />
+                {/* )} */}
+              </div>
+            ))}
           </div>
         </PeriodLabelProvider>
 

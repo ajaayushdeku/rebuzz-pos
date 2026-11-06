@@ -61,6 +61,37 @@ export default function ApiKeysScreen() {
   const configuredProviders =
     status?.configuredProviders ?? (status?.configured ? [activeProvider] : []);
 
+  // The provider answering insights goes first in the list, so it is the one
+  // a merchant sees when they open this screen. The active provider is
+  // anchored to the very top, and everything else is grouped by key and
+  // fallback status so the merchant acts on what they can first.
+  const orderedProviders = providers.find((p) => p.id === activeProvider)
+    ? providers.toSorted((a, b) => {
+        // The active provider always goes first.
+        if (a.id === activeProvider) return -1;
+        if (b.id === activeProvider) return 1;
+
+        const aHasKey = configuredProviders.includes(a.id);
+        const bHasKey = configuredProviders.includes(b.id);
+        const aFallback = a.allowAutomaticFallback ?? false;
+        const bFallback = b.allowAutomaticFallback ?? false;
+
+        // Top tier: key saved and fallback enabled.
+        if (aHasKey && bHasKey && aFallback && bFallback) return 0;
+        if (aHasKey && bHasKey) return 0;
+        if (aHasKey) return -1;
+        if (bHasKey) return 1;
+
+        // Middle tier: fallback enabled but no key.
+        if (aFallback && bFallback) return 0;
+        if (aFallback) return -1;
+        if (bFallback) return 1;
+
+        // Bottom tier: no key and no fallback.
+        return 0;
+      })
+    : providers;
+
   return (
     <div className="space-y-6">
       {/* Once for the screen: the marks in the cards and in the panel paint
@@ -69,7 +100,7 @@ export default function ApiKeysScreen() {
       <ProviderMarkDefs />
 
       <ProviderPicker
-        providers={providers}
+        providers={orderedProviders}
         selected={current}
         activeProvider={activeProvider}
         configuredProviders={configuredProviders}
