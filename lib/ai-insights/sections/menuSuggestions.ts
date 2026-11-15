@@ -63,6 +63,9 @@ export interface MenuFacts {
   categories: { name: string; units: number; sharePct: number }[];
 }
 
+/** Status of a menu suggestion */
+export type MenuSuggestionStatus = "suggested" | "added" | "dismissed";
+
 const BEST_SELLERS = 8;
 /** Enough for the model to know the menu without the briefing ballooning. */
 const MAX_MENU_LINES = 60;
@@ -234,12 +237,15 @@ export interface MenuSuggestion {
   kind: MenuIdeaKind;
   difficulty: Difficulty;
   description: string;
-  /** Real menu items, with their real prices. */
   builtFrom: { name: string; price: number }[];
-  /** The model's price to try, dropped when it would sell below cost. */
   suggestedPrice: number | null;
-  /** A combo's items bought one by one, from the menu's own prices. */
   separatePrice: number | null;
+
+  // Persistent status returned by the AI backend.
+  status?: MenuSuggestionStatus;
+  addedProductId?: string;
+  addedAt?: string;
+  dismissedAt?: string;
 }
 
 const MAX_IDEAS = 6;

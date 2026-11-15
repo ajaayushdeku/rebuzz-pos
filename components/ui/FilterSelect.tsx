@@ -40,6 +40,7 @@ interface FilterSelectProps {
   disabled?: boolean;
 
   preserveCase?: boolean;
+  periodSelectorSpread?: string;
 }
 
 export function FilterSelect({
@@ -53,6 +54,7 @@ export function FilterSelect({
   ariaLabel,
   disabled = false,
   preserveCase = false,
+  periodSelectorSpread = "",
 }: FilterSelectProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -173,7 +175,9 @@ export function FilterSelect({
           buttonClassName,
         )}
       >
-        <span className="flex min-w-0 flex-1 items-center gap-1.5">
+        <span
+          className={`flex min-w-0 flex-1 items-center  ${periodSelectorSpread} gap-1.5`}
+        >
           <span className="truncate">{selected?.label ?? placeholder}</span>
           {selected?.suffix}
         </span>

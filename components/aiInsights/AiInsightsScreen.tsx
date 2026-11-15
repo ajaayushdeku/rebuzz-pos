@@ -1,6 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import ProductFormModal from "@/components/product/ProductFormModal";
+import { useProductsList } from "@/hooks/useProductsList";
+import { useSubscriptionType } from "@/hooks/useSubscriptionType";
+import { FREE_PRODUCT_LIMIT, parseSubscription } from "@/lib/config/plans";
 import { Loader2, TriangleAlert } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -23,6 +27,8 @@ import {
   usePeriodInsights,
   usePeriodList,
   useGeneratePeriod,
+  useMarkMenuSuggestionAdded,
+  useDismissMenuSuggestion,
 } from "@/hooks/usePeriodInsights";
 import { usePeriodSection } from "@/hooks/usePeriodSection";
 import type { FestivalPrep } from "@/lib/ai-insights/sections/festivalPrep";
@@ -37,6 +43,8 @@ import type { PeriodKind } from "@/services/apiPeriodInsights.client";
 import PeriodProgressVisualizer from "./PeriodProgressVisualizer";
 import ProviderFallbackStatus from "./ProviderFallbackStatus";
 import ProviderSwitchNotice from "./sections/ProviderSwitchNotice";
+import type { Product } from "@/lib/types/product";
+import ProductDetailModal from "../product/ProductDetailModal";
 
 /**
  * AI Insights for a completed analytics period.
@@ -60,6 +68,198 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
    */
   const keyStatus = useAiKeyStatus();
   const needsKey = keyStatus.data?.configured === false;
+
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
+
+  // Product limit — reuse the same logic as the Products page.
+  const { data: products = [], isLoading: productsLoading } = useProductsList();
+
+  const { subscriptionType, isLoading: planLoading } = useSubscriptionType();
+
+  const { tier } = parseSubscription(subscriptionType);
+
+  const isFree = !planLoading && tier === "free";
+  const atLimit = isFree && products.length >= FREE_PRODUCT_LIMIT;
+
+  const productLimitLoading = productsLoading || planLoading;
+
+  const markSuggestionAdded = useMarkMenuSuggestionAdded();
+  const dismissSuggestionMutation = useDismissMenuSuggestion();
+
+  type PendingSuggestionStatus = {
+    kind: PeriodKind;
+    id: string;
+    promptVersion: string;
+    suggestionId: string;
+    productId: string;
+    productName: string;
+  };
+
+  const [pendingSuggestionStatus, setPendingSuggestionStatus] =
+    useState<PendingSuggestionStatus | null>(null);
+
+  type SelectedMenuSuggestion = {
+    item: MenuSuggestion;
+    kind: PeriodKind;
+    periodId: string;
+    promptVersion: string;
+  };
+
+  const [selectedMenuSuggestion, setSelectedMenuSuggestion] =
+    useState<SelectedMenuSuggestion | null>(null);
+
+  const [productModalOpen, setProductModalOpen] = useState(false);
+
+  const handleAddToMenu = (item: MenuSuggestion) => {
+    if (!isAdmin) {
+      toast.error("Only the business admin can add menu suggestions.");
+      return;
+    }
+
+    if (item.status === "added") return;
+
+    if (productLimitLoading) return;
+
+    if (pendingSuggestionStatus) {
+      toast.error("Please finish the previous suggestion status update first.");
+      return;
+    }
+
+    const promptVersion = stored["menu-suggestions"]?.promptVersion;
+
+    if (!periodId || !promptVersion) {
+      toast.error("Couldn't identify this saved menu suggestion.");
+      return;
+    }
+
+    setSelectedMenuSuggestion({
+      item,
+      kind,
+      periodId,
+      promptVersion,
+    });
+
+    setProductModalOpen(true);
+  };
+
+  const productInitialValues = useMemo(
+    () =>
+      selectedMenuSuggestion
+        ? {
+            name: selectedMenuSuggestion.item.title,
+            description: selectedMenuSuggestion.item.description,
+            ...(selectedMenuSuggestion.item.suggestedPrice != null &&
+            Number.isFinite(selectedMenuSuggestion.item.suggestedPrice) &&
+            selectedMenuSuggestion.item.suggestedPrice >= 0
+              ? { price: selectedMenuSuggestion.item.suggestedPrice }
+              : {}),
+          }
+        : undefined,
+    [selectedMenuSuggestion],
+  );
+
+  const handleProductCreated = async (product: Product) => {
+    const selected = selectedMenuSuggestion;
+
+    setProductModalOpen(false);
+    setSelectedMenuSuggestion(null);
+
+    if (!selected || !product.id) {
+      toast.error(
+        "Product created, but its suggestion association could not be prepared.",
+      );
+      return;
+    }
+
+    const statusInput: PendingSuggestionStatus = {
+      kind: selected.kind,
+      id: selected.periodId,
+      promptVersion: selected.promptVersion,
+      suggestionId: selected.item.id,
+      productId: product.id,
+      productName: product.name,
+    };
+
+    try {
+      await markSuggestionAdded.mutateAsync({
+        kind: statusInput.kind,
+        id: statusInput.id,
+        promptVersion: statusInput.promptVersion,
+        suggestionId: statusInput.suggestionId,
+        productId: statusInput.productId,
+      });
+
+      toast.success("Product created and suggestion marked as added.");
+    } catch {
+      setPendingSuggestionStatus(statusInput);
+
+      toast.error(
+        "Product created, but its suggestion status could not be saved. You can retry without creating the product again.",
+        { duration: 6000 },
+      );
+    }
+  };
+
+  const retrySuggestionStatus = async () => {
+    if (!pendingSuggestionStatus) return;
+
+    try {
+      await markSuggestionAdded.mutateAsync({
+        kind: pendingSuggestionStatus.kind,
+        id: pendingSuggestionStatus.id,
+        promptVersion: pendingSuggestionStatus.promptVersion,
+        suggestionId: pendingSuggestionStatus.suggestionId,
+        productId: pendingSuggestionStatus.productId,
+      });
+
+      setPendingSuggestionStatus(null);
+      toast.success("Suggestion status updated successfully.");
+    } catch {
+      toast.error("Couldn't update the suggestion status. Please try again.");
+    }
+  };
+
+  const dismissMenuItem = async (suggestionId: string) => {
+    if (!isAdmin) {
+      toast.error("Only the business admin can dismiss suggestions.");
+      return;
+    }
+
+    const promptVersion = stored["menu-suggestions"]?.promptVersion;
+
+    if (!periodId || !promptVersion) {
+      toast.error("Couldn't identify this saved menu suggestion.");
+      return;
+    }
+
+    try {
+      await dismissSuggestionMutation.mutateAsync({
+        kind,
+        id: periodId,
+        promptVersion,
+        suggestionId,
+      });
+
+      toast.success("Suggestion dismissed.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Couldn't dismiss this suggestion.",
+      );
+    }
+  };
+
+  const handleViewProduct = (productId: string) => {
+    const product = products.find((item) => item.id === productId);
+
+    if (!product) {
+      toast.error("This product could not be found. It may have been deleted.");
+      return;
+    }
+
+    setViewingProduct(product);
+  };
 
   // ── Which period ────────────────────────────────────────────────────────
   const [kind, setKind] = useState<PeriodKind>("month");
@@ -181,12 +381,24 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
       id: "menu-suggestions",
       state: menuSuggestions,
       view: (
+        // <MenuSuggestionsSection
+        //   items={menu}
+        //   state={menuSuggestions}
+        //   shortlisted={shortlisted}
+        //   onToggleShortlist={toggleShortlist}
+        //   onDismiss={dismiss}
+        //   onAddToMenu={handleAddToMenu}
+        //   productLimitLoading={productLimitLoading}
+        // />
         <MenuSuggestionsSection
           items={menu}
           state={menuSuggestions}
           shortlisted={shortlisted}
           onToggleShortlist={toggleShortlist}
-          onDismiss={dismiss}
+          onDismiss={dismissMenuItem}
+          onAddToMenu={handleAddToMenu}
+          onViewProduct={handleViewProduct}
+          productLimitLoading={productLimitLoading}
         />
       ),
     },
@@ -430,6 +642,67 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
           />
         </ChartErrorBoundary>
       </div>
+
+      {pendingSuggestionStatus && (
+        <div
+          role="alert"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-400/25 dark:bg-amber-400/10"
+        >
+          <div className="min-w-0">
+            <p className="text-[13px] font-semibold text-amber-900 dark:text-amber-200">
+              Product created successfully
+            </p>
+
+            <p className="mt-0.5 text-[12px] text-amber-800 dark:text-amber-300">
+              Couldn&lsquo;t save the Added status for &ldquo;
+              {pendingSuggestionStatus.productName}&rdquo;. Retry without
+              creating another product.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => void retrySuggestionStatus()}
+            disabled={markSuggestionAdded.isPending}
+            className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-amber-600 px-3 py-2 text-[12px] font-semibold text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {markSuggestionAdded.isPending && (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            )}
+            Retry status update
+          </button>
+        </div>
+      )}
+
+      {/* <ProductFormModal
+        open={productModalOpen}
+        onClose={() => setProductModalOpen(false)}
+        initialValues={productInitialValues}
+        limitReached={atLimit}
+        onSuccess={() => {
+          setProductModalOpen(false);
+          setSelectedMenuSuggestion(null);
+        }}
+      /> */}
+
+      <ProductDetailModal
+        open={!!viewingProduct}
+        onClose={() => setViewingProduct(null)}
+        product={viewingProduct}
+      />
+
+      <ProductFormModal
+        open={productModalOpen}
+        onClose={() => {
+          setProductModalOpen(false);
+          setSelectedMenuSuggestion(null);
+        }}
+        initialValues={productInitialValues}
+        limitReached={atLimit}
+        onSuccess={(product) => {
+          void handleProductCreated(product);
+        }}
+      />
     </div>
   );
 }

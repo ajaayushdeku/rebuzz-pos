@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Star, UtensilsCrossed } from "lucide-react";
+import {
+  Check,
+  ExternalLink,
+  PackagePlus,
+  Search,
+  Star,
+  UtensilsCrossed,
+} from "lucide-react";
 
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import type { AiSectionState } from "@/hooks/useAiSection";
@@ -15,7 +22,7 @@ import { useWindowPhrase } from "@/components/aiInsights/periodLabel";
 import {
   AiSectionBody,
   BodyLabel,
-  CardAction,
+  // CardAction,
   CardGrid,
   EmptySection,
   InsightCard,
@@ -91,6 +98,9 @@ export default function MenuSuggestionsSection({
   shortlisted,
   onToggleShortlist,
   onDismiss,
+  onAddToMenu,
+  productLimitLoading,
+  onViewProduct,
 }: {
   /** The ideas still on the page, after dismissals. */
   items: MenuSuggestion[];
@@ -98,6 +108,9 @@ export default function MenuSuggestionsSection({
   shortlisted: ReadonlySet<string>;
   onToggleShortlist: (id: string) => void;
   onDismiss: (id: string) => void;
+  onAddToMenu: (item: MenuSuggestion) => void;
+  productLimitLoading: boolean;
+  onViewProduct: (productId: string) => void;
 }) {
   // The period these cards describe, or this section's own rolling window
   // when there is none — see components/aiInsights/periodLabel.tsx.
@@ -189,6 +202,8 @@ export default function MenuSuggestionsSection({
           <CardGrid>
             {visible.map((item) => {
               const starred = shortlisted.has(item.id);
+              const added = item.status === "added";
+              const dismissed = item.status === "dismissed";
               return (
                 <InsightCard
                   key={item.id}
@@ -202,6 +217,7 @@ export default function MenuSuggestionsSection({
                   title={item.title}
                   onDismiss={() => onDismiss(item.id)}
                   dismissLabel={item.title}
+                  dismissible={!added}
                   corner={
                     <button
                       type="button"
@@ -226,10 +242,81 @@ export default function MenuSuggestionsSection({
                   }
                   metrics={menuMetrics(item, money)}
                   // A new item is added on the products page.
+                  // footer={
+                  //   <CardAction href="/records/products" primary={true}>
+                  //     Add to menu
+                  //   </CardAction>
+                  // }
+
                   footer={
-                    <CardAction href="/records/products" primary={true}>
-                      Add to menu
-                    </CardAction>
+                    added ? (
+                      <div className="flex items-center justify-between gap-2">
+                        <span
+                          className="
+          inline-flex items-center gap-1.5 rounded-lg
+          border border-emerald-200 bg-emerald-50
+          px-3.5 py-2 text-xs font-semibold text-emerald-700
+          dark:border-emerald-400/25 dark:bg-emerald-400/10
+          dark:text-emerald-300
+        "
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                          Added to Menu
+                        </span>
+
+                        {item.addedProductId && (
+                          <button
+                            type="button"
+                            onClick={() => onViewProduct(item.addedProductId!)}
+                            className="
+            inline-flex items-center gap-1.5 rounded-lg
+            px-3 py-2 text-xs font-semibold
+            text-[#244074] transition-colors
+            hover:bg-[#244074]/10
+            dark:text-blue-300 dark:hover:bg-blue-400/10
+          "
+                          >
+                            View Product
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    ) : dismissed ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3.5 py-2 text-xs font-semibold text-gray-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-400">
+                        Dismissed
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onAddToMenu(item)}
+                        disabled={productLimitLoading || dismissed}
+                        title={
+                          dismissed
+                            ? "This suggestion has been dismissed"
+                            : productLimitLoading
+                              ? "Checking product limit..."
+                              : "Create a product from this suggestion"
+                        }
+                        className="
+        inline-flex items-center justify-center gap-2
+        rounded-lg border border-[#244074]
+        bg-[#244074] px-3.5 py-2
+        text-xs font-semibold text-white shadow-sm
+        transition-all duration-200
+        hover:border-[#1b3158] hover:bg-[#1b3158]
+        active:scale-[0.98]
+        focus-visible:outline-none focus-visible:ring-2
+        focus-visible:ring-[#244074]/40 focus-visible:ring-offset-2
+        disabled:pointer-events-none disabled:cursor-not-allowed
+        disabled:opacity-50 disabled:shadow-none
+        dark:border-[#42649e] dark:bg-[#244074]
+        dark:hover:bg-[#2e5087]
+      "
+                      >
+                        <PackagePlus className="h-3.5 w-3.5" />
+                        Add to Menu
+                      </button>
+                    )
                   }
                 >
                   <p className="text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">

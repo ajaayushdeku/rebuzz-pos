@@ -12,7 +12,11 @@ import {
   type PeriodKind,
   type StoredSection,
 } from "@/services/apiPeriodInsights.client";
-import { AiInsightsError } from "@/services/apiAiInsights.client";
+import {
+  AiInsightsError,
+  dismissMenuSuggestion,
+  markMenuSuggestionAdded,
+} from "@/services/apiAiInsights.client";
 
 /**
  * Reading stored insights for an analytics period.
@@ -112,6 +116,55 @@ export function useGenerateSection(kind: PeriodKind, id: string) {
 
     // No retry. Every attempt can spend the merchant's quota, and the codes that
     // come back — a rate limit, a missing key — are not things a retry fixes.
+    retry: false,
+  });
+}
+
+interface MenuSuggestionMutationInput {
+  kind: PeriodKind;
+  id: string;
+  promptVersion: string;
+  suggestionId: string;
+}
+
+interface MarkMenuSuggestionAddedInput extends MenuSuggestionMutationInput {
+  productId: string;
+}
+
+/**
+ * Persist that a menu suggestion has been added to the POS menu.
+ */
+export function useMarkMenuSuggestionAdded() {
+  const queryClient = useQueryClient();
+
+  return useMutation<unknown, AiInsightsError, MarkMenuSuggestionAddedInput>({
+    mutationFn: markMenuSuggestionAdded,
+
+    onSuccess: async (_data, input) => {
+      await queryClient.invalidateQueries({
+        queryKey: periodKeys.insights(input.kind, input.id),
+      });
+    },
+
+    retry: false,
+  });
+}
+
+/**
+ * Persist that a menu suggestion has been dismissed.
+ */
+export function useDismissMenuSuggestion() {
+  const queryClient = useQueryClient();
+
+  return useMutation<unknown, AiInsightsError, MenuSuggestionMutationInput>({
+    mutationFn: dismissMenuSuggestion,
+
+    onSuccess: async (_data, input) => {
+      await queryClient.invalidateQueries({
+        queryKey: periodKeys.insights(input.kind, input.id),
+      });
+    },
+
     retry: false,
   });
 }

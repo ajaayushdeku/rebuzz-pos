@@ -1,4 +1,7 @@
-import type { Draft, PeriodDescriptor } from "@/lib/ai-insights/periodData.server";
+import type {
+  Draft,
+  PeriodDescriptor,
+} from "@/lib/ai-insights/periodData.server";
 import {
   alreadyShownBriefing,
   currencySymbol,
@@ -70,7 +73,10 @@ import {
   parsePricing,
   pricingBriefing,
 } from "@/lib/ai-insights/sections/pricing";
-import type { DateWindow, SalesWindows } from "@/lib/ai-insights/sections/shared";
+import type {
+  DateWindow,
+  SalesWindows,
+} from "@/lib/ai-insights/sections/shared";
 
 /**
  * How each section turns a period into something the model can answer.
@@ -182,7 +188,12 @@ const pricing: SectionBuilder = async ({ token, period, windows, slices }) => {
       empty: true,
       reason: "NO_SALES",
       promptVersion: PRICING_VERSION,
-      basis: { itemsSold: 0, slices: slices.length, from: period.from, to: period.to },
+      basis: {
+        itemsSold: 0,
+        slices: slices.length,
+        from: period.from,
+        to: period.to,
+      },
     };
   }
 
@@ -247,7 +258,12 @@ const slowItems: SectionBuilder = async ({ token, period, windows }) => {
       empty: true,
       reason: "NOTHING_FLAGGED",
       promptVersion: SLOW_ITEMS_VERSION,
-      basis: { totalUnits: facts.totalUnits, candidates: 0, from: period.from, to: period.to },
+      basis: {
+        totalUnits: facts.totalUnits,
+        candidates: 0,
+        from: period.from,
+        to: period.to,
+      },
     };
   }
 
@@ -316,11 +332,20 @@ const menuSuggestions: SectionBuilder = async ({
       to: period.to,
     },
     extra: { windows },
-    resolve: (answer) =>
+    // resolve: (answer) =>
+    //   parseMenuSuggestions(
+    //     answer,
+    //     menu,
+    //     batch > 0 ? `menu-${period.id}-b${batch}` : `menu-${period.id}`,
+    //     exclude,
+    //   ),
+    resolve: (answer, draft) =>
       parseMenuSuggestions(
         answer,
         menu,
-        batch > 0 ? `menu-${period.id}-b${batch}` : `menu-${period.id}`,
+        batch > 0
+          ? `menu-${period.id}-b${batch}`
+          : `menu-${period.id}-${draft.generatedAt}`,
         exclude,
       ),
   };
@@ -402,7 +427,12 @@ const retention: SectionBuilder = async ({ token, period, windows }) => {
       empty: true,
       reason: "NO_SALES",
       promptVersion: RETENTION_VERSION,
-      basis: { bills: bills.length, named: 0, from: period.from, to: period.to },
+      basis: {
+        bills: bills.length,
+        named: 0,
+        from: period.from,
+        to: period.to,
+      },
     };
   }
 
@@ -412,7 +442,12 @@ const retention: SectionBuilder = async ({ token, period, windows }) => {
       empty: true,
       reason: "NOTHING_FLAGGED",
       promptVersion: RETENTION_VERSION,
-      basis: { customers: customers.length, candidates: 0, from: period.from, to: period.to },
+      basis: {
+        customers: customers.length,
+        candidates: 0,
+        from: period.from,
+        to: period.to,
+      },
     };
   }
 
@@ -472,7 +507,11 @@ const hourPlaybook: SectionBuilder = async ({ token, period, windows }) => {
       empty: true,
       reason: "NO_SALES",
       promptVersion: HOUR_PLAYBOOK_VERSION,
-      basis: { totalOrders: facts.totalOrders, from: period.from, to: period.to },
+      basis: {
+        totalOrders: facts.totalOrders,
+        from: period.from,
+        to: period.to,
+      },
     };
   }
   if (facts.slots.length === 0) {

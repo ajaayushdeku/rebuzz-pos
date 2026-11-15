@@ -66,6 +66,10 @@ type ProductFormData = {
   discounts: string[];
 };
 
+export type ProductFormInitialValues = Partial<
+  Pick<ProductFormData, "name" | "description" | "price">
+>;
+
 type FormErrors = Partial<Record<keyof ProductFormData, string>>;
 
 /** "812 KB" / "1.4 MB" — shown next to the stated upload limit. */
@@ -273,13 +277,8 @@ interface ProductFormModalProps {
   onClose: () => void;
   product?: Product | null;
   initialName?: string;
+  initialValues?: ProductFormInitialValues;
   onSuccess?: (product: Product) => void;
-  /**
-   * The account is on Free and has used every product it allows.
-   *
-   * Passed only by the add flow. Editing an existing product is never blocked
-   * — the limit is on how many products exist, and an edit does not add one.
-   */
   limitReached?: boolean;
 }
 
@@ -288,6 +287,7 @@ export default function ProductFormModal({
   onClose,
   product,
   initialName,
+  initialValues,
   onSuccess,
   limitReached = false,
 }: ProductFormModalProps) {
@@ -385,7 +385,11 @@ export default function ProductFormModal({
       setVariantErrors({});
       setStep("details");
     } else if (!product && open) {
-      setForm({ ...INITIAL_FORM, name: initialName ?? "" });
+      setForm({
+        ...INITIAL_FORM,
+        ...initialValues,
+        name: initialValues?.name ?? initialName ?? "",
+      });
       setErrors({});
       setSubmitError(null);
       setImageFile(null);
@@ -396,7 +400,7 @@ export default function ProductFormModal({
       setVariantErrors({});
       setStep("details");
     }
-  }, [product, open]);
+  }, [product, open, initialName, initialValues]);
 
   const set = <K extends keyof ProductFormData>(
     key: K,

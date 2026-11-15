@@ -91,7 +91,7 @@ export default function CustomerRetentionSection({
       >
         <CardGrid>
           {items.map((item) => {
-            const tone = STATUS[item.status];
+            const tone = STATUS[item.status] ?? STATUS["Cooling off"];
             return (
               <InsightCard
                 key={item.id}

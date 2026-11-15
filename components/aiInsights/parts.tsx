@@ -788,21 +788,19 @@ export function InsightCard({
   metrics,
   children,
   footer,
+  dismissible = true,
 }: {
   accent: AccentName;
-  /** The tile at the left of the header; usually a LeadTile. */
   lead: ReactNode;
-  /** The small coloured line above the title: what kind of card this is. */
   label: ReactNode;
   title: ReactNode;
   onDismiss: () => void;
   dismissLabel: string;
-  /** Extra controls beside the dismiss button, e.g. a shortlist star. */
   corner?: ReactNode;
   metrics?: Metric[];
   children: ReactNode;
-  /** The action at the bottom; a CardAction. */
   footer?: ReactNode;
+  dismissible?: boolean;
 }) {
   const a = ACCENTS[accent];
   return (
@@ -829,11 +827,13 @@ export function InsightCard({
         </div>
         <div className="absolute right-3 top-4 flex items-center gap-0.5">
           {corner}
-          <DismissButton
-            label={dismissLabel}
-            onClick={onDismiss}
-            className=""
-          />
+          {dismissible && (
+            <DismissButton
+              label={dismissLabel}
+              onClick={onDismiss}
+              className=""
+            />
+          )}
         </div>
       </header>
 

@@ -85,7 +85,9 @@ export async function fetchPeriodContext(
     };
   }
 
-  const url = periodApiUrl(`/${encodeURIComponent(kind)}/${encodeURIComponent(id)}`);
+  const url = periodApiUrl(
+    `/${encodeURIComponent(kind)}/${encodeURIComponent(id)}`,
+  );
   if (!url) return { ok: false, response: unavailable() };
 
   let res: Response;
@@ -95,7 +97,10 @@ export async function fetchPeriodContext(
       cache: "no-store",
     });
   } catch (error) {
-    console.error(`[period-insights] GET ${url} failed:`, (error as Error)?.message);
+    console.error(
+      `[period-insights] GET ${url} failed:`,
+      (error as Error)?.message,
+    );
     return {
       ok: false,
       response: NextResponse.json(
@@ -218,6 +223,7 @@ export interface Draft {
   model: string | null;
   provider: string | null;
   settingsModel: string | null;
+  generatedAt: string;
   /** False when this joined a generation already running, so nothing was paid. */
   spent: boolean;
 }
@@ -254,7 +260,10 @@ async function post(
   token: string,
   body: unknown,
   label: string,
-): Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; response: NextResponse }> {
+): Promise<
+  | { ok: true; data: Record<string, unknown> }
+  | { ok: false; response: NextResponse }
+> {
   let res: Response;
   try {
     res = await fetch(url, {
@@ -267,7 +276,10 @@ async function post(
       cache: "no-store",
     });
   } catch (error) {
-    console.error(`[period-insights] ${label} failed:`, (error as Error)?.message);
+    console.error(
+      `[period-insights] ${label} failed:`,
+      (error as Error)?.message,
+    );
     return {
       ok: false,
       response: NextResponse.json(
@@ -338,6 +350,7 @@ export async function draftSection(input: DraftInput): Promise<DraftResult> {
       model: data.model ?? null,
       provider: data.provider ?? null,
       settingsModel: data.settingsModel ?? null,
+      generatedAt: data.generatedAt ?? "",
       spent: data.spent !== false,
     },
   };

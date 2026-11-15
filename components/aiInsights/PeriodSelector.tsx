@@ -111,6 +111,7 @@ export default function PeriodSelector({
             // Period labels are names and counts, not words to capitalise.
             preserveCase
             ariaLabel="Period"
+            periodSelectorSpread="justify-between"
           />
 
           {/* The exact dates, because "September 2026" is not the same thing as

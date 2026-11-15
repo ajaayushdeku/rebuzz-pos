@@ -248,3 +248,77 @@ export const fetchAiInsights = async (
 
   return { ...envelope, insights: envelope.insights as AiInsightsResponse };
 };
+
+type MenuSuggestionPeriodKind = "month" | "quarter" | "year";
+
+interface MenuSuggestionStatusRequest {
+  kind: MenuSuggestionPeriodKind;
+  id: string;
+  promptVersion: string;
+  suggestionId: string;
+}
+
+/**
+ * Shared request for changing a stored menu suggestion's status.
+ */
+async function patchMenuSuggestion(
+  input: MenuSuggestionStatusRequest,
+  action: "status" | "dismiss",
+  productId?: string,
+): Promise<unknown> {
+  const { kind, id, promptVersion, suggestionId } = input;
+
+  const url =
+    `/api/period-insights/${encodeURIComponent(kind)}` +
+    `/${encodeURIComponent(id)}` +
+    `/menu-suggestions/${encodeURIComponent(promptVersion)}` +
+    `/items/${encodeURIComponent(suggestionId)}/${action}`;
+
+  let res: Response;
+
+  try {
+    res = await fetch(url, {
+      method: "PATCH",
+      ...(productId
+        ? {
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId }),
+          }
+        : {}),
+      cache: "no-store",
+    });
+  } catch {
+    throw new AiInsightsError(
+      "NETWORK",
+      "Couldn't reach the server. Check your connection and try again.",
+    );
+  }
+
+  const json = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw errorFromBody(json);
+  }
+
+  return json?.data;
+}
+
+/**
+ * Mark a menu suggestion as added after its POS product is created.
+ */
+export async function markMenuSuggestionAdded(
+  input: MenuSuggestionStatusRequest & {
+    productId: string;
+  },
+): Promise<unknown> {
+  return patchMenuSuggestion(input, "status", input.productId);
+}
+
+/**
+ * Persist a dismissed menu suggestion.
+ */
+export async function dismissMenuSuggestion(
+  input: MenuSuggestionStatusRequest,
+): Promise<unknown> {
+  return patchMenuSuggestion(input, "dismiss");
+}
