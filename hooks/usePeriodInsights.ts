@@ -127,9 +127,14 @@ interface MenuSuggestionMutationInput {
   suggestionId: string;
 }
 
-interface MarkMenuSuggestionAddedInput extends MenuSuggestionMutationInput {
-  productId: string;
-}
+// interface MarkMenuSuggestionAddedInput extends MenuSuggestionMutationInput {
+//   productId: string;
+// }
+type MarkMenuSuggestionAddedInput = MenuSuggestionMutationInput &
+  (
+    | { productId: string; addonId?: never }
+    | { addonId: string; productId?: never }
+  );
 
 /**
  * Persist that a menu suggestion has been added to the POS menu.

@@ -23,7 +23,7 @@ export default function Navbar() {
           <MobileButton />
           <Link
             href="/"
-            className="text-xl px-2 sm:px-3 font-bold tracking-tight text-blue-600 transition-opacity hover:opacity-80 flex flex-row items-center gap-1.5"
+            className="text-xl px-2 sm:px-3 font-bold tracking-tight text-blue-600 transition-opacity hover:opacity-80 flex flex-row items-end gap-1.5"
           >
             <Image
               src="/rebuzz.png"
@@ -42,7 +42,7 @@ export default function Navbar() {
             <span className="text-lg font-bold tracking-tight">
               <span className="text-[#244074] dark:text-[#7ba2e3]">Re</span>
               <span style={{ color: "#E26924" }}>Buzz</span>
-              <span className="ml-1.5 align-end text-[15px] font-semibold uppercase tracking-[2px] text-gray-400 dark:text-[#7b869b]">
+              <span className="ml-1.5 align-end text-[15px] font-semibold uppercase tracking-[2px] text-gray-400 dark:text-gray-350">
                 IQ
               </span>
             </span>

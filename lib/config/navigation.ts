@@ -36,6 +36,7 @@ import {
   Sparkles,
   LifeBuoy,
   Palette,
+  Shapes,
 } from "lucide-react";
 
 export type NavigationItem =
@@ -244,6 +245,11 @@ export const navigationConfig: NavigationItem[] = [
         label: "Category",
         href: "/settings/category",
         icon: Tag,
+      },
+      {
+        label: "Addon",
+        href: "/settings/addons",
+        icon: Shapes,
       },
       {
         label: "Offers",

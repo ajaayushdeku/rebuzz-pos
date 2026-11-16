@@ -1,10 +1,12 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ArrowDownRight,
   ArrowUpRight,
   BadgePercent,
+  ChevronDown,
+  ChevronUp,
   Hourglass,
   Scale,
   Tags,
@@ -29,7 +31,7 @@ import {
   Recommendation,
   TipList,
   SectionHeader,
-  SectionRefreshButton,
+  // SectionRefreshButton,
   useMoney,
   type AccentName,
   type Metric,
@@ -315,6 +317,8 @@ export default function PricingSection({
     `your last ${PRICING_WEEKS} weeks of sales`,
   );
 
+  const [isBodyExpanded, setIsBodyExpanded] = useState(true);
+
   return (
     <section>
       <SectionHeader
@@ -327,29 +331,67 @@ export default function PricingSection({
           body: `Each card compares what an item earns now against what it earned over ${windowText}. The suggested price is an estimate from your own sales, not a promise — nothing changes until you set it yourself.`,
         }}
         actions={
-          <div className="hidden flex flex-row w-full md:w-fit items-end justify-end ">
-            <SectionRefreshButton
+          <div className=" flex flex-row w-full md:w-fit items-end justify-end ">
+            {/* <SectionRefreshButton
               state={state}
               textClassName="text-emerald-700 dark:text-emerald-300"
-            />
+            /> */}
+
+            {/* Collapse / Expand */}
+            <button
+              type="button"
+              onClick={() => setIsBodyExpanded((prev) => !prev)}
+              aria-expanded={isBodyExpanded}
+              aria-label={
+                isBodyExpanded ? "Collapse section" : "Expand section"
+              }
+              title={isBodyExpanded ? "Collapse section" : "Expand section"}
+              className="
+        inline-flex shrink-0 items-center justify-center
+        rounded-lg border border-[#e2e6ed]
+        bg-white p-2 text-[#737b89]
+        transition-all duration-200
+        hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600
+        dark:border-white/10 dark:bg-white/[0.04]
+        dark:text-[#aab4c4]
+        dark:hover:border-violet-400/40
+        dark:hover:bg-violet-400/10 dark:hover:text-violet-300
+      "
+            >
+              {isBodyExpanded ? (
+                <ChevronUp size={15} />
+              ) : (
+                <ChevronDown size={15} />
+              )}
+            </button>
           </div>
         }
       />
 
-      <AiSectionBody
-        state={state}
-        visibleCount={items.length}
-        layout="cards"
-        noSalesMessage={`No sales in ${windowText} to judge prices from.`}
-        nothingFlaggedMessage="Your prices, discounts and margins look healthy. Nothing to change right now."
-        emptyMessage="No price changes suggested right now."
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
+          isBodyExpanded
+            ? "grid-rows-[1fr] opacity-100"
+            : "grid-rows-[0fr] opacity-0"
+        }`}
       >
-        <CardGrid>
-          {items.map((item) => (
-            <PricingCard key={item.id} item={item} onDismiss={onDismiss} />
-          ))}
-        </CardGrid>
-      </AiSectionBody>
+        <div className="min-h-0 overflow-hidden">
+          <AiSectionBody
+            state={state}
+            visibleCount={items.length}
+            layout="cards"
+            noSalesMessage={`No sales in ${windowText} to judge prices from.`}
+            nothingFlaggedMessage="Your prices, discounts and margins look healthy. Nothing to change right now."
+            emptyMessage="No price changes suggested right now."
+          >
+            <CardGrid>
+              {items.map((item) => (
+                <PricingCard key={item.id} item={item} onDismiss={onDismiss} />
+              ))}
+            </CardGrid>
+          </AiSectionBody>
+        </div>
+      </div>
     </section>
   );
 }

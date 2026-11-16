@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarClock, CalendarDays } from "lucide-react";
+import {
+  CalendarClock,
+  CalendarDays,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
 import type { AiSectionState } from "@/hooks/useAiSection";
 import {
@@ -21,7 +26,7 @@ import {
   Recommendation,
   TipList,
   SectionHeader,
-  SectionRefreshButton,
+  // SectionRefreshButton,
   TagList,
 } from "../parts";
 
@@ -88,6 +93,8 @@ export default function FestivalPrepSection({
   const shown = showAll ? items : items.slice(0, INITIAL_CARDS);
   const hidden = items.length - INITIAL_CARDS;
 
+  const [isBodyExpanded, setIsBodyExpanded] = useState(true);
+
   return (
     <section>
       <SectionHeader
@@ -111,6 +118,35 @@ export default function FestivalPrepSection({
                 onClick={() => setShowAll((v) => !v)}
               />
             )}
+
+            {/* Collapse / Expand */}
+            <button
+              type="button"
+              onClick={() => setIsBodyExpanded((prev) => !prev)}
+              aria-expanded={isBodyExpanded}
+              aria-label={
+                isBodyExpanded ? "Collapse section" : "Expand section"
+              }
+              title={isBodyExpanded ? "Collapse section" : "Expand section"}
+              className="
+        inline-flex shrink-0 items-center justify-center
+        rounded-lg border border-[#e2e6ed]
+        bg-white p-2 text-[#737b89]
+        transition-all duration-200
+        hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600
+        dark:border-white/10 dark:bg-white/[0.04]
+        dark:text-[#aab4c4]
+        dark:hover:border-violet-400/40
+        dark:hover:bg-violet-400/10 dark:hover:text-violet-300
+      "
+            >
+              {isBodyExpanded ? (
+                <ChevronUp size={15} />
+              ) : (
+                <ChevronDown size={15} />
+              )}
+            </button>
+
             {/* <SectionRefreshButton
               state={state}
               textClassName="text-amber-700 hover:bg-amber-100 border-amber-300 hover:border-amber-400 dark:hover:border-amber-400/60 dark:hover:bg-amber-400/20 dark:border-amber-400/40 dark:text-amber-300"
@@ -119,88 +155,99 @@ export default function FestivalPrepSection({
         }
       />
 
-      <AiSectionBody
-        state={state}
-        visibleCount={items.length}
-        layout="cards"
-        noSalesMessage="No recent sales to base festival advice on yet."
-        nothingFlaggedMessage={`No festivals or public holidays in the next ${FESTIVAL_LOOKAHEAD_DAYS} days.`}
-        emptyMessage="No festivals coming up."
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
+          isBodyExpanded
+            ? "grid-rows-[1fr] opacity-100"
+            : "grid-rows-[0fr] opacity-0"
+        }`}
       >
-        <CardGrid>
-          {shown.map((item) => {
-            const when = countdown(item.startDate, item.endDate);
-            const range = dateRange(item.startDate, item.endDate);
-            const days = dayCount(item.startDate, item.endDate);
+        <div className="min-h-0 overflow-hidden">
+          <AiSectionBody
+            state={state}
+            visibleCount={items.length}
+            layout="cards"
+            noSalesMessage="No recent sales to base festival advice on yet."
+            nothingFlaggedMessage={`No festivals or public holidays in the next ${FESTIVAL_LOOKAHEAD_DAYS} days.`}
+            emptyMessage="No festivals coming up."
+          >
+            <CardGrid>
+              {shown.map((item) => {
+                const when = countdown(item.startDate, item.endDate);
+                const range = dateRange(item.startDate, item.endDate);
+                const days = dayCount(item.startDate, item.endDate);
 
-            return (
-              <InsightCard
-                key={item.id}
-                accent="amber"
-                lead={<LeadTile accent="amber">{item.icon}</LeadTile>}
-                label={
-                  <>
-                    <CalendarClock size={11} aria-hidden />
-                    {when ?? observedBy(item)}
-                    {when && <LabelNote>{observedBy(item)}</LabelNote>}
-                  </>
-                }
-                title={item.label}
-                onDismiss={() => onDismiss(item.id)}
-                dismissLabel={item.label}
-                // Both calendars, each with its own label.
-                metrics={[
-                  {
-                    label: "Dates",
-                    value: range,
-                    note: `${days} day${days === 1 ? "" : "s"}`,
-                  },
-                  {
-                    label: "Nepali date",
-                    value: item.bsLabel,
-                    valueClassName: "text-emerald-700 dark:text-emerald-300",
-                  },
-                ]}
-                footer={
-                  <CardAction href="/offers">
-                    Plan a {item.label} offer
-                  </CardAction>
-                }
-              >
-                <p className="text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
-                  {item.description}
-                </p>
+                return (
+                  <InsightCard
+                    key={item.id}
+                    accent="amber"
+                    lead={<LeadTile accent="amber">{item.icon}</LeadTile>}
+                    label={
+                      <>
+                        <CalendarClock size={11} aria-hidden />
+                        {when ?? observedBy(item)}
+                        {when && <LabelNote>{observedBy(item)}</LabelNote>}
+                      </>
+                    }
+                    title={item.label}
+                    onDismiss={() => onDismiss(item.id)}
+                    dismissLabel={item.label}
+                    // Both calendars, each with its own label.
+                    metrics={[
+                      {
+                        label: "Dates",
+                        value: range,
+                        note: `${days} day${days === 1 ? "" : "s"}`,
+                      },
+                      {
+                        label: "Nepali date",
+                        value: item.bsLabel,
+                        valueClassName:
+                          "text-emerald-700 dark:text-emerald-300",
+                      },
+                    ]}
+                    footer={
+                      <CardAction href="/offers">
+                        Plan a {item.label} offer
+                      </CardAction>
+                    }
+                  >
+                    <p className="text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
+                      {item.description}
+                    </p>
 
-                {item.stockUp.length > 0 && (
-                  <div>
-                    <BodyLabel>Stock up on</BodyLabel>
-                    <TagList
-                      tags={item.stockUp.map((name) => ({
-                        key: name,
-                        content: name,
-                      }))}
-                    />
-                  </div>
-                )}
+                    {item.stockUp.length > 0 && (
+                      <div>
+                        <BodyLabel>Stock up on</BodyLabel>
+                        <TagList
+                          tags={item.stockUp.map((name) => ({
+                            key: name,
+                            content: name,
+                          }))}
+                        />
+                      </div>
+                    )}
 
-                {item.offerIdeas.length > 0 && (
-                  <div className="mt-auto">
-                    <Recommendation
-                      title={
-                        item.offerIdeas.length > 1
-                          ? "Offer ideas"
-                          : "Offer idea"
-                      }
-                    >
-                      <TipList tips={item.offerIdeas} />
-                    </Recommendation>
-                  </div>
-                )}
-              </InsightCard>
-            );
-          })}
-        </CardGrid>
-      </AiSectionBody>
+                    {item.offerIdeas.length > 0 && (
+                      <div className="mt-auto">
+                        <Recommendation
+                          title={
+                            item.offerIdeas.length > 1
+                              ? "Offer ideas"
+                              : "Offer idea"
+                          }
+                        >
+                          <TipList tips={item.offerIdeas} />
+                        </Recommendation>
+                      </div>
+                    )}
+                  </InsightCard>
+                );
+              })}
+            </CardGrid>
+          </AiSectionBody>
+        </div>
+      </div>
     </section>
   );
 }

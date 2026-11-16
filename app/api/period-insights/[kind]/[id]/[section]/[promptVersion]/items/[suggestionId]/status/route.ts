@@ -38,8 +38,16 @@ export async function PATCH(
 
   const body = await req.json().catch(() => ({}));
 
-  if (typeof body.productId !== "string" || !body.productId.trim()) {
-    return NextResponse.json({ error: "PRODUCT_ID_REQUIRED" }, { status: 400 });
+  const productId =
+    typeof body.productId === "string" ? body.productId.trim() : "";
+  const addonId = typeof body.addonId === "string" ? body.addonId.trim() : "";
+
+  // Exactly one association must be provided.
+  if (Boolean(productId) === Boolean(addonId)) {
+    return NextResponse.json(
+      { error: "PRODUCT_OR_ADDON_REQUIRED" },
+      { status: 400 },
+    );
   }
 
   let res: Response;
@@ -51,9 +59,7 @@ export async function PATCH(
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        productId: body.productId,
-      }),
+      body: JSON.stringify(productId ? { productId } : { addonId }),
       cache: "no-store",
     });
   } catch (error) {

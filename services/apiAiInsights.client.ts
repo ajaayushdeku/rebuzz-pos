@@ -251,6 +251,9 @@ export const fetchAiInsights = async (
 
 type MenuSuggestionPeriodKind = "month" | "quarter" | "year";
 
+/**
+ * Shared request for changing a stored menu suggestion's status.
+ */
 interface MenuSuggestionStatusRequest {
   kind: MenuSuggestionPeriodKind;
   id: string;
@@ -258,13 +261,23 @@ interface MenuSuggestionStatusRequest {
   suggestionId: string;
 }
 
+type MenuSuggestionAssociation =
+  | {
+      productId: string;
+      addonId?: never;
+    }
+  | {
+      addonId: string;
+      productId?: never;
+    };
+
 /**
  * Shared request for changing a stored menu suggestion's status.
  */
 async function patchMenuSuggestion(
   input: MenuSuggestionStatusRequest,
   action: "status" | "dismiss",
-  productId?: string,
+  association?: MenuSuggestionAssociation,
 ): Promise<unknown> {
   const { kind, id, promptVersion, suggestionId } = input;
 
@@ -279,10 +292,10 @@ async function patchMenuSuggestion(
   try {
     res = await fetch(url, {
       method: "PATCH",
-      ...(productId
+      ...(association
         ? {
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ productId }),
+            body: JSON.stringify(association),
           }
         : {}),
       cache: "no-store",
@@ -304,14 +317,18 @@ async function patchMenuSuggestion(
 }
 
 /**
- * Mark a menu suggestion as added after its POS product is created.
+ * Mark a menu suggestion as added after its POS product or add-on is created.
  */
 export async function markMenuSuggestionAdded(
-  input: MenuSuggestionStatusRequest & {
-    productId: string;
-  },
+  input: MenuSuggestionStatusRequest & MenuSuggestionAssociation,
 ): Promise<unknown> {
-  return patchMenuSuggestion(input, "status", input.productId);
+  const { productId, addonId } = input;
+
+  return patchMenuSuggestion(
+    input,
+    "status",
+    productId ? { productId } : { addonId: addonId! },
+  );
 }
 
 /**
@@ -322,3 +339,75 @@ export async function dismissMenuSuggestion(
 ): Promise<unknown> {
   return patchMenuSuggestion(input, "dismiss");
 }
+
+// interface MenuSuggestionStatusRequest {
+//   kind: MenuSuggestionPeriodKind;
+//   id: string;
+//   promptVersion: string;
+//   suggestionId: string;
+// }
+
+// /**
+//  * Shared request for changing a stored menu suggestion's status.
+//  */
+// async function patchMenuSuggestion(
+//   input: MenuSuggestionStatusRequest,
+//   action: "status" | "dismiss",
+//   productId?: string,
+// ): Promise<unknown> {
+//   const { kind, id, promptVersion, suggestionId } = input;
+
+//   const url =
+//     `/api/period-insights/${encodeURIComponent(kind)}` +
+//     `/${encodeURIComponent(id)}` +
+//     `/menu-suggestions/${encodeURIComponent(promptVersion)}` +
+//     `/items/${encodeURIComponent(suggestionId)}/${action}`;
+
+//   let res: Response;
+
+//   try {
+//     res = await fetch(url, {
+//       method: "PATCH",
+//       ...(productId
+//         ? {
+//             headers: { "Content-Type": "application/json" },
+//             body: JSON.stringify({ productId }),
+//           }
+//         : {}),
+//       cache: "no-store",
+//     });
+//   } catch {
+//     throw new AiInsightsError(
+//       "NETWORK",
+//       "Couldn't reach the server. Check your connection and try again.",
+//     );
+//   }
+
+//   const json = await res.json().catch(() => ({}));
+
+//   if (!res.ok) {
+//     throw errorFromBody(json);
+//   }
+
+//   return json?.data;
+// }
+
+// /**
+//  * Mark a menu suggestion as added after its POS product is created.
+//  */
+// export async function markMenuSuggestionAdded(
+//   input: MenuSuggestionStatusRequest & {
+//     productId: string;
+//   },
+// ): Promise<unknown> {
+//   return patchMenuSuggestion(input, "status", input.productId);
+// }
+
+// /**
+//  * Persist a dismissed menu suggestion.
+//  */
+// export async function dismissMenuSuggestion(
+//   input: MenuSuggestionStatusRequest,
+// ): Promise<unknown> {
+//   return patchMenuSuggestion(input, "dismiss");
+// }

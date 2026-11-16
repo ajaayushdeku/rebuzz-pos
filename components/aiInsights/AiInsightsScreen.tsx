@@ -45,6 +45,17 @@ import ProviderFallbackStatus from "./ProviderFallbackStatus";
 import ProviderSwitchNotice from "./sections/ProviderSwitchNotice";
 import type { Product } from "@/lib/types/product";
 import ProductDetailModal from "../product/ProductDetailModal";
+import EditAddonModal, {
+  AddonFormValues,
+} from "../settingsComponents/addons/EditAddonModal";
+import { useCreateAddon } from "@/hooks/useAddons";
+
+const emptyAddonForm: AddonFormValues = {
+  name: "",
+  price: 0,
+  description: "",
+  maxAvailable: 0,
+};
 
 /**
  * AI Insights for a completed analytics period.
@@ -86,14 +97,23 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
   const markSuggestionAdded = useMarkMenuSuggestionAdded();
   const dismissSuggestionMutation = useDismissMenuSuggestion();
 
-  type PendingSuggestionStatus = {
+  type PendingSuggestionStatusBase = {
     kind: PeriodKind;
     id: string;
     promptVersion: string;
     suggestionId: string;
-    productId: string;
-    productName: string;
+    itemName: string;
   };
+
+  type PendingSuggestionStatus =
+    | (PendingSuggestionStatusBase & {
+        entityType: "product";
+        productId: string;
+      })
+    | (PendingSuggestionStatusBase & {
+        entityType: "addon";
+        addonId: string;
+      });
 
   const [pendingSuggestionStatus, setPendingSuggestionStatus] =
     useState<PendingSuggestionStatus | null>(null);
@@ -109,6 +129,12 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
     useState<SelectedMenuSuggestion | null>(null);
 
   const [productModalOpen, setProductModalOpen] = useState(false);
+  const createAddonMutation = useCreateAddon();
+
+  const [addonModalOpen, setAddonModalOpen] = useState(false);
+  const [addonForm, setAddonForm] = useState<AddonFormValues>({
+    ...emptyAddonForm,
+  });
 
   const handleAddToMenu = (item: MenuSuggestion) => {
     if (!isAdmin) {
@@ -118,12 +144,13 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
 
     if (item.status === "added") return;
 
-    if (productLimitLoading) return;
-
     if (pendingSuggestionStatus) {
       toast.error("Please finish the previous suggestion status update first.");
       return;
     }
+
+    // Product limits do not apply to add-ons.
+    if (item.kind !== "add-on" && productLimitLoading) return;
 
     const promptVersion = stored["menu-suggestions"]?.promptVersion;
 
@@ -138,6 +165,23 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
       periodId,
       promptVersion,
     });
+
+    if (item.kind === "add-on") {
+      setAddonForm({
+        ...emptyAddonForm,
+        name: item.title,
+        description: item.description,
+        price:
+          item.suggestedPrice != null &&
+          Number.isFinite(item.suggestedPrice) &&
+          item.suggestedPrice >= 0
+            ? item.suggestedPrice
+            : 0,
+      });
+
+      setAddonModalOpen(true);
+      return;
+    }
 
     setProductModalOpen(true);
   };
@@ -176,8 +220,9 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
       id: selected.periodId,
       promptVersion: selected.promptVersion,
       suggestionId: selected.item.id,
+      entityType: "product",
       productId: product.id,
-      productName: product.name,
+      itemName: product.name,
     };
 
     try {
@@ -200,16 +245,87 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
     }
   };
 
+  const handleAddonCreated = async () => {
+    const selected = selectedMenuSuggestion;
+
+    if (!selected) {
+      toast.error("Couldn't identify the selected menu suggestion.");
+      return;
+    }
+
+    if (!addonForm.name.trim()) {
+      toast.error("Please enter an add-on name.");
+      return;
+    }
+
+    if (!Number.isFinite(addonForm.price) || addonForm.price < 0) {
+      toast.error("Please enter a valid add-on price.");
+      return;
+    }
+
+    let addon: Awaited<ReturnType<typeof createAddonMutation.mutateAsync>>;
+
+    try {
+      addon = await createAddonMutation.mutateAsync({
+        name: addonForm.name.trim(),
+        price: addonForm.price,
+        description: addonForm.description.trim() || undefined,
+        maxAvailable: addonForm.maxAvailable,
+      });
+    } catch {
+      // The useCreateAddon hook already displays its creation error toast.
+      return;
+    }
+
+    setAddonModalOpen(false);
+    setAddonForm({ ...emptyAddonForm });
+    setSelectedMenuSuggestion(null);
+
+    const statusInput: PendingSuggestionStatus = {
+      kind: selected.kind,
+      id: selected.periodId,
+      promptVersion: selected.promptVersion,
+      suggestionId: selected.item.id,
+      entityType: "addon",
+      addonId: addon._id,
+      itemName: addon.name,
+    };
+
+    try {
+      await markSuggestionAdded.mutateAsync({
+        kind: statusInput.kind,
+        id: statusInput.id,
+        promptVersion: statusInput.promptVersion,
+        suggestionId: statusInput.suggestionId,
+        addonId: statusInput.addonId,
+      });
+
+      toast.success("Add-on created and suggestion marked as added.");
+    } catch {
+      setPendingSuggestionStatus(statusInput);
+
+      toast.error(
+        "Add-on created, but its suggestion status could not be saved. You can retry without creating the add-on again.",
+        { duration: 6000 },
+      );
+    }
+  };
+
   const retrySuggestionStatus = async () => {
     if (!pendingSuggestionStatus) return;
 
     try {
+      const association =
+        pendingSuggestionStatus.entityType === "product"
+          ? { productId: pendingSuggestionStatus.productId }
+          : { addonId: pendingSuggestionStatus.addonId };
+
       await markSuggestionAdded.mutateAsync({
         kind: pendingSuggestionStatus.kind,
         id: pendingSuggestionStatus.id,
         promptVersion: pendingSuggestionStatus.promptVersion,
         suggestionId: pendingSuggestionStatus.suggestionId,
-        productId: pendingSuggestionStatus.productId,
+        ...association,
       });
 
       setPendingSuggestionStatus(null);
@@ -381,15 +497,6 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
       id: "menu-suggestions",
       state: menuSuggestions,
       view: (
-        // <MenuSuggestionsSection
-        //   items={menu}
-        //   state={menuSuggestions}
-        //   shortlisted={shortlisted}
-        //   onToggleShortlist={toggleShortlist}
-        //   onDismiss={dismiss}
-        //   onAddToMenu={handleAddToMenu}
-        //   productLimitLoading={productLimitLoading}
-        // />
         <MenuSuggestionsSection
           items={menu}
           state={menuSuggestions}
@@ -456,9 +563,17 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
   ];
   const orderedPeriodSections = periodSections.sort((a, b) => {
     const order = (section: (typeof periodSections)[number]) => {
-      if (section.state.data) {
-        const timestamp = section.state.data.generatedAt
-          ? Date.parse(section.state.data.generatedAt)
+      // Check if data exists AND has items (not empty)
+      const hasDataWithItems = section.state.data
+        ? Array.isArray(section.state.data.items)
+          ? section.state.data.items.length > 0
+          : false
+        : false;
+
+      if (hasDataWithItems) {
+        const generatedAt = section.state.data?.generatedAt;
+        const timestamp = generatedAt
+          ? Date.parse(generatedAt)
           : Number.POSITIVE_INFINITY;
         return [
           0,
@@ -467,6 +582,7 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
       }
       if (section.state.isFetching) return [1, 0];
       if (section.state.isError) return [2, 0];
+      // Sections with data but no items, or no data at all, go to bottom
       return [3, 0];
     };
 
@@ -607,7 +723,7 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 mt-4">
         {/* Everything inside names the period in its own copy — "September 2026"
             rather than "the last 30 days". The festival section below is outside
             on purpose: it is about what is coming, so the rolling wording it
@@ -650,13 +766,19 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
         >
           <div className="min-w-0">
             <p className="text-[13px] font-semibold text-amber-900 dark:text-amber-200">
-              Product created successfully
+              {pendingSuggestionStatus.entityType === "product"
+                ? "Product created successfully"
+                : "Add-on created successfully"}
             </p>
 
             <p className="mt-0.5 text-[12px] text-amber-800 dark:text-amber-300">
               Couldn&lsquo;t save the Added status for &ldquo;
-              {pendingSuggestionStatus.productName}&rdquo;. Retry without
-              creating another product.
+              {pendingSuggestionStatus.itemName}&rdquo;. Retry without creating
+              another{" "}
+              {pendingSuggestionStatus.entityType === "product"
+                ? "product"
+                : "add-on"}
+              .
             </p>
           </div>
 
@@ -673,7 +795,6 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
           </button>
         </div>
       )}
-
       {/* <ProductFormModal
         open={productModalOpen}
         onClose={() => setProductModalOpen(false)}
@@ -702,6 +823,23 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
         onSuccess={(product) => {
           void handleProductCreated(product);
         }}
+      />
+
+      <EditAddonModal
+        open={addonModalOpen}
+        onOpenChange={(open) => {
+          setAddonModalOpen(open);
+
+          if (!open) {
+            setSelectedMenuSuggestion(null);
+            setAddonForm({ ...emptyAddonForm });
+          }
+        }}
+        editTarget={null}
+        form={addonForm}
+        onFormChange={setAddonForm}
+        onSave={() => void handleAddonCreated()}
+        isPending={createAddonMutation.isPending}
       />
     </div>
   );

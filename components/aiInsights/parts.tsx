@@ -228,9 +228,36 @@ export function CardGrid({ children }: { children: ReactNode }) {
 /** Shown when every card in a section has been dismissed. */
 export function EmptySection({ message }: { message: string }) {
   return (
-    <p className="rounded-xl border border-dashed border-[#dadce0] bg-white dark:bg-transparent px-4 py-8 text-center text-[13px] text-[#9aa0a6] dark:border-white/15 dark:text-[#9aa6bd]">
-      {message}
-    </p>
+    <div className="rounded-2xl border border-[#e5e7eb] bg-[#fafafa] px-5 py-10 text-center dark:border-white/10 dark:bg-[#171c26] sm:px-8 sm:py-12">
+      <div className="mx-auto flex max-w-md flex-col items-center">
+        {/* Icon */}
+        <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f0f1f3] dark:bg-white/10">
+          <Sparkles
+            size={24}
+            className="text-gray-500 dark:text-[#9aa6bd]"
+            aria-hidden
+          />
+        </div>
+
+        {/* Heading */}
+        <h3 className="text-sm font-semibold text-[#374151] dark:text-[#e5e7eb]">
+          Nothing to show just yet
+        </h3>
+
+        {/* Description */}
+        <p className="mt-2 max-w-sm text-[13px] leading-relaxed text-[#737b89] dark:text-[#9ca6b5]">
+          {message}
+        </p>
+
+        {/* Status */}
+        <div className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[#f0f1f3] px-3 py-2 dark:bg-white/[0.05]">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          <span className="text-[10px] font-medium tracking-wide text-[#737b89] dark:text-[#a1a8b5]">
+            ALL CAUGHT UP
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
 

@@ -62,8 +62,8 @@ export default function PeriodSelector({
   });
 
   return (
-    <div className="sticky top-0 z-20 -mx-2 rounded-2xl border border-[#e3e3e3]/90 bg-white/95 p-3 shadow-md shadow-slate-900/[0.04] backdrop-blur-xl sm:-mx-3 sm:p-4 dark:border-white/10 dark:bg-[#161d2e]/95 dark:shadow-black/20">
-      <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+    <div className="sticky top-0 z-20 -mx-2 rounded-2xl border border-[#e3e3e3]/90 bg-white/95 p-3 shadow-md shadow-slate-900/[0.04] backdrop-blur-xl sm:-mx-0 sm:p-4 dark:border-white/10 dark:bg-[#161d2e]/95 dark:shadow-black/20">
+      <div className="flex flex-wrap iteåms-center justify-between gap-3 sm:gap-4">
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#7b8494] dark:text-[#9aa6bd]">
             <CalendarRange className="h-3.5 w-3.5 text-[#E26924]" aria-hidden />

@@ -1,6 +1,14 @@
 "use client";
 
-import { Clock, Coins, Flame, Hourglass, type LucideIcon } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Coins,
+  Flame,
+  Hourglass,
+  type LucideIcon,
+} from "lucide-react";
 
 import type { AiSectionState } from "@/hooks/useAiSection";
 import { useWindowPhrase } from "@/components/aiInsights/periodLabel";
@@ -17,10 +25,11 @@ import {
   Recommendation,
   TipList,
   SectionHeader,
-  SectionRefreshButton,
+  // SectionRefreshButton,
   useMoney,
   type AccentName,
 } from "../parts";
+import { useState } from "react";
 
 /**
  * How busy an hour is, as one colour used three times on the card — the time
@@ -100,6 +109,8 @@ export default function HourPlaybookSection({
 
   const money = useMoney();
 
+  const [isBodyExpanded, setIsBodyExpanded] = useState(true);
+
   return (
     <section>
       <SectionHeader
@@ -112,80 +123,119 @@ export default function HourPlaybookSection({
           body: `Every bill from ${windowText} is grouped by the hour it was rung up, then averaged, so one exceptional day does not move an hour on its own.`,
         }}
         actions={
-          <div className="hidden flex flex-row w-full md:w-fit items-end justify-end">
-            <SectionRefreshButton
+          <div className=" flex flex-row w-full md:w-fit items-end justify-end">
+            {/* <SectionRefreshButton
               state={state}
               textClassName="text-[#5f6368] dark:text-[#a9b4c7]"
-            />
+            /> */}
+
+            {/* Collapse / Expand */}
+            <button
+              type="button"
+              onClick={() => setIsBodyExpanded((prev) => !prev)}
+              aria-expanded={isBodyExpanded}
+              aria-label={
+                isBodyExpanded ? "Collapse section" : "Expand section"
+              }
+              title={isBodyExpanded ? "Collapse section" : "Expand section"}
+              className="
+        inline-flex shrink-0 items-center justify-center
+        rounded-lg border border-[#e2e6ed]
+        bg-white p-2 text-[#737b89]
+        transition-all duration-200
+        hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600
+        dark:border-white/10 dark:bg-white/[0.04]
+        dark:text-[#aab4c4]
+        dark:hover:border-violet-400/40
+        dark:hover:bg-violet-400/10 dark:hover:text-violet-300
+      "
+            >
+              {isBodyExpanded ? (
+                <ChevronUp size={15} />
+              ) : (
+                <ChevronDown size={15} />
+              )}
+            </button>
           </div>
         }
       />
 
-      <AiSectionBody
-        state={state}
-        visibleCount={items.length}
-        layout="cards"
-        noSalesMessage={`Not enough orders in ${windowText} to read an hourly pattern. It needs at least 20 orders over 7 trading days.`}
-        nothingFlaggedMessage="Your hours are evenly busy. No hour stands out right now."
-        emptyMessage="No hourly plays right now."
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
+          isBodyExpanded
+            ? "grid-rows-[1fr] opacity-100"
+            : "grid-rows-[0fr] opacity-0"
+        }`}
       >
-        <CardGrid>
-          {items.map((item) => {
-            const tone = busynessTone(item.busynessPct);
-            const Icon = KIND_ICON[item.kind];
-            return (
-              <InsightCard
-                key={item.id}
-                accent={tone.accent}
-                lead={
-                  <span
-                    className={`flex h-10 shrink-0 items-center gap-1 rounded-lg px-2.5 text-[14px] font-bold ${tone.pill}`}
+        <div className="min-h-0 overflow-hidden">
+          <AiSectionBody
+            state={state}
+            visibleCount={items.length}
+            layout="cards"
+            noSalesMessage={`Not enough orders in ${windowText} to read an hourly pattern. It needs at least 20 orders over 7 trading days.`}
+            nothingFlaggedMessage="Your hours are evenly busy. No hour stands out right now."
+            emptyMessage="No hourly plays right now."
+          >
+            <CardGrid>
+              {items.map((item) => {
+                const tone = busynessTone(item.busynessPct);
+                const Icon = KIND_ICON[item.kind];
+                return (
+                  <InsightCard
+                    key={item.id}
+                    accent={tone.accent}
+                    lead={
+                      <span
+                        className={`flex h-10 shrink-0 items-center gap-1 rounded-lg px-2.5 text-[14px] font-bold ${tone.pill}`}
+                      >
+                        <Icon
+                          size={15}
+                          strokeWidth={2.5}
+                          aria-hidden
+                          className="shrink-0"
+                        />
+                        {item.time}
+                      </span>
+                    }
+                    label={<KindLabel kind={item.kind} />}
+                    title={item.title}
+                    onDismiss={() => onDismiss(item.id)}
+                    dismissLabel={`${item.time} ${item.title}`}
+                    // Busyness, not occupancy: the POS counts orders, not seats,
+                    // so this hour is compared with the busiest one.
+                    metrics={[
+                      {
+                        label: "Busyness",
+                        value: `${item.busynessPct}%`,
+                        valueClassName: tone.text,
+                        note: "of busiest hour",
+                      },
+                      {
+                        label: "Orders / day",
+                        value: ordersLabel(item.ordersPerDay),
+                      },
+                      {
+                        label: "Per order",
+                        value:
+                          item.avgOrder === null ? "—" : money(item.avgOrder),
+                      },
+                    ]}
                   >
-                    <Icon
-                      size={15}
-                      strokeWidth={2.5}
-                      aria-hidden
-                      className="shrink-0"
-                    />
-                    {item.time}
-                  </span>
-                }
-                label={<KindLabel kind={item.kind} />}
-                title={item.title}
-                onDismiss={() => onDismiss(item.id)}
-                dismissLabel={`${item.time} ${item.title}`}
-                // Busyness, not occupancy: the POS counts orders, not seats,
-                // so this hour is compared with the busiest one.
-                metrics={[
-                  {
-                    label: "Busyness",
-                    value: `${item.busynessPct}%`,
-                    valueClassName: tone.text,
-                    note: "of busiest hour",
-                  },
-                  {
-                    label: "Orders / day",
-                    value: ordersLabel(item.ordersPerDay),
-                  },
-                  {
-                    label: "Per order",
-                    value: item.avgOrder === null ? "—" : money(item.avgOrder),
-                  },
-                ]}
-              >
-                <p className="text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
-                  {item.description}
-                </p>
-                <div className="mt-auto">
-                  <Recommendation title="Play for this hour">
-                    <TipList tips={item.tips} />
-                  </Recommendation>
-                </div>
-              </InsightCard>
-            );
-          })}
-        </CardGrid>
-      </AiSectionBody>
+                    <p className="text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
+                      {item.description}
+                    </p>
+                    <div className="mt-auto">
+                      <Recommendation title="Play for this hour">
+                        <TipList tips={item.tips} />
+                      </Recommendation>
+                    </div>
+                  </InsightCard>
+                );
+              })}
+            </CardGrid>
+          </AiSectionBody>
+        </div>
+      </div>
     </section>
   );
 }

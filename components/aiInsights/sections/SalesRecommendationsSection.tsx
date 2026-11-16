@@ -2,6 +2,8 @@
 
 import {
   ChartNoAxesCombined,
+  ChevronDown,
+  ChevronUp,
   CircleCheck,
   Info,
   TriangleAlert,
@@ -23,6 +25,7 @@ import {
   SectionHeader,
   SectionMoreButton,
 } from "../parts";
+import { useState } from "react";
 
 const KIND = {
   warning: {
@@ -62,6 +65,8 @@ export default function SalesRecommendationsSection({
     `the last ${SALES_WINDOW_DAYS} days against the ${SALES_WINDOW_DAYS} before them`,
   );
 
+  const [isBodyExpanded, setIsBodyExpanded] = useState(true);
+
   return (
     <section>
       <SectionHeader
@@ -81,6 +86,35 @@ export default function SalesRecommendationsSection({
               state={state}
               textClassName="text-blue-700 hover:bg-blue-100 border-blue-300 hover:border-blue-400 dark:hover:border-blue-400/60 dark:hover:bg-blue-400/20 dark:border-blue-400/40 dark:text-blue-300"
             />
+
+            {/* Collapse / Expand */}
+            <button
+              type="button"
+              onClick={() => setIsBodyExpanded((prev) => !prev)}
+              aria-expanded={isBodyExpanded}
+              aria-label={
+                isBodyExpanded ? "Collapse section" : "Expand section"
+              }
+              title={isBodyExpanded ? "Collapse section" : "Expand section"}
+              className="
+        inline-flex shrink-0 items-center justify-center
+        rounded-lg border border-[#e2e6ed]
+        bg-white p-2 text-[#737b89]
+        transition-all duration-200
+        hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600
+        dark:border-white/10 dark:bg-white/[0.04]
+        dark:text-[#aab4c4]
+        dark:hover:border-violet-400/40
+        dark:hover:bg-violet-400/10 dark:hover:text-violet-300
+      "
+            >
+              {isBodyExpanded ? (
+                <ChevronUp size={15} />
+              ) : (
+                <ChevronDown size={15} />
+              )}
+            </button>
+
             {/* <SectionRefreshButton
               state={state}
               textClassName="text-blue-700 hover:bg-blue-100 border-blue-300 hover:border-blue-400 dark:hover:border-blue-400/60 dark:hover:bg-blue-400/20 dark:border-blue-400/40 dark:text-blue-300"
@@ -89,48 +123,58 @@ export default function SalesRecommendationsSection({
         }
       />
 
-      <AiSectionBody
-        state={state}
-        visibleCount={items.length}
-        layout="list"
-        noSalesMessage={`No sales in ${windowText}, so there is nothing to analyse.`}
-        emptyMessage="No sales alerts right now."
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
+          isBodyExpanded
+            ? "grid-rows-[1fr] opacity-100"
+            : "grid-rows-[0fr] opacity-0"
+        }`}
       >
-        <ul className="flex flex-col gap-2.5">
-          {items.map((item) => {
-            const kind = KIND[item.kind];
-            const Icon = kind.icon;
-            return (
-              // `relative` anchors the screen-reader label below. An
-              // absolutely positioned element with no positioned ancestor is
-              // placed against the window rather than the page's scroll area,
-              // so this label, some 3,000px down, stretched the window itself:
-              // it grew a second scrollbar, and scrolling it lifted the whole
-              // app shell away to show empty space underneath.
-              <li
-                key={item.id}
-                className="relative flex items-center gap-3 rounded-xl border border-[#e3e3e3] bg-white px-4 py-3 dark:border-white/10 dark:bg-[#161d2e]"
-              >
-                <Icon
-                  size={16}
-                  className={`shrink-0 ${kind.className}`}
-                  aria-hidden
-                />
-                {/* The icon's meaning, for anyone who cannot see its colour. */}
-                <span className="sr-only">{kind.label}:</span>
-                <p className="flex-1 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
-                  {item.text}
-                </p>
-                <DismissButton
-                  label="this recommendation"
-                  onClick={() => onDismiss(item.id)}
-                  className="shrink-0"
-                />
-              </li>
-            );
-          })}
-        </ul>
-      </AiSectionBody>
+        <div className="min-h-0 overflow-hidden">
+          <AiSectionBody
+            state={state}
+            visibleCount={items.length}
+            layout="list"
+            noSalesMessage={`No sales in ${windowText}, so there is nothing to analyse.`}
+            emptyMessage="No sales alerts right now."
+          >
+            <ul className="flex flex-col gap-2.5">
+              {items.map((item) => {
+                const kind = KIND[item.kind];
+                const Icon = kind.icon;
+                return (
+                  // `relative` anchors the screen-reader label below. An
+                  // absolutely positioned element with no positioned ancestor is
+                  // placed against the window rather than the page's scroll area,
+                  // so this label, some 3,000px down, stretched the window itself:
+                  // it grew a second scrollbar, and scrolling it lifted the whole
+                  // app shell away to show empty space underneath.
+                  <li
+                    key={item.id}
+                    className="relative flex items-center gap-3 rounded-xl border border-[#e3e3e3] bg-white px-4 py-3 dark:border-white/10 dark:bg-[#161d2e]"
+                  >
+                    <Icon
+                      size={16}
+                      className={`shrink-0 ${kind.className}`}
+                      aria-hidden
+                    />
+                    {/* The icon's meaning, for anyone who cannot see its colour. */}
+                    <span className="sr-only">{kind.label}:</span>
+                    <p className="flex-1 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
+                      {item.text}
+                    </p>
+                    <DismissButton
+                      label="this recommendation"
+                      onClick={() => onDismiss(item.id)}
+                      className="shrink-0"
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          </AiSectionBody>
+        </div>
+      </div>
     </section>
   );
 }

@@ -25,7 +25,7 @@ import {
 } from "./shared";
 
 /** Part of the cache key: bump when the prompt or the facts change. */
-export const RETENTION_VERSION = "v2";
+export const RETENTION_VERSION = "v3";
 
 /** How far back visits are read. */
 export const RETENTION_LOOKBACK_DAYS = 120;
@@ -102,6 +102,7 @@ export interface RetentionCandidate {
   loyaltyPoints: number;
   /** Filled in after the facts, from their purchase history. */
   usualOrder: string[];
+  tip?: string;
 }
 
 const nepalDate = (iso: string) =>
@@ -275,32 +276,135 @@ export function retentionBriefing(
 
 // ── Instructions and answer format ────────────────────────────────────────
 
-export const RETENTION_PROMPT = `You help the owner of a small shop, café or restaurant in Nepal that uses the Rebuzz POS win back regular customers who have gone quiet. For each customer you receive their habit, how overdue they are, what they spend and what they usually order.
+// export const RETENTION_PROMPT = `You help the owner of a small shop, café or restaurant in Nepal that uses the Rebuzz POS win back regular customers who have gone quiet. For each customer you receive their habit, how overdue they are, what they spend and what they usually order.
 
-For each customer, write:
-- ref: the customer's ref exactly as given.
-- tip: what the owner should do, in one or two sentences under 200 characters. A small, specific gesture works best: their usual order, their loyalty points, a reason to come back this week.
-- message: a short, warm message the owner could send them, under 220 characters, starting with "Hi {name}". Friendly and personal, not salesy. Mention their usual order or points when you have them.
+// For each customer, write:
+// - ref: the customer's ref exactly as given.
+// - tip: what the owner should do, in one or two sentences under 200 characters. A small, specific gesture works best: their usual order, their loyalty points, a reason to come back this week.
+// - message: a short, warm message the owner could send them, under 220 characters, starting with "Hi {name}". Friendly and personal, not salesy. Mention their usual order or points when you have them.
 
-Rules:
-- Write {name} for the customer's name. Never write a ref such as cyaxai4 in the tip or message, and never invent a name.
-- Never invent figures, prices or discounts that are not in the facts. An offer may be described without a number ("a free drink with your next visit").
-- A customer at risk needs a stronger reason to return than one cooling off.
-- Plain words. No markdown, no emojis in the tip. At most one emoji in the message.`;
+// Rules:
+// - Write {name} for the customer's name. Never write a ref such as cyaxai4 in the tip or message, and never invent a name.
+// - Never invent figures, prices or discounts that are not in the facts. An offer may be described without a number ("a free drink with your next visit").
+// - A customer at risk needs a stronger reason to return than one cooling off.
+// - Plain words. No markdown, no emojis in the tip. At most one emoji in the message.`;
+
+// export const RETENTION_SCHEMA = {
+//   type: "object",
+//   properties: {
+//     customers: {
+//       type: "array",
+//       items: {
+//         type: "object",
+//         properties: {
+//           ref: { type: "string" },
+//           tip: { type: "string" },
+//           message: { type: "string" },
+//         },
+//         required: ["ref", "tip", "message"],
+//       },
+//     },
+//   },
+//   required: ["customers"],
+// } as const;
+
+export const RETENTION_PROMPT = `You help the owner of a small shop, café or restaurant in Nepal win back customers who have become less active.
+
+You receive anonymized information about each customer. Each customer has a unique reference such as c123abc. Use the customer's own facts to write personalized recommendations.
+
+For EVERY customer provided, generate:
+- Exactly one personalized recommendation tip.
+- Exactly 6 message styles with exactly 2 messages per style.
+
+The recommendation tip:
+- Explain the best approach the owner should take to reconnect with this specific customer.
+- Use their retention status, visit habits, usual orders, spending pattern and loyalty points where available.
+- Keep it practical, specific and under 200 characters.
+- This is internal guidance for the business owner, NOT a message to send to the customer.
+- Do not invent offers, discounts, rewards, products or customer preferences.
+
+The six styles are:
+
+1. friendly_warm: Friendly, welcoming messages that make the customer feel appreciated.
+2. curiosity_led: Create curiosity about visiting again, discovering something new or seeing what's happening.
+3. personal_relatable: Relatable messages inspired by the customer's usual orders or familiar experiences.
+4. loyalty_appreciation: Express appreciation for the customer's continued support and loyalty.
+5. playful_fun: Lighthearted, cheerful messages with a fun conversational tone.
+6. come_back_soon: Encourage the customer to visit again soon.
+
+For each customer return:
+- ref: The customer's exact reference from the supplied facts.
+- tip: One personalized recommendation for the business owner.
+- styles: Exactly six style groups.
+- Each style must contain its exact style identifier and exactly two distinct messages.
+
+Personalization rules:
+- Start messages naturally with "Hi {name}" when appropriate.
+- Use the customer's usual orders when available.
+- Mention loyalty points only when they are greater than zero.
+- Consider their retention status and how overdue they are.
+- An At risk customer should receive a stronger invitation than a Cooling off customer.
+- Make every message relevant to that specific customer.
+
+Privacy and accuracy rules:
+- Never invent a customer's name, phone number, order, spending, loyalty points or visit history.
+- Never include the anonymized customer reference in a tip or message.
+- Use {name} as the only name placeholder.
+- Do not invent prices, discounts, promotions, free items or rewards.
+- Never promise an offer that is not supported by the supplied facts.
+- Keep messages natural, friendly and under 220 characters where possible.
+- Make the two messages within each style meaningfully different.
+- Avoid repeating the same message across styles.
+- Use simple conversational English suitable for customers in Nepal.
+- At most one emoji per message.
+- Keep tips concise, actionable and free of emojis.
+
+Return every supplied customer exactly once.
+Return valid structured output only.`;
 
 export const RETENTION_SCHEMA = {
   type: "object",
+  additionalProperties: false,
   properties: {
     customers: {
       type: "array",
       items: {
         type: "object",
+        additionalProperties: false,
         properties: {
           ref: { type: "string" },
           tip: { type: "string" },
-          message: { type: "string" },
+          styles: {
+            type: "array",
+            minItems: 6,
+            maxItems: 6,
+            items: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                style: {
+                  type: "string",
+                  enum: [
+                    "friendly_warm",
+                    "curiosity_led",
+                    "personal_relatable",
+                    "loyalty_appreciation",
+                    "playful_fun",
+                    "come_back_soon",
+                  ],
+                },
+                messages: {
+                  type: "array",
+                  minItems: 2,
+                  maxItems: 2,
+                  items: { type: "string" },
+                },
+              },
+              required: ["style", "messages"],
+            },
+          },
         },
-        required: ["ref", "tip", "message"],
+        required: ["ref", "tip", "styles"],
       },
     },
   },
@@ -309,12 +413,45 @@ export const RETENTION_SCHEMA = {
 
 // ── Answer ────────────────────────────────────────────────────────────────
 
+// export interface RetentionInsight {
+//   /** Stable per customer, so a dismissal survives a refresh. */
+//   id: string;
+//   name: string;
+//   status: RetentionStatus;
+//   /** "2x a week · 18 visits". */
+//   profile: string;
+//   daysSinceVisit: number;
+//   usualGapDays: number;
+//   spendPerVisit: number;
+//   monthlyValue: number;
+//   loyaltyPoints: number;
+//   usualOrder: string[];
+//   tip: string;
+//   /** The model's message with the customer's first name put in. */
+//   message: string;
+//   /** For a WhatsApp link, when the customer has a phone number. */
+//   phone: string | null;
+// }
+
+export type RetentionMessageStyleId =
+  | "friendly_warm"
+  | "curiosity_led"
+  | "personal_relatable"
+  | "loyalty_appreciation"
+  | "playful_fun"
+  | "come_back_soon";
+
+export interface RetentionMessageStyle {
+  id: RetentionMessageStyleId;
+  title: string;
+  description: string;
+  messages: string[];
+}
+
 export interface RetentionInsight {
-  /** Stable per customer, so a dismissal survives a refresh. */
   id: string;
   name: string;
   status: RetentionStatus;
-  /** "2x a week · 18 visits". */
   profile: string;
   daysSinceVisit: number;
   usualGapDays: number;
@@ -322,12 +459,43 @@ export interface RetentionInsight {
   monthlyValue: number;
   loyaltyPoints: number;
   usualOrder: string[];
-  tip: string;
-  /** The model's message with the customer's first name put in. */
-  message: string;
-  /** For a WhatsApp link, when the customer has a phone number. */
   phone: string | null;
+  tip: string;
+  styles: RetentionMessageStyle[];
 }
+
+export const RETENTION_STYLES: Omit<RetentionMessageStyle, "messages">[] = [
+  {
+    id: "friendly_warm",
+    title: "Friendly & Warm",
+    description: "Welcoming messages that make customers feel appreciated.",
+  },
+  {
+    id: "curiosity_led",
+    title: "Curiosity-led",
+    description: "Create curiosity and give customers a reason to reconnect.",
+  },
+  {
+    id: "personal_relatable",
+    title: "Personal & Relatable",
+    description: "Messages inspired by familiar orders and experiences.",
+  },
+  {
+    id: "loyalty_appreciation",
+    title: "Loyalty Appreciation",
+    description: "Show gratitude and make customers feel valued.",
+  },
+  {
+    id: "playful_fun",
+    title: "Playful & Fun",
+    description: "Cheerful messages with a lighthearted personality.",
+  },
+  {
+    id: "come_back_soon",
+    title: "Come Back Soon",
+    description: "Encourage customers to visit again soon.",
+  },
+];
 
 /**
  * The model's notes joined onto the customers, names put back.
@@ -336,48 +504,152 @@ export interface RetentionInsight {
  * first name; a message the model wrote without the placeholder is kept as it
  * is, since it names nobody.
  */
+// export function parseRetention(
+//   value: unknown,
+//   candidates: RetentionCandidate[],
+// ): RetentionInsight[] {
+//   const list = (value as { customers?: unknown } | null)?.customers;
+//   if (!Array.isArray(list)) return [];
+
+//   const notes = new Map<string, { tip: string; message: string }>();
+//   for (const entry of list) {
+//     const e = (entry ?? {}) as Record<string, unknown>;
+//     const ref = typeof e.ref === "string" ? e.ref.trim() : "";
+//     const tip = textOr(e.tip, 300);
+//     const message = textOr(e.message, 320);
+//     if (ref && tip && message && !notes.has(ref))
+//       notes.set(ref, { tip, message });
+//   }
+
+//   // Each customer's code with their first name, so one the model copied into
+//   // its text is replaced too — not only the {name} it was asked to write.
+//   const firstNameOf = (c: RetentionCandidate) =>
+//     c.name.split(/\s+/)[0] || c.name;
+//   const byCode = new Map(candidates.map((c) => [c.ref, firstNameOf(c)]));
+
+//   return candidates.flatMap((c) => {
+//     const note = notes.get(c.ref);
+//     if (!note) return [];
+//     const firstName = firstNameOf(c);
+//     return [
+//       {
+//         id: `retention-${c.ref}`,
+//         name: c.name,
+//         status: c.status,
+//         profile: `${paceLabel(c.usualGapDays)} · ${c.visits} visits`,
+//         daysSinceVisit: c.daysSinceVisit,
+//         usualGapDays: c.usualGapDays,
+//         spendPerVisit: c.spendPerVisit,
+//         monthlyValue: c.monthlyValue,
+//         loyaltyPoints: c.loyaltyPoints,
+//         usualOrder: c.usualOrder,
+//         tip: putNamesBack(note.tip, firstName, byCode),
+//         message: putNamesBack(note.message, firstName, byCode),
+//         phone: c.phone,
+//       },
+//     ];
+//   });
+// }
+
+// export type RetentionResult = AiSectionResult<RetentionInsight>;
+
 export function parseRetention(
   value: unknown,
   candidates: RetentionCandidate[],
 ): RetentionInsight[] {
   const list = (value as { customers?: unknown } | null)?.customers;
+
   if (!Array.isArray(list)) return [];
 
-  const notes = new Map<string, { tip: string; message: string }>();
+  const candidateMap = new Map(
+    candidates.map((candidate) => [candidate.ref, candidate]),
+  );
+
+  const received = new Map<
+    string,
+    {
+      tip: string;
+      styles: RetentionMessageStyle[];
+    }
+  >();
+
   for (const entry of list) {
-    const e = (entry ?? {}) as Record<string, unknown>;
-    const ref = typeof e.ref === "string" ? e.ref.trim() : "";
-    const tip = textOr(e.tip, 300);
-    const message = textOr(e.message, 320);
-    if (ref && tip && message && !notes.has(ref))
-      notes.set(ref, { tip, message });
+    const customer = (entry ?? {}) as Record<string, unknown>;
+    const ref = typeof customer.ref === "string" ? customer.ref.trim() : "";
+
+    const candidate = candidateMap.get(ref);
+
+    // Ignore unknown and duplicate customer references.
+    if (!candidate || received.has(ref)) continue;
+
+    const tip = textOr(customer.tip, 200);
+
+    if (!tip || !Array.isArray(customer.styles)) continue;
+
+    const stylesReceived = new Map<RetentionMessageStyleId, string[]>();
+
+    for (const styleEntry of customer.styles) {
+      const styleData = (styleEntry ?? {}) as Record<string, unknown>;
+
+      const styleId =
+        typeof styleData.style === "string" ? styleData.style : "";
+
+      const style = RETENTION_STYLES.find((item) => item.id === styleId);
+
+      if (!style || stylesReceived.has(style.id)) continue;
+      if (!Array.isArray(styleData.messages)) continue;
+
+      // Require exactly two valid, non-empty messages.
+      if (styleData.messages.length !== 2) continue;
+
+      const messages = styleData.messages.map((message) =>
+        textOr(message, 280),
+      );
+
+      if (messages.some((message) => !message)) continue;
+
+      stylesReceived.set(
+        style.id,
+        messages as [string, string] as unknown as string[],
+      );
+    }
+
+    // Every customer must have all six complete styles.
+    if (stylesReceived.size !== RETENTION_STYLES.length) continue;
+
+    const firstName = candidate.name.split(/\s+/)[0] || candidate.name;
+
+    const styles: RetentionMessageStyle[] = RETENTION_STYLES.map((style) => ({
+      ...style,
+      messages: stylesReceived
+        .get(style.id)!
+        .map((message) => putNamesBack(message, firstName, new Map())),
+    }));
+
+    received.set(ref, { tip, styles });
   }
 
-  // Each customer's code with their first name, so one the model copied into
-  // its text is replaced too — not only the {name} it was asked to write.
-  const firstNameOf = (c: RetentionCandidate) =>
-    c.name.split(/\s+/)[0] || c.name;
-  const byCode = new Map(candidates.map((c) => [c.ref, firstNameOf(c)]));
+  // Preserve the original candidate order.
+  return candidates.flatMap((candidate) => {
+    const result = received.get(candidate.ref);
 
-  return candidates.flatMap((c) => {
-    const note = notes.get(c.ref);
-    if (!note) return [];
-    const firstName = firstNameOf(c);
+    if (!result) return [];
+
     return [
       {
-        id: `retention-${c.ref}`,
-        name: c.name,
-        status: c.status,
-        profile: `${paceLabel(c.usualGapDays)} · ${c.visits} visits`,
-        daysSinceVisit: c.daysSinceVisit,
-        usualGapDays: c.usualGapDays,
-        spendPerVisit: c.spendPerVisit,
-        monthlyValue: c.monthlyValue,
-        loyaltyPoints: c.loyaltyPoints,
-        usualOrder: c.usualOrder,
-        tip: putNamesBack(note.tip, firstName, byCode),
-        message: putNamesBack(note.message, firstName, byCode),
-        phone: c.phone,
+        id: `retention-${candidate.ref}`,
+        name: candidate.name,
+        status: candidate.status,
+        profile: `${paceLabel(candidate.usualGapDays)} · ${candidate.visits} visits`,
+        daysSinceVisit: candidate.daysSinceVisit,
+        usualGapDays: candidate.usualGapDays,
+        spendPerVisit: candidate.spendPerVisit,
+        monthlyValue: candidate.monthlyValue,
+        loyaltyPoints: candidate.loyaltyPoints,
+        usualOrder: candidate.usualOrder,
+        phone: candidate.phone,
+        tip: result.tip,
+        styles: result.styles,
       },
     ];
   });

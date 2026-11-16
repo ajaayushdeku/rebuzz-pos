@@ -2,6 +2,8 @@
 
 import {
   Award,
+  ChevronDown,
+  ChevronUp,
   Coffee,
   Gauge,
   TrendingDown,
@@ -27,11 +29,12 @@ import {
   LeadTile,
   Recommendation,
   SectionHeader,
-  SectionRefreshButton,
+  // SectionRefreshButton,
   useMoney,
   type AccentName,
   type Metric,
 } from "../parts";
+import { useState } from "react";
 
 /** Each kind of card: its label, icon and accent. */
 const KIND: Record<
@@ -202,6 +205,8 @@ export default function StaffingSection({
     `the last ${STAFFING_WINDOW_DAYS / 7} weeks`,
   );
 
+  const [isBodyExpanded, setIsBodyExpanded] = useState(true);
+
   return (
     <section>
       <SectionHeader
@@ -216,29 +221,67 @@ export default function StaffingSection({
           body: `The POS records who rang up each bill, so this covers the till in ${windowText} — not the kitchen, the floor or anyone working a shift without taking orders.`,
         }}
         actions={
-          <div className="hidden flex flex-row w-full md:w-fit items-end justify-end">
-            <SectionRefreshButton
+          <div className=" flex flex-row w-full md:w-fit items-end justify-end">
+            {/* <SectionRefreshButton
               state={state}
               textClassName="text-amber-700 hover:bg-amber-100 border-amber-300 hover:border-amber-400 dark:hover:border-amber-400/60 dark:hover:bg-amber-400/20 dark:border-amber-400/40 dark:text-amber-300"
-            />
+            /> */}
+
+            {/* Collapse / Expand */}
+            <button
+              type="button"
+              onClick={() => setIsBodyExpanded((prev) => !prev)}
+              aria-expanded={isBodyExpanded}
+              aria-label={
+                isBodyExpanded ? "Collapse section" : "Expand section"
+              }
+              title={isBodyExpanded ? "Collapse section" : "Expand section"}
+              className="
+        inline-flex shrink-0 items-center justify-center
+        rounded-lg border border-[#e2e6ed]
+        bg-white p-2 text-[#737b89]
+        transition-all duration-200
+        hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600
+        dark:border-white/10 dark:bg-white/[0.04]
+        dark:text-[#aab4c4]
+        dark:hover:border-violet-400/40
+        dark:hover:bg-violet-400/10 dark:hover:text-violet-300
+      "
+            >
+              {isBodyExpanded ? (
+                <ChevronUp size={15} />
+              ) : (
+                <ChevronDown size={15} />
+              )}
+            </button>
           </div>
         }
       />
 
-      <AiSectionBody
-        state={state}
-        visibleCount={items.length}
-        layout="cards"
-        noSalesMessage={`Not enough orders in the last ${STAFFING_WINDOW_DAYS / 7} weeks to read who takes them. It needs at least 20 orders over 7 days.`}
-        nothingFlaggedMessage="Orders are spread evenly across your team. Nothing to change right now."
-        emptyMessage="No staffing changes suggested right now."
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
+          isBodyExpanded
+            ? "grid-rows-[1fr] opacity-100"
+            : "grid-rows-[0fr] opacity-0"
+        }`}
       >
-        <CardGrid>
-          {items.map((item) => (
-            <StaffingCard key={item.id} item={item} onDismiss={onDismiss} />
-          ))}
-        </CardGrid>
-      </AiSectionBody>
+        <div className="min-h-0 overflow-hidden">
+          <AiSectionBody
+            state={state}
+            visibleCount={items.length}
+            layout="cards"
+            noSalesMessage={`Not enough orders in the last ${STAFFING_WINDOW_DAYS / 7} weeks to read who takes them. It needs at least 20 orders over 7 days.`}
+            nothingFlaggedMessage="Orders are spread evenly across your team. Nothing to change right now."
+            emptyMessage="No staffing changes suggested right now."
+          >
+            <CardGrid>
+              {items.map((item) => (
+                <StaffingCard key={item.id} item={item} onDismiss={onDismiss} />
+              ))}
+            </CardGrid>
+          </AiSectionBody>{" "}
+        </div>
+      </div>
     </section>
   );
 }

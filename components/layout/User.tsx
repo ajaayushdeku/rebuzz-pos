@@ -213,7 +213,7 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
                 full name is in the dropdown, and in the title for a hover. */}
             <span
               title={initialBusinessName}
-              className="hidden md:block cursor-pointer text-[13px] font-medium tracking-wide text-gray-700 hover:underline sm:inline dark:text-[#7ba2e3]"
+              className="hidden md:block cursor-pointer text-[13px] font-medium tracking-wide text-gray-700 hover:underline sm:inline dark:text-[#8EC6FF]"
             >
               {shortName(initialBusinessName)}
             </span>
@@ -246,7 +246,7 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
                   phone. `min-w-0` on the name lets it truncate so the badge
                   keeps its width. */}
               <div className="flex items-center gap-1.5">
-                <p className="min-w-0 truncate text-sm font-semibold text-gray-800 dark:text-[#7ba2e3]">
+                <p className="min-w-0 truncate text-sm font-semibold text-gray-800 dark:text-[#8EC6FF]">
                   {initialBusinessName}
                 </p>
                 <Badge
@@ -286,7 +286,7 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
                       {initials(acc.businessName || acc.label)}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium text-gray-700 truncate">
+                      <p className="text-xs font-medium text-gray-700 truncate dark:text-[#8EC6FF]">
                         {acc.businessName || acc.label}
                       </p>
                       <p className="text-[10px] text-gray-400 truncate">
@@ -330,7 +330,7 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
           <DropdownMenuSeparator />
 
           <DropdownMenuItem
-            className="text-gray-600 dark:text-gray-400 cursor-pointer"
+            className="text-gray-600 dark:text-gray-400 cursor-pointer dark:hover:text-white"
             asChild
           >
             <Link href="/settings/business" className="flex gap-2">
@@ -340,7 +340,7 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            className="sm:hidden block text-gray-600 dark:text-gray-400 cursor-pointer"
+            className="sm:hidden block text-gray-600 dark:text-gray-400 cursor-pointer dark:hover:text-white"
             asChild
           >
             <Link href="/help" className="flex gap-2">
@@ -350,7 +350,7 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            className="text-gray-600 dark:text-gray-400 cursor-pointer"
+            className="text-gray-600 dark:text-gray-400 cursor-pointer dark:hover:text-white"
             onClick={() => router.push("/settings/change-password")}
           >
             <Settings className="mr-2 h-4 w-4" />
