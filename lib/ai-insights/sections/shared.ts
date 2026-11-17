@@ -34,7 +34,10 @@ export function daysBetween(startDate: string, endDate: string): number {
     const [y, m, d] = iso.split("-").map(Number);
     return Date.UTC(y, m - 1, d);
   };
-  return Math.max(1, Math.round((at(endDate) - at(startDate)) / 86_400_000) + 1);
+  return Math.max(
+    1,
+    Math.round((at(endDate) - at(startDate)) / 86_400_000) + 1,
+  );
 }
 
 export function shiftIsoDate(iso: string, days: number): string {
@@ -145,21 +148,67 @@ export const normalizeName = (name: string) =>
  * their product here: a slow item is a menu decision, and the menu lists the
  * product.
  */
+// export function productMatcher(products: MenuProduct[]) {
+//   const exact = new Map(products.map((p) => [normalizeName(p.name), p]));
+//   const byLength = [...products].sort((a, b) => b.name.length - a.name.length);
+
+//   return (rowName: string): MenuProduct | null => {
+//     const key = normalizeName(rowName);
+//     const hit = exact.get(key);
+//     if (hit) return hit;
+
+//     for (const product of byLength) {
+//       const prefix = normalizeName(product.name);
+//       if (!prefix || !key.startsWith(prefix)) continue;
+//       const boundary = key.charAt(prefix.length);
+//       if (boundary === "" || !/[a-z0-9]/.test(boundary)) return product;
+//     }
+//     return null;
+//   };
+// }
+
 export function productMatcher(products: MenuProduct[]) {
   const exact = new Map(products.map((p) => [normalizeName(p.name), p]));
+
+  // Match known variant names to their parent products.
+  const variants = new Map<string, MenuProduct>();
+
+  for (const product of products) {
+    for (const variantName of product.variantNames) {
+      const key = normalizeName(variantName);
+
+      if (key) {
+        variants.set(key, product);
+      }
+    }
+  }
+
   const byLength = [...products].sort((a, b) => b.name.length - a.name.length);
 
   return (rowName: string): MenuProduct | null => {
     const key = normalizeName(rowName);
-    const hit = exact.get(key);
-    if (hit) return hit;
 
+    // 1. Exact product match.
+    const exactHit = exact.get(key);
+    if (exactHit) return exactHit;
+
+    // 2. Exact variant match.
+    const variantHit = variants.get(key);
+    if (variantHit) return variantHit;
+
+    // 3. Product prefix match.
     for (const product of byLength) {
       const prefix = normalizeName(product.name);
+
       if (!prefix || !key.startsWith(prefix)) continue;
+
       const boundary = key.charAt(prefix.length);
-      if (boundary === "" || !/[a-z0-9]/.test(boundary)) return product;
+
+      if (boundary === "" || !/[a-z0-9]/.test(boundary)) {
+        return product;
+      }
     }
+
     return null;
   };
 }

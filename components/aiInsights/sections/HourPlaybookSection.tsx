@@ -81,15 +81,15 @@ const KIND_ICON: Record<SlotKind, LucideIcon> = {
 
 function KindLabel({ kind }: { kind: SlotKind }) {
   return (
-    <div className="flex flex-row items-center gap-0.5">
+    <span className="flex flex-row items-center gap-0.5">
       {/* <Icon
         size={10}
         strokeWidth={2.5}
         aria-hidden
         className="shrink-0 bg-red-300 dark:bg-red-400/40"
       /> */}
-      <p>{KIND_LABEL[kind]}</p>
-    </div>
+      <span>{KIND_LABEL[kind]}</span>
+    </span>
   );
 }
 

@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   X,
   ImageOff,
+  BadgePercent,
 } from "lucide-react";
 import Image from "next/image";
 import { Product, ProductVariant } from "@/lib/types/product";
@@ -21,6 +22,8 @@ import { useCategories } from "@/hooks/useCategories";
 import { normalizeColor } from "@/services/category.client";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useLockAppScroll } from "@/hooks/useLockAppScroll";
+import { useAddons } from "@/hooks/useAddons";
+import { useDiscounts } from "@/hooks/useDiscounts";
 
 /**
  * Colour is a code here, not decoration: each data domain owns one hue, and it
@@ -137,6 +140,8 @@ export default function ProductDetailModal({
 }: ProductDetailModalProps) {
   const { currency } = useCurrency();
   const { data: categories = [] } = useCategories();
+  const { data: addons = [] } = useAddons();
+  const { data: discounts = [] } = useDiscounts();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
@@ -157,6 +162,19 @@ export default function ProductDetailModal({
   const category = useMemo(
     () => categories.find((c) => c._id === product?.categories),
     [categories, product?.categories],
+  );
+
+  const productAddons = useMemo(
+    () => addons.filter((addon) => product?.addons?.includes(addon._id)),
+    [addons, product?.addons],
+  );
+
+  const productDiscounts = useMemo(
+    () =>
+      discounts.filter((discount) =>
+        product?.discounts?.includes(discount._id),
+      ),
+    [discounts, product?.discounts],
   );
 
   const variants: ProductVariant[] = useMemo(
@@ -200,6 +218,19 @@ export default function ProductDetailModal({
   /** One figure when every variant agrees, a span when they don't. */
   const range = (min: number, max: number) =>
     min === max ? fmt(min) : `${fmt(min)} – ${fmt(max)}`;
+
+  const applyDiscounts = (price: number) => {
+    return productDiscounts
+      .filter((discount) => discount.isEnabled)
+      .reduce((currentPrice, discount) => {
+        const discounted =
+          discount.type === "percentage"
+            ? currentPrice - (currentPrice * discount.rate) / 100
+            : currentPrice - discount.rate;
+
+        return Math.max(0, discounted);
+      }, price);
+  };
 
   const categoryColor = category ? normalizeColor(category.color) : null;
 
@@ -293,7 +324,7 @@ export default function ProductDetailModal({
               three columns: a span like "Rs 500 – Rs 1,200" needs the full
               width, and truncated to a third of it says nothing. */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
-            <Figure
+            {/* <Figure
               domain="price"
               label="Price"
               value={
@@ -305,6 +336,40 @@ export default function ProductDetailModal({
                 hasVariants && rollup && rollup.minPrice !== rollup.maxPrice
                   ? "varies by variant"
                   : undefined
+              }
+            /> */}
+            <Figure
+              domain="price"
+              label="Price"
+              value={
+                hasVariants && rollup
+                  ? range(rollup.minPrice, rollup.maxPrice)
+                  : fmt(product.price)
+              }
+              sub={
+                productDiscounts.some((discount) => discount.isEnabled) ? (
+                  <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                    After discount:{" "}
+                    {hasVariants
+                      ? range(
+                          Math.min(
+                            ...variants.map((v) =>
+                              applyDiscounts(v.price ?? 0),
+                            ),
+                          ),
+                          Math.max(
+                            ...variants.map((v) =>
+                              applyDiscounts(v.price ?? 0),
+                            ),
+                          ),
+                        )
+                      : fmt(applyDiscounts(product.price))}
+                  </span>
+                ) : hasVariants &&
+                  rollup &&
+                  rollup.minPrice !== rollup.maxPrice ? (
+                  "varies by variant"
+                ) : undefined
               }
             />
 
@@ -543,6 +608,52 @@ export default function ProductDetailModal({
                 )}
               </MetaRow>
 
+              {product.addons?.length !== 0 && (
+                <MetaRow label="Addons">
+                  {productAddons.length > 0 ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {productAddons.map((addon) => (
+                        <span
+                          key={addon._id}
+                          className="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:bg-white/10 dark:text-slate-200"
+                        >
+                          {addon.name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-slate-400 dark:text-[#9aa6bd]">
+                      No matching addons found
+                    </span>
+                  )}
+                </MetaRow>
+              )}
+
+              {product.discounts?.length !== 0 && (
+                <MetaRow label="Discounts Applied">
+                  {productDiscounts.length > 0 ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {productDiscounts.map((discount) => (
+                        <span
+                          key={discount._id}
+                          className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:bg-white/10 dark:text-slate-200"
+                        >
+                          <BadgePercent
+                            size={13}
+                            className="shrink-0 text-emerald-600 dark:text-emerald-400"
+                          />
+                          <span>{discount.name}</span>
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-slate-400 dark:text-[#9aa6bd]">
+                      No discount applied
+                    </span>
+                  )}
+                </MetaRow>
+              )}
+
               <MetaRow label="Tax">
                 <span
                   className={
@@ -561,7 +672,7 @@ export default function ProductDetailModal({
                   className={
                     product.usesStocks
                       ? "inline-flex items-center gap-1.5 font-medium text-blue-700 dark:text-[#a8c4ee]"
-                      : "text-slate-400 dark:text-[#9aa6bd]"
+                      : "text-slate-400 flex flex-row gap-1.5 items-center  dark:text-[#9aa6bd]"
                   }
                 >
                   <Package className="h-3 w-3" />

@@ -15,6 +15,8 @@ import {
   ChevronRight,
   ChevronLeft,
   CornerDownRight,
+  BadgePercent,
+  Layers,
 } from "lucide-react";
 import { Product } from "@/lib/types/product";
 import { initials } from "@/lib/utils";
@@ -30,6 +32,30 @@ import ColumnPicker, {
 } from "@/components/ui/ColumnPicker";
 import { useDeleteProduct } from "@/hooks/useProducts";
 import toast from "react-hot-toast";
+import { useCategories } from "@/hooks/useCategories";
+import { normalizeColor } from "@/services/category.client";
+import { useDiscounts } from "@/hooks/useDiscounts";
+import { Discount } from "@/services/apiDiscounts.client";
+
+const getTotalDiscountPercent = (
+  sellingPrice: number,
+  discounts: Discount[],
+) => {
+  if (sellingPrice <= 0) return 0;
+
+  const finalPrice = discounts
+    .filter((discount) => discount.isEnabled)
+    .reduce((currentPrice, discount) => {
+      const discountedPrice =
+        discount.type === "percentage"
+          ? currentPrice - (currentPrice * discount.rate) / 100
+          : currentPrice - discount.rate;
+
+      return Math.max(0, discountedPrice);
+    }, sellingPrice);
+
+  return ((sellingPrice - finalPrice) / sellingPrice) * 100;
+};
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -38,8 +64,12 @@ const PRODUCT_COLUMNS: TableColumn[] = [
   { key: "name", label: "Product" },
   { key: "description", label: "Description" },
   { key: "price", label: "Price" },
+  { key: "category", label: "Category" },
   { key: "tax", label: "Tax" },
+  { key: "addon", label: "Addons" },
   { key: "stock", label: "Stock" },
+  { key: "lowstock", label: "Low Stock Limit" },
+
   { key: "actions", label: "Actions", locked: true },
 ];
 
@@ -53,8 +83,11 @@ const COLUMN_WIDTHS: Record<string, string> = {
   profile: "w-25",
   name: "w-65",
   price: "w-42",
+  category: "w-42",
   tax: "w-40",
+  addon: "w-36",
   stock: "w-40",
+  lowstock: "w-36",
   actions: "w-25",
 };
 
@@ -263,7 +296,7 @@ export default function ProductTable({
 
   const TaxBadge = ({ taxable }: { taxable: boolean }) =>
     taxable ? (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-400/15 dark:text-rose-200 dark:border-rose-400/25">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-400/15 dark:text-rose-200 dark:border-rose-400/45">
         <Percent className="h-3 w-3" />
         Taxable
       </span>
@@ -274,6 +307,9 @@ export default function ProductTable({
     );
 
   const isEmpty = pagedProducts.length === 0;
+
+  const { data: categories = [] } = useCategories();
+  const { data: discounts = [] } = useDiscounts();
 
   return (
     <>
@@ -363,12 +399,31 @@ export default function ProductTable({
                   </span>
                 </th>
               )}
+
+              {showColumn("category") && (
+                <th className="text-center pb-3 pt-3 px-4 font-normal">
+                  Category
+                </th>
+              )}
+
               {showColumn("tax") && (
                 <th className="text-center pb-3 pt-3 px-4 font-normal">Tax</th>
               )}
+              {showColumn("addon") && (
+                <th className="text-center pb-3 pt-3 px-4 font-normal">
+                  Addons
+                </th>
+              )}
+
               {showColumn("stock") && (
                 <th className="text-center pb-3 pt-3 px-4 font-normal">
                   Stock
+                </th>
+              )}
+
+              {showColumn("lowstock") && (
+                <th className="text-center pb-3 pt-3 px-4 font-normal">
+                  Low Stock Limit
                 </th>
               )}
               <th className="text-right pb-3 pt-3 px-4 font-normal">Actions</th>
@@ -410,7 +465,38 @@ export default function ProductTable({
                 const variants = product.variants ?? [];
                 const variantCount = variants.length;
                 const isExpanded = expandedIds.has(product.id);
+                const addonCount = product.addons?.length ?? 0;
 
+                const category = categories.find(
+                  (c) => c._id === product?.categories,
+                );
+
+                const categoryColor = category
+                  ? normalizeColor(category.color)
+                  : null;
+
+                const productDiscounts = discounts.filter((discount) =>
+                  product?.discounts?.includes(discount._id),
+                );
+
+                const discountCount = productDiscounts.length;
+
+                const variantDiscountPercents = variants.map((variant) =>
+                  getTotalDiscountPercent(variant.price, productDiscounts),
+                );
+
+                const discountPercents =
+                  variantCount > 0
+                    ? variantDiscountPercents
+                    : [
+                        getTotalDiscountPercent(
+                          product.price,
+                          productDiscounts,
+                        ),
+                      ];
+
+                const minDiscountPercent = Math.min(...discountPercents);
+                const maxDiscountPercent = Math.max(...discountPercents);
                 return [
                   // ── Parent row ──────────────────────────────────────────
                   <tr
@@ -456,13 +542,27 @@ export default function ProductTable({
                             {product.name}
                           </span>
                           <span className="flex flex-row items-center justify-between gap-2">
-                            {" "}
-                            {variantCount > 0 && (
-                              <span className="inline-flex flex-row items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-50 text-purple-600 border border-purple-200 dark:bg-purple-400/15 dark:text-purple-300 dark:border-purple-400/25">
-                                {variantCount} variant
-                                {variantCount > 1 ? "s" : ""}
-                              </span>
-                            )}
+                            <div className="flex flex-row items-center gap-2">
+                              {variantCount > 0 && (
+                                <span className="inline-flex flex-row items-center gap-1       s px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-50 text-purple-600 border border-purple-200 dark:bg-purple-400/15 dark:text-purple-300 dark:border-purple-400/25">
+                                  {variantCount} variant
+                                  {variantCount > 1 ? "s" : ""}
+                                  <Layers size={11} className="shrink-0" />
+                                </span>
+                              )}
+
+                              {discountCount !== 0 && (
+                                <span className="inline-flex flex-row items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-300">
+                                  {discountCount} discount
+                                  {discountCount > 1 ? "s" : ""} applied{" "}
+                                  <BadgePercent
+                                    size={11}
+                                    className="shrink-0"
+                                  />
+                                </span>
+                              )}
+                            </div>
+
                             {/* Expander sits in the name cell rather than taking a
                               column of its own, so the header stays unchanged. */}
                             {variantCount > 0 ? (
@@ -502,16 +602,64 @@ export default function ProductTable({
                         </span>
                       </td>
                     )}
+
                     {showColumn("price") && (
-                      <td className="py-3 px-4 text-[13px] text-right font-medium  tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
-                        {priceLabel(product)}
+                      <td className="px-4 py-3 text-right text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
+                        <div className="flex flex-col items-end gap-1">
+                          <span>{priceLabel(product)}</span>
+
+                          {maxDiscountPercent > 0 && (
+                            <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                              {minDiscountPercent.toFixed(2) ===
+                              maxDiscountPercent.toFixed(2)
+                                ? `${Number(maxDiscountPercent.toFixed(2))}% OFF`
+                                : `${Number(minDiscountPercent.toFixed(2))}% – ${Number(maxDiscountPercent.toFixed(2))}% OFF`}
+                            </span>
+                          )}
+                        </div>
                       </td>
                     )}
+
+                    {showColumn("category") && (
+                      <td className="px-4 py-3 text-center">
+                        {category?.name ? (
+                          <span className="inline-flex max-w-full items-center justify-center gap-2 text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
+                            <span
+                              className="h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/20"
+                              style={{
+                                backgroundColor: categoryColor ?? "#e2e8f0",
+                              }}
+                            />
+                            <span className="truncate">{category.name}</span>
+                          </span>
+                        ) : (
+                          <span className="text-xs font-medium text-gray-400 dark:text-[#7b869b]">
+                            Uncategorized
+                          </span>
+                        )}
+                      </td>
+                    )}
+
                     {showColumn("tax") && (
                       <td className="py-3 px-4 text-center">
                         <TaxBadge taxable={product.isTaxable} />
                       </td>
                     )}
+
+                    {showColumn("addon") && (
+                      <td className="px-4 py-3 text-center">
+                        {addonCount > 0 ? (
+                          <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:border-indigo-400/60 dark:bg-indigo-400/10 dark:text-indigo-300">
+                            {addonCount} {addonCount === 1 ? "Addon" : "Addons"}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400 dark:text-[#7b869b]">
+                            No Addons
+                          </span>
+                        )}
+                      </td>
+                    )}
+
                     {showColumn("stock") && (
                       <td className="py-3 px-4 text-center">
                         {!product.usesStocks ? (
@@ -519,22 +667,47 @@ export default function ProductTable({
                             Not tracked
                           </span>
                         ) : (
-                          <div className="flex items-center justify-center gap-1.5">
-                            <Package className="h-3.5 w-3.5 text-blue-500 dark:text-[#7ba2e3]" />
-                            <span className="text-[13px] font-medium tabular-nums  tracking-wide text-[#3c4043] dark:text-[#e8ecf4]">
-                              {formatNumber(stockOf(product))}
-                            </span>
-                            {product.lowStock !== undefined &&
+                          <div className="flex  flex-col items-center justify-center gap-1.5">
+                            <div className="flex flex-row items-center gap-1.5">
+                              {" "}
+                              <Package className="h-3.5 w-3.5 text-blue-500 dark:text-[#7ba2e3]" />
+                              <span className="text-[13px] font-medium tabular-nums  tracking-wide text-[#3c4043] dark:text-[#e8ecf4]">
+                                {formatNumber(stockOf(product))}
+                              </span>
+                            </div>
+                            {/* {product.lowStock !== undefined &&
                               product.lowStock > 0 &&
                               variantCount === 0 && (
                                 <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold border border-amber-200 dark:bg-amber-400/15 dark:text-amber-300 dark:border-amber-400/25">
                                   Low: {product.lowStock}
                                 </span>
-                              )}
+                              )} */}
                           </div>
                         )}
                       </td>
                     )}
+
+                    {showColumn("lowstock") && (
+                      <td className="px-4 py-3 text-center">
+                        {!product.usesStocks ? (
+                          <span className="text-xs text-gray-400 dark:text-[#7b869b]">
+                            Not tracked
+                          </span>
+                        ) : product.lowStock !== undefined &&
+                          product.lowStock > 0 &&
+                          variantCount === 0 ? (
+                          <span className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold tabular-nums text-amber-600 dark:text-amber-400">
+                            <Package className="h-3.5 w-3.5 shrink-0" />
+                            {product.lowStock}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-300 dark:text-[#596579]">
+                            —
+                          </span>
+                        )}
+                      </td>
+                    )}
+
                     <td className="py-3 px-4">
                       <div
                         className="flex items-center justify-end gap-1"
@@ -594,14 +767,50 @@ export default function ProductTable({
                             </td>
                           )}
                           {showColumn("price") && (
-                            <td className="py-2.5 px-4 text-right text-[11px] font-medium tabular-nums  text-[#3c4043] dark:text-[#e8ecf4]">
+                            <td className="py-2.5 px-4 text-right text-xs font-medium tabular-nums  text-[#3c4043] dark:text-[#e8ecf4]">
                               {fmt(variant.price)}
+                            </td>
+                          )}
+                          {showColumn("category") && (
+                            <td className="px-4 py-3 text-center">
+                              {category?.name ? (
+                                <span className="inline-flex max-w-full items-center justify-center gap-2 text-xs font-medium text-[#3c4043] dark:text-[#e8ecf4]">
+                                  <span
+                                    className="h-2 w-2 shrink-0 rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/20"
+                                    style={{
+                                      backgroundColor:
+                                        categoryColor ?? "#e2e8f0",
+                                    }}
+                                  />
+                                  <span className="truncate">
+                                    {category.name}
+                                  </span>
+                                </span>
+                              ) : (
+                                <span className="text-xs font-medium text-gray-400 dark:text-[#7b869b]">
+                                  Uncategorized
+                                </span>
+                              )}
                             </td>
                           )}
                           {showColumn("tax") && (
                             <td className="py-2.5 px-4 text-center">
                               {/* Tax status is inherited from the parent product */}
                               <TaxBadge taxable={product.isTaxable} />
+                            </td>
+                          )}
+                          {showColumn("addon") && (
+                            <td className="px-4 py-3 text-center">
+                              {addonCount > 0 ? (
+                                <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:border-indigo-400/60 dark:bg-indigo-400/10 dark:text-indigo-300">
+                                  {addonCount}{" "}
+                                  {addonCount === 1 ? "Addon" : "Addons"}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-gray-400 dark:text-[#7b869b]">
+                                  No Addons
+                                </span>
+                              )}
                             </td>
                           )}
                           {showColumn("stock") && (
@@ -616,16 +825,37 @@ export default function ProductTable({
                                   <span className="text-xs font-medium tabular-nums text-gray-600 dark:text-[#c3ccdc]">
                                     {formatNumber(Number(variant.inStock)) ?? 0}
                                   </span>
-                                  {variant.lowStock !== undefined &&
+                                  {/* {variant.lowStock !== undefined &&
                                     variant.lowStock > 0 && (
                                       <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold border border-amber-200 dark:bg-amber-400/15 dark:text-amber-300 dark:border-amber-400/25">
                                         Low: {variant.lowStock}
                                       </span>
-                                    )}
+                                    )} */}
                                 </div>
                               )}
                             </td>
                           )}
+
+                          {showColumn("lowstock") && (
+                            <td className="px-4 py-2.5 text-center">
+                              {!product.usesStocks ? (
+                                <span className="text-xs text-gray-400 dark:text-[#7b869b]">
+                                  Not tracked
+                                </span>
+                              ) : variant.lowStock !== undefined &&
+                                variant.lowStock > 0 ? (
+                                <span className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold tabular-nums text-amber-600 dark:text-amber-400">
+                                  <Package className="h-3.5 w-3.5 shrink-0" />
+                                  {variant.lowStock}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-gray-300 dark:text-[#596579]">
+                                  —
+                                </span>
+                              )}
+                            </td>
+                          )}
+
                           <td className="py-2.5 px-4">
                             <div
                               className="flex items-center justify-end gap-1"

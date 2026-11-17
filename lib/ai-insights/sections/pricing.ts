@@ -241,7 +241,11 @@ export function buildHistories(weeklyRows: SalesByItemRow[][]): ItemHistory[] {
 // ── Facts ─────────────────────────────────────────────────────────────────
 
 export type PricingKind =
-  "price-change" | "just-changed" | "discount" | "below-cost" | "low-margin";
+  | "price-change"
+  | "just-changed"
+  | "discount"
+  | "below-cost"
+  | "low-margin";
 
 interface Base {
   /** From the item's name, so it names the same item all day. */
@@ -252,6 +256,7 @@ interface Base {
   cost: number;
   /** The menu price today, or the latest one it sold at. */
   price: number;
+  productId?: string | null;
 }
 
 export interface PriceChangeFacts extends Base {
@@ -297,7 +302,10 @@ export interface MarginFacts extends Base {
 }
 
 export type PricingCandidate =
-  PriceChangeFacts | JustChangedFacts | DiscountFacts | MarginFacts;
+  | PriceChangeFacts
+  | JustChangedFacts
+  | DiscountFacts
+  | MarginFacts;
 
 export interface PricingFacts {
   weeks: DateWindow[];
@@ -392,6 +400,14 @@ export function buildPricingFacts(
     menu.filter((p) => p.isAvailable).map((p) => [normalizeName(p.name), p]),
   );
 
+  console.log(
+    "[Pricing Debug] Menu products:",
+    menu.map((product) => ({
+      id: product.id,
+      name: product.name,
+    })),
+  );
+
   const changes: PricingCandidate[] = [];
   const watching: PricingCandidate[] = [];
   const discounts: PricingCandidate[] = [];
@@ -400,6 +416,12 @@ export function buildPricingFacts(
 
   for (const h of histories) {
     const product = menuByName.get(normalizeName(h.name));
+    console.log("[Pricing Debug] Matching product:", {
+      historyName: h.name,
+      normalizedName: normalizeName(h.name),
+      matchedProduct: product,
+      productId: product?.id,
+    });
     const totalUnits = h.weeks.reduce((s, w) => s + w.units, 0);
     const lastWeeks = h.weeks.slice(-recent);
     const recentUnits = lastWeeks.reduce((s, w) => s + w.units, 0);
@@ -418,6 +440,7 @@ export function buildPricingFacts(
           ? product.costPrice
           : h.cost,
       price: lastList,
+      productId: product?.id ?? null,
     };
 
     // ── A price change already in force ──

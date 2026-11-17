@@ -38,6 +38,12 @@ import toast from "react-hot-toast";
 import { formatCurrencySymbolOnly } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import FilterSelect from "../ui/FilterSelect";
+import { useAddons, useCreateAddon } from "@/hooks/useAddons";
+import { CreateAddonPayload } from "@/lib/types/addons";
+import {
+  removeProductAddons,
+  removeProductDiscounts,
+} from "@/services/product/apiProduct.client";
 
 /**
  * Same colour code as the product detail modal: each data domain owns one hue,
@@ -63,6 +69,7 @@ type ProductFormData = {
   inStock: number;
   lowStock: number;
   categoryId: string;
+  addons: string[];
   discounts: string[];
 };
 
@@ -89,6 +96,7 @@ const INITIAL_FORM: ProductFormData = {
   inStock: 0,
   lowStock: 0,
   categoryId: "",
+  addons: [],
   discounts: [],
 };
 
@@ -320,6 +328,18 @@ export default function ProductFormModal({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
+  const { data: addons = [] } = useAddons();
+  const createAddonMutation = useCreateAddon();
+
+  const [showNewAddon, setShowNewAddon] = useState(false);
+  const [newAddon, setNewAddon] = useState<CreateAddonPayload>({
+    name: "",
+    price: 0,
+    description: "",
+    maxAvailable: 0,
+  });
+  const [isRemovingAddons, setIsRemovingAddons] = useState(false);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -354,6 +374,7 @@ export default function ProductFormModal({
         inStock: product.inStock ?? 0,
         lowStock: product.lowStock ?? 0,
         categoryId: product.categories ?? "",
+        addons: product.addons ?? [],
         discounts: product.discounts ?? [],
       });
       setErrors({});
@@ -424,6 +445,12 @@ export default function ProductFormModal({
     setVariantRows([]);
     setVariantErrors({});
     setStep("details");
+    setShowNewAddon(false);
+    setNewAddon({
+      name: "",
+      price: 0,
+      description: "",
+    });
     if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
@@ -560,41 +587,125 @@ export default function ProductFormModal({
     const parentInStock = hasVariants ? 0 : form.inStock;
     const parentLowStock = hasVariants ? 0 : form.lowStock;
 
+    const selectedAddonIds = Array.isArray(form.addons)
+      ? [
+          ...new Set(
+            form.addons.flatMap((id) =>
+              id
+                .split(",")
+                .map((v) => v.trim())
+                .filter(Boolean),
+            ),
+          ),
+        ]
+      : [];
     // `mutateAsync` rejects on failure and both `onError` callbacks were
     // commented out, so a failed save previously surfaced nothing at all.
     try {
+      // if (isEditMode && product) {
+      //   await updateMutation.mutateAsync(
+      //     {
+      //       productId: product.id,
+      //       fields: {
+      //         name: form.name,
+      //         price: parentPrice,
+      //         costPrice: parentCostPrice,
+      //         description: form.description,
+      //         isTaxable: form.isTaxable,
+      //         usesStocks: form.usesStocks,
+      //         inStock: parentInStock,
+      //         lowStock: parentLowStock,
+      //         soldBy: "each",
+      //         categories: categoryId,
+      //         image: imageFile,
+      //         addons: selectedAddonIds,
+      //         discounts: form.discounts,
+      //         discountType: "applyEverytime",
+      //         ...variantFields,
+      //       },
+      //     },
+      //     {
+      //       onSuccess: () => {
+      //         // toast.success(`Product "${form.name}" updated`);
+      //         resetForm();
+      //         onClose();
+      //       },
+      //       // onError: (err) => {
+      //       //   toast.error(`Update failed: ${err.message}`);
+      //       // },
+      //     },
+      //   );
+
       if (isEditMode && product) {
-        await updateMutation.mutateAsync(
-          {
-            productId: product.id,
-            fields: {
-              name: form.name,
-              price: parentPrice,
-              costPrice: parentCostPrice,
-              description: form.description,
-              isTaxable: form.isTaxable,
-              usesStocks: form.usesStocks,
-              inStock: parentInStock,
-              lowStock: parentLowStock,
-              soldBy: "each",
-              categories: categoryId,
-              image: imageFile,
-              discounts: form.discounts,
-              discountType: "applyEverytime",
-              ...variantFields,
-            },
-          },
-          {
-            onSuccess: () => {
-              // toast.success(`Product "${form.name}" updated`);
-              resetForm();
-              onClose();
-            },
-            // onError: (err) => {
-            //   toast.error(`Update failed: ${err.message}`);
-            // },
-          },
+        // Find addons that existed before editing but are no longer selected.
+        const originalAddonIds = (product.addons ?? []).flatMap((id) =>
+          String(id)
+            .split(",")
+            .map((value) => value.trim())
+            .filter(Boolean),
         );
+
+        const removedAddonIds = originalAddonIds.filter(
+          (id) => !selectedAddonIds.includes(id),
+        );
+
+        const originalDiscountIds = (product.discounts ?? []).flatMap((id) =>
+          String(id)
+            .split(",")
+            .map((value) => value.trim())
+            .filter(Boolean),
+        );
+
+        const removedDiscountIds = originalDiscountIds.filter(
+          (id) => !form.discounts.includes(id),
+        );
+
+        // First update the regular product fields and selected addons.
+        await updateMutation.mutateAsync({
+          productId: product.id,
+          fields: {
+            name: form.name,
+            price: parentPrice,
+            costPrice: parentCostPrice,
+            description: form.description,
+            isTaxable: form.isTaxable,
+            usesStocks: form.usesStocks,
+            inStock: parentInStock,
+            lowStock: parentLowStock,
+            soldBy: "each",
+            categories: categoryId,
+            image: imageFile,
+            addons: selectedAddonIds,
+            discounts: form.discounts,
+            discountType: "applyEverytime",
+            ...variantFields,
+          },
+        });
+
+        if (removedDiscountIds.length > 0) {
+          setIsRemovingAddons(true);
+
+          try {
+            await removeProductDiscounts(product.id, removedDiscountIds);
+          } finally {
+            setIsRemovingAddons(false);
+          }
+        }
+
+        // Then remove addons that were explicitly deselected.
+        if (removedAddonIds.length > 0) {
+          setIsRemovingAddons(true);
+
+          try {
+            await removeProductAddons(product.id, removedAddonIds);
+          } finally {
+            setIsRemovingAddons(false);
+          }
+        }
+
+        // Close only after both operations succeed.
+        resetForm();
+        onClose();
       } else {
         const payload: Record<string, unknown> = {
           name: form.name,
@@ -605,6 +716,7 @@ export default function ProductFormModal({
           usesStocks: form.usesStocks,
           soldBy: "each",
           categories: categoryId,
+          addons: selectedAddonIds,
           image: imageFile,
           discounts: form.discounts,
           discountType: "applyEverytime",
@@ -640,7 +752,8 @@ export default function ProductFormModal({
     }
   };
 
-  const isPending = createMutation.isPending || updateMutation.isPending;
+  const isPending =
+    createMutation.isPending || updateMutation.isPending || isRemovingAddons;
 
   const symbol = formatCurrencySymbolOnly(currency.symbol);
 
@@ -1049,6 +1162,243 @@ export default function ProductFormModal({
                   >
                     <Plus className="h-3.5 w-3.5" />
                   </button>
+                </div>
+              )}
+            </Field>
+
+            <Field label="Addons">
+              {showNewAddon ? (
+                <div className="space-y-3 rounded-xl border border-[#e2e8f0] bg-[#f8faff] p-3 dark:border-white/10 dark:bg-[#111827]">
+                  {/* Name */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                      Addon Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      value={newAddon.name}
+                      onChange={(e) =>
+                        setNewAddon((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
+                      placeholder="e.g. Extra Cheese"
+                      className="w-full rounded-lg border border-[#dce3ed] bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#244074] dark:border-white/10 dark:bg-[#171e2c] dark:text-white"
+                    />
+                  </div>
+
+                  {/* Price */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                      Price <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={newAddon.price}
+                      onChange={(e) =>
+                        setNewAddon((prev) => ({
+                          ...prev,
+                          price: Number(e.target.value),
+                        }))
+                      }
+                      placeholder="Enter addon price"
+                      className="w-full rounded-lg border border-[#dce3ed] bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#244074] dark:border-white/10 dark:bg-[#171e2c] dark:text-white"
+                    />
+                  </div>
+
+                  {/* Max Available */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                      Maximum Available
+                      <span className="ml-1 font-normal text-gray-400 dark:text-gray-500">
+                        (Optional)
+                      </span>
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={newAddon.maxAvailable ?? ""}
+                      onChange={(e) =>
+                        setNewAddon((prev) => ({
+                          ...prev,
+                          maxAvailable:
+                            e.target.value === ""
+                              ? undefined
+                              : Number(e.target.value),
+                        }))
+                      }
+                      placeholder="Leave empty for unlimited"
+                      className="w-full rounded-lg border border-[#dce3ed] bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#244074] dark:border-white/10 dark:bg-[#171e2c] dark:text-white"
+                    />
+                    <p className="text-[11px] text-gray-400 dark:text-gray-500">
+                      Set the maximum quantity customers can select for this
+                      addon.
+                    </p>
+                  </div>
+
+                  {/* Description */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                      Description
+                      <span className="ml-1 font-normal text-gray-400 dark:text-gray-500">
+                        (Optional)
+                      </span>
+                    </label>
+                    <textarea
+                      value={newAddon.description ?? ""}
+                      onChange={(e) =>
+                        setNewAddon((prev) => ({
+                          ...prev,
+                          description: e.target.value,
+                        }))
+                      }
+                      placeholder="Add a short description..."
+                      rows={2}
+                      className="w-full resize-none rounded-lg border border-[#dce3ed] bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#244074] dark:border-white/10 dark:bg-[#171e2c] dark:text-white"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2 border-t border-[#e2e8f0] pt-3 dark:border-white/10">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowNewAddon(false);
+                        setNewAddon({
+                          name: "",
+                          price: 0,
+                          description: "",
+                          maxAvailable: undefined,
+                        });
+                      }}
+                      className="rounded-lg px-3 py-2 text-xs font-semibold text-gray-500 transition hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={
+                        !newAddon.name.trim() ||
+                        newAddon.price < 0 ||
+                        createAddonMutation.isPending
+                      }
+                      onClick={async () => {
+                        try {
+                          const createdAddon =
+                            await createAddonMutation.mutateAsync({
+                              ...newAddon,
+                              name: newAddon.name.trim(),
+                              price: Number(newAddon.price) || 0,
+                            });
+
+                          set(
+                            "addons",
+                            Array.from(
+                              new Set([...form.addons, createdAddon._id]),
+                            ),
+                          );
+                          setShowNewAddon(false);
+                          setNewAddon({
+                            name: "",
+                            price: 0,
+                            description: "",
+                            maxAvailable: undefined,
+                          });
+                        } catch {
+                          // The mutation already displays an error toast.
+                        }
+                      }}
+                      className="rounded-lg bg-[#244074] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#1d3561] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {createAddonMutation.isPending
+                        ? "Creating..."
+                        : "Create & select"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="min-w-0 flex-1">
+                      <FilterSelect
+                        value=""
+                        options={addons
+                          .filter((addon) => !form.addons.includes(addon._id))
+                          .map((addon) => ({
+                            value: addon._id,
+                            label: `${addon.name} — ${addon.price}`,
+                          }))}
+                        onChange={(id) => {
+                          if (!id) return;
+
+                          const selectedIds = id
+                            .split(",")
+                            .map((value) => value.trim())
+                            .filter(Boolean);
+
+                          set(
+                            "addons",
+                            Array.from(
+                              new Set([...form.addons, ...selectedIds]),
+                            ),
+                          );
+                        }}
+                        placeholder="Select an addon"
+                        ariaLabel="Select addon"
+                        className="w-full"
+                        buttonClassName="rounded-lg px-3 py-2.5 text-[13px]"
+                        menuClassName="w-full"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowNewAddon(true)}
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#dce3ed] text-gray-500 transition hover:border-[#244074] hover:text-[#244074] dark:border-white/10 dark:text-gray-400 dark:hover:border-[#6687c5] dark:hover:text-[#9db8eb]"
+                      title="Create addon"
+                      aria-label="Create addon"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  {form.addons.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {form.addons.map((id) => {
+                        const addon = addons.find((item) => item._id === id);
+
+                        return (
+                          <span
+                            key={id}
+                            className="inline-flex items-center gap-2 rounded-lg border border-[#dce5f2] bg-[#f1f5fb] px-2.5 py-1.5 text-xs font-medium text-[#244074] dark:border-[#34435e] dark:bg-[#1d2a40] dark:text-[#c5d5f1]"
+                          >
+                            {addon?.name ?? "Unavailable addon"}
+
+                            {addon && (
+                              <span className="text-[11px] opacity-70">
+                                {addon.price}
+                              </span>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                set(
+                                  "addons",
+                                  form.addons.filter((item) => item !== id),
+                                )
+                              }
+                              className="ml-0.5 rounded p-0.5 opacity-60 transition hover:bg-black/5 hover:opacity-100 dark:hover:bg-white/10"
+                              aria-label={`Remove ${addon?.name ?? "addon"}`}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </Field>

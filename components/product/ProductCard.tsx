@@ -49,7 +49,7 @@ const statusConfig = {
     label: "In Stock",
     icon: CheckCircle2,
     text: "text-emerald-600 dark:text-emerald-400",
-    card: "border-[#e3e3e3] bg-white dark:bg-[#161d2e] hover:border-[#dadce0] dark:border-white/10 dark:hover:border-white/25",
+    card: "border-gray-200/90 bg-white hover:border-blue-200 hover:shadow-md hover:shadow-slate-900/[0.04] dark:border-white/[0.09] dark:bg-[#171f30] dark:hover:border-blue-400/25",
     count: "text-gray-900 dark:text-[#e8ecf4]",
   },
 
@@ -60,7 +60,7 @@ const statusConfig = {
     label: "Low Stock",
     icon: AlertTriangle,
     text: "text-amber-600 dark:text-amber-400",
-    card: "border-amber-200 bg-amber-50/40 hover:border-amber-300 dark:bg-amber-400/10 dark:border-amber-400/25",
+    card: "border-amber-300/80 bg-amber-50/30 hover:border-amber-400 hover:shadow-md hover:shadow-amber-900/[0.04] dark:border-amber-400/25 dark:bg-[#211f27] dark:hover:border-amber-400/40",
     count: "text-amber-600 dark:text-amber-400",
   },
 
@@ -71,7 +71,7 @@ const statusConfig = {
     label: "Critical",
     icon: CircleAlert,
     text: "text-red-600 dark:text-red-400",
-    card: "border-red-200 bg-red-50/40 hover:border-red-300 dark:bg-red-400/10 dark:border-red-400/25",
+    card: "border-red-300/80 bg-red-50/30 hover:border-red-400 hover:shadow-md hover:shadow-red-900/[0.04] dark:border-red-400/30 dark:bg-[#251d29] dark:hover:border-red-400/45",
     count: "text-red-600 dark:text-red-400",
   },
 
@@ -81,7 +81,7 @@ const statusConfig = {
     label: "Out of Stock",
     icon: Ban,
     text: "text-yellow-900",
-    card: "border-yellow-300 bg-yellow-50/50 hover:border-yellow-400",
+    card: "border-yellow-400/80 bg-yellow-50/40 hover:border-yellow-500 hover:shadow-md hover:shadow-yellow-900/[0.05] dark:border-yellow-400/30 dark:bg-[#25232a] dark:hover:border-yellow-400/45",
     count: "text-gray-900 dark:text-[#e8ecf4]",
   },
 
@@ -92,7 +92,7 @@ const statusConfig = {
     label: "Overstocked",
     icon: PackagePlus,
     text: "text-indigo-600 dark:text-indigo-300",
-    card: "border-indigo-200 bg-indigo-50/40 hover:border-indigo-300 dark:bg-indigo-400/10 dark:border-indigo-400/25",
+    card: "border-indigo-300/80 bg-indigo-50/30 hover:border-indigo-400 hover:shadow-md hover:shadow-indigo-900/[0.04] dark:border-indigo-400/25 dark:bg-[#1e2031] dark:hover:border-indigo-400/40",
     count: "text-indigo-600 dark:text-indigo-300",
   },
 
@@ -108,7 +108,7 @@ const statusConfig = {
     label: "Not Tracked",
     icon: InfinityIcon,
     text: "text-slate-500 dark:text-[#9aa6bd]",
-    card: "border-dashed border-[#dadce0] bg-gray-50/60 hover:border-gray-400 dark:bg-white/5 dark:border-white/15",
+    card: "border-dashed border-gray-300 bg-gray-50/70 hover:border-gray-400 hover:bg-white dark:border-white/15 dark:bg-[#1a2231] dark:hover:border-white/25 dark:hover:bg-[#1d283a]",
     count: "text-gray-400 dark:text-[#7b869b]",
   },
 };
@@ -293,12 +293,8 @@ export default function ProductCard({
       )}
 
       <div className="flex flex-1 flex-col">
-        {/* ── Header: thumbnail, identity, toggle — all on one row ──
-            Was a full-width `aspect-square` hero above the name. A square
-            image is as tall as the card is wide, so on a one-column phone the
-            card opened with a ~330px photograph and ran to about 420px shut —
-            one product per screen. */}
-        <div className="flex items-start gap-3 ">
+        <div className="flex items-start gap-3">
+          {/* Product image */}
           <button
             type="button"
             onClick={() => gallery.length && openLightbox(0)}
@@ -338,21 +334,22 @@ export default function ProductCard({
             )}
           </button>
 
-          <div className="min-w-0 flex-1 pt-2">
-            <h3 className="line-clamp-2 text-[13px] leading-snug text-[#3c4043] dark:text-[#e8ecf4]">
+          {/* Product information */}
+          <div className="min-w-0 flex-1">
+            {/* Name */}
+            <h3 className="line-clamp-2 mt-2 text-sm font-semibold leading-snug text-[#303744] dark:text-[#e8ecf4]">
               {item.name}
             </h3>
 
-            {/* Status, and the one figure worth seeing while collapsed. The
-                badge used to float over the image; at thumbnail size there is
-                nothing to float over, and it reads better in the line. */}
-            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            {/* Status and stock */}
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
               <span
-                className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] ${cfg.badge}`}
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${cfg.badge}`}
               >
                 <StatusIcon className="h-3 w-3 shrink-0" aria-hidden />
                 {cfg.label}
               </span>
+
               {item.usesStocks && (
                 <span
                   className={`text-[11px] font-medium tabular-nums ${cfg.text}`}
@@ -361,57 +358,53 @@ export default function ProductCard({
                 </span>
               )}
             </div>
-            <div className="flex flex-row sm:flex-col items-center sm:items-start gap-2 sm:gap-0">
-              {/* Price, and what comes off it. The discount was a rotated ribbon
-                pinned past the corner, which needed a tall card to cross; on
-                this one it would have run through the thumbnail. */}
-              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                <span className="text-[15px] font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
-                  {fmt(item.price)}
+
+            {/* Price and discount */}
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="text-base font-bold tracking-tight tabular-nums text-[#303744] dark:text-[#e8ecf4]">
+                {fmt(item.price)}
+              </span>
+
+              {discountPercent > 0 && (
+                <span className="inline-flex items-center rounded-md bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-600 dark:bg-rose-400/10 dark:text-rose-400">
+                  {discountPercent}% OFF
                 </span>
-                {discountPercent > 0 && (
-                  <span className="rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-white">
-                    -{discountPercent}%
+              )}
+            </div>
+
+            {/* Product attributes */}
+            {(item.isTaxable || item.categories || !item.isAvailable) && (
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                {item.isTaxable && (
+                  <span className="rounded-md border border-blue-300 bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-600 dark:border-blue-400/60 dark:bg-blue-400/10 dark:text-[#8EC6FF]">
+                    Taxable
+                  </span>
+                )}
+
+                {item?.categories && (
+                  <span
+                    className="max-w-36 truncate rounded-md border px-2 py-0.5 text-[10px] font-medium truncate rounded-full border border-[var(--cat-edge)]  sm:text-[10px] text-[var(--cat-ink)] dark:border-[var(--cat-edge-dark)] dark:text-[var(--cat-ink-dark)]"
+                    style={
+                      {
+                        "--cat-ink": categoryTextColor,
+                        "--cat-ink-dark": categoryTextColorDark,
+                        "--cat-edge": categoryBoderColor,
+                        "--cat-edge-dark": categoryBorderColorDark,
+                        backgroundColor: `${categoryColor}20`,
+                      } as React.CSSProperties
+                    }
+                  >
+                    {category?.name}
+                  </span>
+                )}
+
+                {!item.isAvailable && (
+                  <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] font-medium text-gray-500 dark:border-white/15 dark:bg-white/5 dark:text-[#9aa6bd]">
+                    Unavailable
                   </span>
                 )}
               </div>
-
-              {/* Tags on their own wrapping line. Sharing the name's row, three
-                pills and a two-line name had about 150px between them on a
-                phone, which clipped the name to a word. */}
-              {(item.isTaxable || item.categories || !item.isAvailable) && (
-                <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                  {item.isTaxable && (
-                    <span className="rounded-full border border-blue-200 bg-blue-50 px-1.5 py-0 sm:py-0.5 text-[9px] sm:text-[10px] text-blue-600 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-[#7ba2e3]">
-                      Taxable
-                    </span>
-                  )}
-
-                  {item?.categories && (
-                    <span
-                      className="max-w-[9rem] truncate rounded-full border border-[var(--cat-edge)] px-1.5 py-0 sm:py-0.5 text-[9px] sm:text-[10px] text-[var(--cat-ink)] dark:border-[var(--cat-edge-dark)] dark:text-[var(--cat-ink-dark)]"
-                      style={
-                        {
-                          "--cat-ink": categoryTextColor,
-                          "--cat-ink-dark": categoryTextColorDark,
-                          "--cat-edge": categoryBoderColor,
-                          "--cat-edge-dark": categoryBorderColorDark,
-                          backgroundColor: `${categoryColor}20`,
-                        } as React.CSSProperties
-                      }
-                    >
-                      {category?.name}
-                    </span>
-                  )}
-
-                  {!item.isAvailable && (
-                    <span className="rounded-full border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[9px] sm:text-[10px] text-gray-500 dark:border-white/15 dark:bg-white/5 dark:text-[#9aa6bd]">
-                      Unavailable
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
+            )}
           </div>
         </div>
 
@@ -425,10 +418,6 @@ export default function ProductCard({
                 : "grid-rows-[0fr] opacity-0"
             }`}
           >
-            {/* The rule and the bottom padding live inside the clipped
-                box, so a shut card has neither. On the wrapper they would
-                draw a line under every collapsed card and leave 12px of
-                space beneath it. */}
             <div
               className={`flex flex-col overflow-hidden border-t border-[#e8eaed]  dark:border-white/10 ${isExpanded ? "pt-3" : ""}`}
             >
@@ -608,11 +597,7 @@ export default function ProductCard({
             </div>
           </div>
 
-          {/* The pair the tax and budget cards use: a neutral pill to open,
-              a rose one to close. Below the panel rather than beside the name,
-              so the label sits with the section it governs — and outside the
-              clipped box, since inside it there would be no way back open. */}
-          <div className="flex items-center justify-end pb-2">
+          <div className="flex mt-2 items-center justify-center pb-2">
             <button
               type="button"
               onClick={() => setIsExpanded(!isExpanded)}

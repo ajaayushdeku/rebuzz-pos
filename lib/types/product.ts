@@ -33,13 +33,15 @@ export interface Product {
   variants?: ProductVariant[];
   /** Present when the product is sold in variances (e.g. Momo → buff/chicken/veg). */
   options?: ProductOption[];
+  /** IDs of addons associated with this product. */
+  addons?: string[];
 }
 
 export type RawProduct = {
   isVeg: boolean;
   isAvailable: boolean;
   usesOfferPrice: boolean;
-  addons: unknown[];
+  addons?: string[];
   categories?: string;
   _id: string;
   name: string;
@@ -102,6 +104,7 @@ export function mapRawProductToProduct(raw: RawProduct): Product {
     inStock: raw.inStock ?? 0,
     lowStock: raw.lowStock ?? 0,
     soldBy: (raw.soldBy as "each" | "volume" | "") ?? "",
+    addons: raw.addons ?? [],
     variants: raw.variants?.variantItems?.map((v) => ({
       id: v._id,
       optionValues: v.optionValues ?? [],

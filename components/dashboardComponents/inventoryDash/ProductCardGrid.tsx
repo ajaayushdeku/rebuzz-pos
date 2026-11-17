@@ -55,8 +55,8 @@ const STOCK_TABS: {
   icon: LucideIcon;
 }[] = [
   { value: "all", label: "All", icon: BoxesIcon },
-  { value: "tracked", label: "Stock Track", icon: PackageCheck },
-  { value: "untracked", label: "Non-Stock Track", icon: PackageX },
+  { value: "tracked", label: "Tracked", icon: PackageCheck },
+  { value: "untracked", label: "Untracked", icon: PackageX },
 ];
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
@@ -355,26 +355,29 @@ const ProductCardGrid = ({
   );
 
   return (
-    <div>
+    <div className="flex flex-col gap-3">
       {/* Toolbar: search + sort */}
-      <div className="flex  w-full flex-row items-center justify-between gap-3 mb-4">
+      <div className="mb-4 mt-6 flex w-full flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
         {/* Search */}
-        <div className="relative  w-full ">
+        <div className="relative min-w-0 flex-1">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none dark:text-[#7b869b]"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
           />
+
           <input
             type="text"
             placeholder="Search products..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-9 w-full rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 dark:text-[#e8ecf4] pl-9 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/15"
+            className="h-10 w-full rounded-xl border border-[#dadce0] bg-white pl-9 pr-9 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/10 dark:border-white/15 dark:bg-white/[0.04] dark:text-[#e8ecf4]"
           />
+
           {search && (
             <button
+              type="button"
               onClick={() => setSearch("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-[#7b869b]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-[#7b869b] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
               aria-label="Clear search"
             >
               <X size={14} />
@@ -382,27 +385,87 @@ const ProductCardGrid = ({
           )}
         </div>
 
-        {/* Right controls: sort dropdown (left) then stock-tracking tabs (right) */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 shrink-0">
+        {/* Controls */}
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center justify-between md:justify-end lg:w-auto lg:shrink-0">
           {/* Sort */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex h-10 w-full items-center gap-2 sm:w-auto">
             <ArrowUpDown
               size={14}
-              className="text-gray-400 dark:text-[#7b869b]"
+              className="shrink-0 text-gray-400 dark:text-[#7b869b]"
             />
+
             <FilterSelect
               value={sortBy}
               options={SORT_OPTIONS}
               onChange={(val) => setSortBy(val as SortKey)}
-              className="w-[100px] md:w-[180px] py-1.5 text-[13px]"
-              buttonClassName="h-9 px-2 md:px-3 text-[12px] sm:text-xs rounded-lg tracking-wide"
+              className="w-full py-1.5 text-[13px] sm:w-[170px]"
+              buttonClassName="h-10 w-full rounded-xl px-3 text-xs tracking-wide"
               menuClassName="w-48 max-w-[calc(100vw-2rem)]"
             />
+          </div>
+
+          {/* Vertical divider */}
+          <div className="mx-1 h-6 w-px shrink-0 bg-[#dadce0] dark:bg-white/15" />
+
+          {/* Stock filters */}
+          <div className="flex w-full flex-col gap-1.5 sm:w-auto sm:flex-row sm:items-center sm:gap-2.5">
+            <span className="shrink-0 text-xs font-semibold text-gray-500 dark:text-[#9aa6bd]">
+              Stock
+            </span>
+
+            <div
+              role="radiogroup"
+              aria-label="Stock tracking"
+              className="flex w-full items-center gap-1 rounded-xl border border-gray-200/80 bg-gray-100/80 p-0.5 sm:w-auto dark:border-white/10 dark:bg-white/[0.04]"
+            >
+              {STOCK_TABS.map((tab) => {
+                const selected = stockTab === tab.value;
+                const Icon = tab.icon;
+
+                return (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => setStockTab(tab.value)}
+                    className={`flex min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-xs transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#171e2c] sm:flex-none sm:px-3 ${
+                      selected
+                        ? "bg-white font-semibold text-[#244074] shadow-sm ring-1 ring-black/[0.04] dark:bg-[#263750] dark:text-[#c2d8ff] dark:ring-white/[0.08]"
+                        : "font-medium text-gray-500 hover:bg-white/60 hover:text-gray-800 dark:text-[#9aa6bd] dark:hover:bg-white/[0.06] dark:hover:text-[#e8ecf4]"
+                    }`}
+                  >
+                    <Icon
+                      className={`h-3.5 w-3.5 shrink-0 ${
+                        selected
+                          ? "text-[#244074] dark:text-[#a8c4ee]"
+                          : "text-gray-400 dark:text-[#7b869b]"
+                      }`}
+                      aria-hidden
+                    />
+
+                    <span className="truncate text-[11px] sm:text-xs">
+                      {tab.label}
+                    </span>
+
+                    <span
+                      className={`inline-flex min-w-[22px] items-center justify-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold tabular-nums ${
+                        selected
+                          ? "bg-blue-50 text-[#244074] dark:bg-white/10 dark:text-[#c2d8ff]"
+                          : "bg-gray-200/70 text-gray-500 dark:bg-white/[0.07] dark:text-[#a9b4c7]"
+                      }`}
+                    >
+                      {stockCounts[tab.value]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col-reverse sm:flex-row items-start justify-between gap-5  mb-4">
+      <div className="flex flex-col-reverse  items-start justify-between gap-5  mb-4">
         <div className="flex items-center flex-wrap gap-2 ">
           {/* Default filters */}
           {defaultCategories.map((cat) => {
@@ -468,42 +531,6 @@ const ProductCardGrid = ({
                 </button>
               );
             })}
-        </div>
-
-        {/* Stock-tracking tabs — the invoice table's switch: a pale blue
-              track with the selected tab raised in white, plus a count. */}
-        <div className="flex w-full  flex-wrap items-start gap-2 sm:ml-auto sm:w-auto justify-end">
-          {" "}
-          <div
-            role="radiogroup"
-            aria-label="Stock tracking"
-            className="flex w-fit items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-white/10 "
-          >
-            {STOCK_TABS.map((tab) => {
-              const selected = stockTab === tab.value;
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  onClick={() => setStockTab(tab.value)}
-                  className={`flex  w-fit md:w-[150px] cursor-pointer items-center md:items-start gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
-                    selected
-                      ? "bg-white font-semibold text-blue-900 shadow-sm dark:bg-white/15 dark:text-[#a8c4ee] dark:shadow-none"
-                      : "font-semibold text-gray-600 hover:text-blue-950 dark:text-[#a9b4c7]"
-                  }`}
-                >
-                  <Icon className="h-4 w-4 shrink-0 md:hidden" aria-hidden />
-                  <span className="hidden  md:inline">{tab.label}</span>
-                  <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums tracking-wide text-blue-950 ring-1 ring-blue-900/40 dark:bg-white/10 dark:text-[#e8ecf4]">
-                    {stockCounts[tab.value]}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
         </div>
       </div>
 

@@ -4,7 +4,7 @@ import HomeFaq from "../HomeFaq";
 const globalFaqs: HelpFaq[] = [
   {
     q: "How can RebuzzIQ help me improve my business?",
-    a: "RebuzzIQ can turn your Rebuzz sales and operations data into suggestions, recommendations, and strategies for areas like menu combinations, pricing, customer retention, sales, and busy-hour planning. Connect your own Gemini or OpenRouter API key to generate insights for a completed period, then review each suggestion against your business context before acting.",
+    a: "RebuzzIQ analyzes the data from your POS system to generate personalized insights, suggestions, and strategies for areas like menu combinations, pricing, customer retention, sales performance, and busy-hour planning. Connect your own Gemini or OpenRouter API key to generate insights for a completed period, then review each recommendation in the context of your business before taking action.",
   },
   {
     q: "Can I create invoices and track customer credit?",

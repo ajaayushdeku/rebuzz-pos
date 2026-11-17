@@ -60,6 +60,14 @@ export const POST = async (request: Request) => {
         formData.append("discounts", d.trim());
       }
     });
+    // Multiple `addons` fields — append each one separately
+    const allAddons = incoming.getAll("addons");
+
+    allAddons.forEach((addon) => {
+      if (typeof addon === "string" && addon.trim()) {
+        formData.append("addons", addon.trim());
+      }
+    });
 
     const soldBy = str("soldBy");
     if (soldBy) {

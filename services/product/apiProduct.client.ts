@@ -34,9 +34,7 @@ async function readErrorMessage(
   // Validation errors often arrive as a list of strings or { message } objects.
   const fromErrors = Array.isArray(body?.errors)
     ? body.errors
-        .map(
-          (e) => str(e) ?? str((e as { message?: unknown } | null)?.message),
-        )
+        .map((e) => str(e) ?? str((e as { message?: unknown } | null)?.message))
         .filter(Boolean)
         .join(", ")
     : "";
@@ -103,6 +101,13 @@ export async function createProduct(
     formData.append("image", productData.image);
   }
 
+  // Append each addon as its own form field entry
+  if (Array.isArray(productData.addons)) {
+    productData.addons.forEach((id) => {
+      formData.append("addons", String(id));
+    });
+  }
+
   // Forward any additional fields (e.g. variant options/items) as-is
   const knownKeys = new Set([
     "name",
@@ -118,6 +123,7 @@ export async function createProduct(
     "discountType",
     "categories",
     "discounts",
+    "addons", // Add this
     "inStock",
     "lowStock",
     "image",
@@ -157,6 +163,7 @@ export async function updateProduct(
     inStock: number;
     image: File | null;
     discounts: string[];
+    addons: string[];
     discountType: string;
   }> &
     Record<string, unknown>,
@@ -189,6 +196,13 @@ export async function updateProduct(
   if (fields.discounts !== undefined) {
     fields.discounts.forEach((id: string) => formData.append("discounts", id));
   }
+  // Only send valid addon IDs.
+  // An empty array is handled separately by the dedicated remove endpoint.
+  if (fields.addons?.length) {
+    fields.addons.forEach((id) => {
+      formData.append("addons", String(id));
+    });
+  }
 
   // Forward any additional fields (e.g. variant options/items) as-is
   const knownKeys = new Set([
@@ -205,6 +219,7 @@ export async function updateProduct(
     "inStock",
     "image",
     "discounts",
+    "addons", // Add this
     "discountType",
   ]);
   Object.entries(fields).forEach(([key, value]) => {
@@ -212,6 +227,8 @@ export async function updateProduct(
       formData.append(key, String(value));
     }
   });
+
+  console.log("Addon FormData:", formData.getAll("addons"));
 
   const res = await fetch(`/api/products/${productId}`, {
     method: "PUT",
@@ -299,4 +316,54 @@ export async function bulkUpdateStock(
   }
 
   return result as BulkStockUpdateResult;
+}
+
+export async function removeProductAddons(
+  productId: string,
+  addonIds: string[],
+): Promise<Product> {
+  const res = await fetch(`/api/products/${productId}/addons`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      remove: addonIds,
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(
+      await readErrorMessage(res, "Failed to remove product addons"),
+    );
+  }
+
+  const result = await res.json();
+
+  return mapRawProductToProduct(result.data.product);
+}
+
+export async function removeProductDiscounts(
+  productId: string,
+  discountIds: string[],
+): Promise<Product> {
+  const res = await fetch(`/api/products/${productId}/discounts`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      remove: discountIds,
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(
+      await readErrorMessage(res, "Failed to remove product discounts"),
+    );
+  }
+
+  const result = await res.json();
+
+  return mapRawProductToProduct(result.data.product);
 }
