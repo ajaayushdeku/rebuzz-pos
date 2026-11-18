@@ -19,7 +19,6 @@ import {
   Recommendation,
   TipList,
   SectionHeader,
-  SectionRefreshButton,
   type AccentName,
 } from "../parts";
 import { useState } from "react";
@@ -90,16 +89,16 @@ export default function SlowItemsSection({
               }
               title={isBodyExpanded ? "Collapse section" : "Expand section"}
               className="
-        inline-flex shrink-0 items-center justify-center
-        rounded-lg border border-[#e2e6ed]
-        bg-white p-2 text-[#737b89]
-        transition-all duration-200
-        hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600
-        dark:border-white/10 dark:bg-white/[0.04]
-        dark:text-[#aab4c4]
-        dark:hover:border-violet-400/40
-        dark:hover:bg-violet-400/10 dark:hover:text-violet-300
-      "
+  inline-flex shrink-0 items-center justify-center
+  rounded-lg border border-[#e2e6ed]
+  bg-white p-2 text-[#737b89]
+  transition-all duration-200
+  hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600
+  dark:border-[#293750] dark:bg-[#182338]
+  dark:text-[#aab4c4]
+  dark:hover:border-rose-400/40
+  dark:hover:bg-rose-400/10 dark:hover:text-rose-300
+"
             >
               {isBodyExpanded ? (
                 <ChevronUp size={15} />

@@ -115,7 +115,7 @@ export default function HourPlaybookSection({
     <section>
       <SectionHeader
         icon={Clock}
-        iconClassName="bg-slate-900 text-white dark:bg-white/15"
+        iconClassName="border-violet-200 bg-gradient-to-br from-violet-100 to-violet-100 text-violet-700 dark:border-violet-400/20 dark:bg-gradient-to-br dark:from-violet-400/15 dark:to-violet-400/10 dark:text-violet-300"
         title="Hour-by-Hour Playbook"
         subtitle={`Your busiest and quietest hours in ${windowText}, and what to do in each`}
         info={{

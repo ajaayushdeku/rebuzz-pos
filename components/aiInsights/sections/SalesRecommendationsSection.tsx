@@ -71,7 +71,7 @@ export default function SalesRecommendationsSection({
     <section>
       <SectionHeader
         icon={ChartNoAxesCombined}
-        iconClassName="bg-blue-50 text-blue-600 dark:text-blue-300 dark:bg-blue-400/10"
+        iconClassName="border-cyan-200 bg-cyan-50 text-cyan-600 dark:border-cyan-400/20 dark:bg-cyan-400/10 dark:text-cyan-300"
         title="Sales Recommendations"
         // The window is part of the subtitle so nobody reads these as
         // following a date filter this page does not have.
@@ -84,7 +84,7 @@ export default function SalesRecommendationsSection({
           <div className="flex flex-row w-full md:w-fit items-end justify-end gap-2">
             <SectionMoreButton
               state={state}
-              textClassName="text-blue-700 hover:bg-blue-100 border-blue-300 hover:border-blue-400 dark:hover:border-blue-400/60 dark:hover:bg-blue-400/20 dark:border-blue-400/40 dark:text-blue-300"
+              textClassName="text-cyan-700 hover:bg-cyan-100 border-cyan-300 hover:border-cyan-400 dark:hover:border-cyan-400/60 dark:hover:bg-cyan-400/20 dark:border-cyan-400/40 dark:text-cyan-300"
             />
 
             {/* Collapse / Expand */}
@@ -97,16 +97,16 @@ export default function SalesRecommendationsSection({
               }
               title={isBodyExpanded ? "Collapse section" : "Expand section"}
               className="
-        inline-flex shrink-0 items-center justify-center
-        rounded-lg border border-[#e2e6ed]
-        bg-white p-2 text-[#737b89]
-        transition-all duration-200
-        hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600
-        dark:border-white/10 dark:bg-white/[0.04]
-        dark:text-[#aab4c4]
-        dark:hover:border-violet-400/40
-        dark:hover:bg-violet-400/10 dark:hover:text-violet-300
-      "
+  inline-flex shrink-0 items-center justify-center
+  rounded-lg border border-[#e2e6ed]
+  bg-white p-2 text-[#737b89]
+  transition-all duration-200
+  hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-600
+  dark:border-[#293750] dark:bg-[#182338]
+  dark:text-[#aab4c4]
+  dark:hover:border-cyan-400/40
+  dark:hover:bg-cyan-400/10 dark:hover:text-cyan-300
+"
             >
               {isBodyExpanded ? (
                 <ChevronUp size={15} />

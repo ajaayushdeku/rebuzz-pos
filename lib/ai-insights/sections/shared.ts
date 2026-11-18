@@ -120,20 +120,25 @@ export const perWeek = (units: number, days = SECTION_WINDOW_DAYS) =>
 
 // ── The menu ──────────────────────────────────────────────────────────────
 
-/** A product on the menu, as the AI sections need it. */
+export interface MenuVariant {
+  id: string;
+  optionValues: string[];
+  price: number;
+  costPrice: number;
+}
+
 export interface MenuProduct {
   id: string;
   name: string;
   categoryName: string | null;
   /** The product's price, or its cheapest variant's when it has variants. */
   price: number;
-  /** Zero when no cost price was entered. */
   costPrice: number;
   description: string;
   isAvailable: boolean;
-  /** Units on hand, or null when stock is not tracked. */
   stock: number | null;
   variantNames: string[];
+  variants?: MenuVariant[];
 }
 
 export const normalizeName = (name: string) =>

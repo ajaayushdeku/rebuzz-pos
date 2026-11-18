@@ -14,7 +14,9 @@ import {
 } from "@/services/apiPeriodInsights.client";
 import {
   AiInsightsError,
+  applyPricingSuggestion,
   dismissMenuSuggestion,
+  dismissPricingSuggestion,
   markMenuSuggestionAdded,
 } from "@/services/apiAiInsights.client";
 
@@ -136,6 +138,21 @@ type MarkMenuSuggestionAddedInput = MenuSuggestionMutationInput &
     | { addonId: string; productId?: never }
   );
 
+interface PricingSuggestionMutationInput {
+  kind: PeriodKind;
+  id: string;
+  promptVersion: string;
+  suggestionId: string;
+}
+
+interface ApplyPricingSuggestionInput extends PricingSuggestionMutationInput {
+  actionType: "price-updated" | "discount-removed";
+  productId: string;
+  variantId?: string;
+  previousValue?: number;
+  appliedValue?: number;
+}
+
 /**
  * Persist that a menu suggestion has been added to the POS menu.
  */
@@ -163,6 +180,44 @@ export function useDismissMenuSuggestion() {
 
   return useMutation<unknown, AiInsightsError, MenuSuggestionMutationInput>({
     mutationFn: dismissMenuSuggestion,
+
+    onSuccess: async (_data, input) => {
+      await queryClient.invalidateQueries({
+        queryKey: periodKeys.insights(input.kind, input.id),
+      });
+    },
+
+    retry: false,
+  });
+}
+
+/**
+ * Persist that a pricing suggestion has been dismissed.
+ */
+export function useDismissPricingSuggestion() {
+  const queryClient = useQueryClient();
+
+  return useMutation<unknown, AiInsightsError, PricingSuggestionMutationInput>({
+    mutationFn: dismissPricingSuggestion,
+
+    onSuccess: async (_data, input) => {
+      await queryClient.invalidateQueries({
+        queryKey: periodKeys.insights(input.kind, input.id),
+      });
+    },
+
+    retry: false,
+  });
+}
+
+/**
+ * Persist that a pricing suggestion has been applied.
+ */
+export function useApplyPricingSuggestion() {
+  const queryClient = useQueryClient();
+
+  return useMutation<unknown, AiInsightsError, ApplyPricingSuggestionInput>({
+    mutationFn: applyPricingSuggestion,
 
     onSuccess: async (_data, input) => {
       await queryClient.invalidateQueries({

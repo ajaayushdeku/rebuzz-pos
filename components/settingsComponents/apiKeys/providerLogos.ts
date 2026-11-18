@@ -77,4 +77,4 @@ export const PROVIDER_LOGOS: Record<string, ProviderLogo> = {
 };
 
 export const logoFor = (providerId: string): ProviderLogo | null =>
-  PROVIDER_LOGOS[providerId] ?? null;
+  PROVIDER_LOGOS[providerId.trim().toLowerCase()] ?? null;

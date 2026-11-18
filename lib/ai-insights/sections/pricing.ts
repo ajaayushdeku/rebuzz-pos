@@ -47,7 +47,7 @@ import {
 /** In step with the prompt: more than three is a list, not advice. */
 const MAX_ADVICE = 3;
 
-export const PRICING_VERSION = "v3";
+export const PRICING_VERSION = "v4";
 
 /** Thirteen weeks: about three months of weekly timeline. */
 export const PRICING_WEEKS = 13;
@@ -248,15 +248,14 @@ export type PricingKind =
   | "low-margin";
 
 interface Base {
-  /** From the item's name, so it names the same item all day. */
   ref: string;
   name: string;
   kind: PricingKind;
-  /** The cost most units sold at; 0 when none was entered. */
   cost: number;
-  /** The menu price today, or the latest one it sold at. */
   price: number;
   productId?: string | null;
+  variantId?: string | null;
+  optionValues?: string[];
 }
 
 export interface PriceChangeFacts extends Base {
@@ -390,15 +389,71 @@ function findPriceChange(
   };
 }
 
+function findMenuMatch(name: string, menu: MenuProduct[]) {
+  const normalizedName = normalizeName(tidyName(name));
+
+  const availableProducts = menu.filter((product) => product.isAvailable);
+
+  // Exact parent-product match.
+  const exactProduct = availableProducts.find(
+    (product) => normalizeName(product.name) === normalizedName,
+  );
+
+  if (exactProduct) {
+    return { product: exactProduct, variant: null };
+  }
+
+  // Extract the parent name and variant label.
+  const match = /^(.*?)\s*[\[(](.+)[\])]$/.exec(normalizedName);
+
+  if (!match) {
+    return { product: null, variant: null };
+  }
+
+  const [, parentName, variantLabel] = match;
+
+  const product = availableProducts.find(
+    (item) => normalizeName(item.name) === normalizeName(parentName),
+  );
+
+  if (!product) {
+    return { product: null, variant: null };
+  }
+
+  const normalizeOptions = (values: string[]) =>
+    normalizeName(
+      values
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .join(" "),
+    );
+
+  const variant = product.variants?.find((item) => {
+    const optionValues = normalizeOptions(item.optionValues);
+
+    const commaSeparated = normalizeName(item.optionValues.join(","));
+
+    const dotSeparated = normalizeName(item.optionValues.join(" · "));
+
+    return (
+      optionValues === normalizeName(variantLabel) ||
+      commaSeparated === normalizeName(variantLabel) ||
+      dotSeparated === normalizeName(variantLabel)
+    );
+  });
+
+  return { product, variant: variant ?? null };
+}
+
 export function buildPricingFacts(
   weeklyRows: SalesByItemRow[][],
   menu: MenuProduct[],
   weeks: DateWindow[],
 ): PricingFacts {
   const histories = buildHistories(weeklyRows);
-  const menuByName = new Map(
-    menu.filter((p) => p.isAvailable).map((p) => [normalizeName(p.name), p]),
-  );
+  // const menuByName = new Map(
+  //   menu.filter((p) => p.isAvailable).map((p) => [normalizeName(p.name), p]),
+  // );
 
   console.log(
     "[Pricing Debug] Menu products:",
@@ -415,12 +470,18 @@ export function buildPricingFacts(
   const recent = Math.min(4, weeks.length); // the last four weeks
 
   for (const h of histories) {
-    const product = menuByName.get(normalizeName(h.name));
+    // const product = menuByName.get(normalizeName(h.name));
+    const { product, variant } = findMenuMatch(h.name, menu);
     console.log("[Pricing Debug] Matching product:", {
       historyName: h.name,
       normalizedName: normalizeName(h.name),
       matchedProduct: product,
       productId: product?.id,
+    });
+    console.log("[Variant Match Debug]", {
+      historyName: h.name,
+      variantLabel: h.name.match(/[\[(](.+)[\])]$/)?.[1],
+      availableVariants: product?.variants?.map((v) => v.optionValues),
     });
     const totalUnits = h.weeks.reduce((s, w) => s + w.units, 0);
     const lastWeeks = h.weeks.slice(-recent);
@@ -433,14 +494,16 @@ export function buildPricingFacts(
     const base = {
       ref: stableRef(h.name),
       name: h.name,
-      // Today's cost from the menu when it has one: the price being judged
-      // is today's, so the cost beside it should be too.
       cost:
-        product?.costPrice && product.costPrice > 0
-          ? product.costPrice
-          : h.cost,
-      price: lastList,
+        variant && variant.costPrice > 0
+          ? variant.costPrice
+          : product?.costPrice && product.costPrice > 0
+            ? product.costPrice
+            : h.cost,
+      price: variant && variant.price > 0 ? variant.price : lastList,
       productId: product?.id ?? null,
+      variantId: variant?.id ?? null,
+      optionValues: variant?.optionValues,
     };
 
     // ── A price change already in force ──
@@ -471,9 +534,9 @@ export function buildPricingFacts(
     if (
       !change &&
       product &&
-      product.price > 0 &&
+      base.price > 0 &&
       lastList > 0 &&
-      Math.abs(product.price - lastList) >= 0.5
+      Math.abs(base.price - lastList) >= 0.5
     ) {
       watching.push({
         ...base,
@@ -528,13 +591,20 @@ export function buildPricingFacts(
 
     // ── Margin, at the price it sells at today ──
     const price =
-      product?.price && product.price > 0 ? product.price : lastList;
-    const cost =
-      product?.costPrice && product.costPrice > 0 ? product.costPrice : h.cost;
+      variant && variant.price > 0
+        ? variant.price
+        : product?.price && product.price > 0
+          ? product.price
+          : lastList;
+
+    const cost = base.cost > 0 ? base.cost : h.cost;
+
     if (recentUnits > 0 && price > 0 && cost > 0) {
-      const margin = product
-        ? menuMarginPct({ ...product, price, costPrice: cost })
-        : round1(((price - cost) / price) * 100);
+      const margin =
+        product && !variant
+          ? menuMarginPct({ ...product, price, costPrice: cost })
+          : round1(((price - cost) / price) * 100);
+
       if (margin !== null && margin < LOW_MARGIN_PCT) {
         margins.push({
           ...base,
@@ -710,19 +780,21 @@ export interface PricingInsight {
   id: string;
   icon: string;
   verdict: string;
-  /** Two or three routes to try, best first. Never empty. */
   advice: string[];
-  /** The model's price, kept only when it covers cost and differs from now. */
   suggestedPrice: number | null;
-  /** The model's discount, kept only when the discounted price covers cost. */
   suggestedDiscount: number | null;
-  /**
-   * For a suggested price: how far sales could fall (negative) or must rise
-   * (positive), in percent, for profit to stay where it is. Null without a
-   * cost price, or when the price does not change.
-   */
   breakEvenUnitsPct: number | null;
   facts: PricingCandidate;
+
+  // Persisted action status
+  status?: "suggested" | "dismissed" | "applied";
+  actionType?: "price-updated" | "discount-removed";
+  productId?: string;
+  variantId?: string;
+  previousValue?: number;
+  appliedValue?: number;
+  appliedAt?: string | null;
+  dismissedAt?: string | null;
 }
 
 /**

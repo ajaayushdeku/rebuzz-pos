@@ -137,7 +137,7 @@ function StaffingCard({
           <span
             className={`flex h-10 shrink-0 items-center rounded-lg px-2.5 text-[14px] font-bold ${
               kind.accent === "red"
-                ? "bg-red-50 text-red-600 dark:text-red-300 dark:bg-red-400/10"
+                ? "bg-red-300/40 text-red-600 dark:text-red-300 dark:bg-red-400/10"
                 : "bg-amber-50 text-amber-600 dark:text-amber-300 dark:bg-amber-400/10"
             }`}
           >
@@ -237,16 +237,16 @@ export default function StaffingSection({
               }
               title={isBodyExpanded ? "Collapse section" : "Expand section"}
               className="
-        inline-flex shrink-0 items-center justify-center
-        rounded-lg border border-[#e2e6ed]
-        bg-white p-2 text-[#737b89]
-        transition-all duration-200
-        hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600
-        dark:border-white/10 dark:bg-white/[0.04]
-        dark:text-[#aab4c4]
-        dark:hover:border-violet-400/40
-        dark:hover:bg-violet-400/10 dark:hover:text-violet-300
-      "
+  inline-flex shrink-0 items-center justify-center
+  rounded-lg border border-[#e2e6ed]
+  bg-white p-2 text-[#737b89]
+  transition-all duration-200
+  hover:border-amber-300 hover:bg-amber-50 hover:text-amber-600
+  dark:border-[#293750] dark:bg-[#182338]
+  dark:text-[#aab4c4]
+  dark:hover:border-amber-400/40
+  dark:hover:bg-amber-400/10 dark:hover:text-amber-300
+"
             >
               {isBodyExpanded ? (
                 <ChevronUp size={15} />

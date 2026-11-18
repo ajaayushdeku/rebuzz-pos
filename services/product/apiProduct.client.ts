@@ -1,5 +1,28 @@
 import { mapRawProductToProduct, Product } from "@/lib/types/product";
 
+export interface ProductVariantOption {
+  _id?: string;
+  title: string;
+  values: string[];
+  [key: string]: unknown;
+}
+
+export interface ProductVariantItem {
+  _id: string;
+  optionValues: string[];
+  price: number;
+  costPrice?: number;
+  inStock?: number;
+  lowStock?: number;
+  isAvailable?: boolean;
+  [key: string]: unknown;
+}
+
+export interface ProductVariantConfig {
+  options: ProductVariantOption[];
+  variantItems: ProductVariantItem[];
+}
+
 /**
  * Pull the most useful message out of a failed response.
  *
@@ -366,4 +389,57 @@ export async function removeProductDiscounts(
   const result = await res.json();
 
   return mapRawProductToProduct(result.data.product);
+}
+
+export async function fetchProductVariant(
+  productId: string,
+): Promise<ProductVariantConfig> {
+  const res = await fetch(`/api/products/${productId}/get-variant`, {
+    method: "GET",
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error(
+      await readErrorMessage(res, "Failed to fetch product variants"),
+    );
+  }
+
+  const json = await res.json();
+
+  const rawConfig = json?.data?.productVariant;
+
+  // Backend returns productVariant as an array.
+  const config = Array.isArray(rawConfig) ? rawConfig[0] : rawConfig;
+
+  if (
+    !config ||
+    !Array.isArray(config.options) ||
+    !Array.isArray(config.variantItems)
+  ) {
+    throw new Error("Invalid product variant configuration received.");
+  }
+
+  return config as ProductVariantConfig;
+}
+
+export async function updateProductVariant(
+  productId: string,
+  payload: ProductVariantConfig,
+) {
+  const res = await fetch(`/api/products/${productId}/update-variant`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    throw new Error(
+      await readErrorMessage(res, "Failed to update product variant"),
+    );
+  }
+
+  return res.json();
 }

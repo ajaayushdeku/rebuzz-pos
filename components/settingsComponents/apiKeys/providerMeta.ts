@@ -45,15 +45,6 @@ export interface ProviderButton {
 export interface ProviderMeta {
   /** Ink: icons, step text, links. Must be readable on white. */
   accent: string;
-  /**
-   * The same signal, for a dark surface. Defaults to `accent`.
-   *
-   * `accent` is chosen to be readable on white, so three of these are close to
-   * black — OpenRouter's is `#03080A`. Lightening one programmatically turns it
-   * grey and the provider stops being recognisable, so each names the shade of
-   * its OWN ramp that carries its identity on a dark card instead: OpenRouter
-   * becomes its lime, Mistral its amber, NVIDIA its green.
-   */
   darkAccent?: string;
   /** When the accent is too dark to read as a link. Defaults to `accent`. */
   link?: string;
@@ -110,20 +101,20 @@ const SHARED_FACTS: ProviderFact[] = [
 
 export const PROVIDER_META: Record<string, ProviderMeta> = {
   gemini: {
-    // Solid Google blue rather than the brand gradient: white 13px bold over
-    // the sweep crosses the yellow stop at 1.71:1, illegible exactly where it
-    // is brightest. #1967D2 measures 5.37:1 and still reads as Google.
+    // Google blue provides a strong, readable accent. The Gemini gradient
+    // remains exclusive to the product identity rather than Google's full
+    // corporate palette.
     accent: "#1967D2",
     darkAccent: "#8AB4F8",
-    tint: "#E8F0FE",
-    // Gemini's own blue → violet → rose sweep, not Google's four brand
-    // colours: the mark names the product, not the company.
+    tint: "#EEF4FF",
     gradient: GEMINI_COLORS,
     darkGradient: ["#8AB4F8", "#B49BE0", "#E88A96"],
-    button: { bg: "#1967D2", ink: "#FFFFFF", hover: "#1557b0" },
+    button: { bg: "#1967D2", ink: "#FFFFFF", hover: "#1557B0" },
+
     blurb: "Powers AI features across your dashboard",
     tagline: "Free tier · no card",
     placeholder: "Paste your Gemini key…",
+
     steps: [
       {
         title: "Open Google AI Studio",
@@ -147,6 +138,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
         body: "Paste it into the field above, then save. The key is checked with Google before it is stored.",
       },
     ],
+
     facts: [
       {
         icon: "wallet",
@@ -158,32 +150,23 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
   },
 
   openrouter: {
-    /**
-     * OpenRouter's own pair: lime #C8FF00 on near-black #03080A.
-     *
-     * Which way round matters. The lime is a background colour, not an ink —
-     * on white it measures about 1.3:1 and disappears — so the near-black
-     * carries the text and icons, and the lime carries the button and the
-     * step numbers with that near-black on top of it. Two supporting shades
-     * are derived rather than invented: a pale lime wash behind the mark, and
-     * a darker lime for links, which near-black would not read as.
-     */
+    // OpenRouter's signature lime works best as a bright surface with dark
+    // ink. A deeper green handles readable text and supporting UI accents.
     accent: "#4A7700",
-    darkAccent: "#8ca728",
-    link: "#4D6B00",
-    tint: "#F2FFCC",
+    darkAccent: "#B7D957",
+    link: "#4A7700",
+    tint: "#F2F9DF",
     stepBg: "#C8FF00",
     stepInk: "#03080A",
-    // A faded lime square, with the mark swept from the near-black into the
-    // lime — both brand colours in one small shape.
-    mark: { bg: "#effdc4", ink: "#4A7700" },
-    gradient: ["#C8FF00", "#88bb08", "#4A7700"],
-    darkGradient: ["#D9FF4D", "#A8DC2E"],
+    mark: { bg: "#F0F8D8", ink: "#4A7700" },
+    gradient: ["#C8FF00", "#A4D62A", "#4A7700"],
+    darkGradient: ["#D9FF4D", "#B7D957", "#8CA728"],
     button: { bg: "#C8FF00", ink: "#03080A", hover: "#B4E600" },
 
     blurb: "One key, many free models",
     tagline: "Free models · no card",
     placeholder: "Paste your OpenRouter key…",
+
     steps: [
       {
         title: "Create an OpenRouter account",
@@ -208,6 +191,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
         body: "Paste it into the field above, then save. Your key is checked with OpenRouter before it is stored.",
       },
     ],
+
     facts: [
       {
         icon: "zap",
@@ -224,22 +208,20 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
   },
 
   groq: {
-    /**
-     * Groq's orange, twice over. The brand orange (#F55036) measures about
-     * 3.5:1 on white — fine as a mark, too weak under 13px bold text — so the
-     * ink and the button take a deepened version of it, and the bright one
-     * stays in the mark's sweep where nothing has to be read through it.
-     */
+    // Deep orange-red carries text and buttons. The brighter coral shades
+    // provide the brand energy in the logo and decorative gradients.
     accent: "#C2340F",
-    darkAccent: "#FF7A59",
-    tint: "#FFEDE7",
-    gradient: ["#FF7A59", "#F55036", "#A32B0C"],
-    darkGradient: ["#FFA98F", "#FF7A59", "#F55036"],
-    mark: { bg: "#FFEDE7", ink: "#C2340F" },
+    darkAccent: "#FF9478",
+    tint: "#FFF0EB",
+    gradient: ["#FF9478", "#F55036", "#A32B0C"],
+    darkGradient: ["#FFB09B", "#FF9478", "#F76B4F"],
+    mark: { bg: "#FFF0EB", ink: "#C2340F" },
     button: { bg: "#C2340F", ink: "#FFFFFF", hover: "#A32B0C" },
+
     blurb: "Fast answers on a free tier",
     tagline: "Free tier · no card",
     placeholder: "Paste your Groq key…",
+
     steps: [
       {
         title: "Create a Groq Cloud account",
@@ -264,6 +246,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
         body: "Paste it into the field above, then save. Your key is checked with Groq before it is stored.",
       },
     ],
+
     facts: [
       {
         icon: "zap",
@@ -285,26 +268,21 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
   },
 
   mistral: {
-    /**
-     * Mistral's own ramp, taken from their site: #FEC63A yellow, #FF8204
-     * orange, #FA500F red and #933800 for the dark end. Their mark is a
-     * stepped flag in exactly that order, so the gradient is the logo rather
-     * than an invention. The red measures about 3.4:1 on white, so as
-     * everywhere else the dark end carries the text and the button.
-     */
+    // Mistral's yellow-orange-red identity stays vivid in the gradient.
+    // Deep burnt orange provides readable text and button contrast.
     accent: "#933800",
-    darkAccent: "#FFAF01",
-    tint: "#FFF7E3",
+    darkAccent: "#FFB84D",
+    tint: "#FFF5E2",
     gradient: ["#FEC63A", "#FF8204", "#FA500F"],
-    darkGradient: ["#FFD972", "#FEC63A", "#FF8204"],
-    // The yellow end of their own ramp, which is the half of it no other
-    // provider here uses — Groq is red-orange.
-    mark: { bg: "#FFF3CE", ink: "#933800" },
-    card: { border: "#FFAF01", bg: "#FFF6DC" },
+    darkGradient: ["#FFD978", "#FFB84D", "#FF8204"],
+    mark: { bg: "#FFF3D9", ink: "#933800" },
+    card: { border: "#E9A83B", bg: "#FFF9EC" },
     button: { bg: "#933800", ink: "#FFFFFF", hover: "#7A2E00" },
+
     blurb: "A large free allowance",
     tagline: "Free tier · trains on data",
     placeholder: "Paste your Mistral key…",
+
     steps: [
       {
         title: "Create a Mistral account",
@@ -331,6 +309,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
         body: "Paste it into the field above, then save. Your key is checked with Mistral before it is stored.",
       },
     ],
+
     facts: [
       {
         icon: "shield",
@@ -352,22 +331,21 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
   },
 
   nvidia: {
-    /**
-     * NVIDIA green, #76B900, and shades of it. The brand green is about 2.3:1
-     * on white — a mark, not an ink — so a darkened version carries the text
-     * and the button, and the bright one leads the mark's sweep.
-     */
+    // NVIDIA green leads the logo gradient. The deeper green is used for
+    // readable accents, while the pale surface keeps the card restrained.
     accent: "#4A7700",
-    darkAccent: "#518200",
-    tint: "#F2FBE0",
+    darkAccent: "#A6D957",
+    tint: "#F0F8E4",
     gradient: ["#A6E000", "#76B900", "#4A7700"],
-    darkGradient: ["#C6F24A", "#A6E000", "#76B900"],
-    mark: { bg: "#EAF7CF", ink: "#4A7700" },
-    card: { border: "#76B900", bg: "#dffaab" },
+    darkGradient: ["#C6F24A", "#A6D957", "#76B900"],
+    mark: { bg: "#EAF5D8", ink: "#4A7700" },
+    card: { border: "#76B900", bg: "#F3FBE8" },
     button: { bg: "#4A7700", ink: "#FFFFFF", hover: "#3A5D00" },
+
     blurb: "Free credits across a large catalogue",
     tagline: "Free credits · no card",
     placeholder: "Paste your NVIDIA key…",
+
     steps: [
       {
         title: "Join the NVIDIA Developer Programme",
@@ -388,6 +366,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
         body: "Paste it into the field above, then save. Your key is checked with NVIDIA before it is stored.",
       },
     ],
+
     facts: [
       {
         icon: "wallet",
@@ -402,16 +381,17 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
       ...SHARED_FACTS,
     ],
   },
+
   zai: {
     // Z.AI-inspired blue identity. These are UI colours chosen for
     // contrast and consistency, not a claim about an official brand palette.
     accent: "#3156A3",
-    darkAccent: "#8EAFFF",
+    darkAccent: "#91AEF5",
     link: "#3156A3",
-    tint: "#EAF0FF",
+    tint: "#EEF3FF",
     mark: { bg: "#EAF0FF", ink: "#3156A3" },
-    gradient: ["#8AB4FF", "#5279D5", "#3156A3"],
-    darkGradient: ["#B4D0FF", "#8AB4FF", "#6E91E8"],
+    gradient: ["#91AEF5", "#5279D5", "#3156A3"],
+    darkGradient: ["#C0D3FF", "#91AEF5", "#6E91E8"],
     button: {
       bg: "#3156A3",
       ink: "#FFFFFF",

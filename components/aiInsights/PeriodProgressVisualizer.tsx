@@ -4,11 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import {
   Check,
   ChevronDown,
-  CircleAlert,
   Clock,
   HeartHandshake,
   LoaderCircle,
-  Database,
   Users,
   type LucideIcon,
   PackageSearch,
@@ -16,12 +14,11 @@ import {
   Tags,
   ChartNoAxesCombined,
   Sparkles,
+  ArrowRight,
+  CheckCircle2,
+  Loader2,
+  X,
 } from "lucide-react";
-
-import ProviderLogo from "@/components/settingsComponents/apiKeys/ProviderLogo";
-import ProviderMarkDefs from "@/components/settingsComponents/apiKeys/ProviderMarkDefs";
-import { metaFor } from "@/components/settingsComponents/apiKeys/providerMeta";
-import { GEMINI_GRADIENT } from "@/components/settingsComponents/apiKeys/googlePalette";
 
 export interface GenerationProgress {
   total: number;
@@ -42,12 +39,6 @@ interface PeriodProgressVisualizerProps {
   storedSections: Record<string, unknown>;
   missingSections: string[];
   progress: GenerationProgress | null;
-  /**
-   * The generate action lives here now, not in a banner above: it only makes
-   * sense when there is something missing, and the checklist right above it
-   * is what names those things. Rendered only when `canGenerate` — the page
-   * passes an admin-gated handler and nothing otherwise.
-   */
   canGenerate: boolean;
   onGenerate: () => void;
 }
@@ -60,12 +51,20 @@ type CheckpointStatus =
   | "generated"
   | "saved";
 
-const PERIOD_CHECKPOINTS: { key: string; label: string; icon: LucideIcon }[] = [
+const PERIOD_CHECKPOINTS: {
+  key: string;
+  label: string;
+  icon: LucideIcon;
+}[] = [
   { key: "retention", label: "Customer Retention", icon: HeartHandshake },
   { key: "menu-suggestions", label: "Menu Suggestions", icon: UtensilsCrossed },
   { key: "slow-items", label: "Slow-Moving Items", icon: PackageSearch },
   { key: "pricing", label: "Pricing Insights", icon: Tags },
-  { key: "hour-playbook", label: "Hourly Sales Playbook", icon: Clock },
+  {
+    key: "hour-playbook",
+    label: "Hourly Sales Playbook",
+    icon: Clock,
+  },
   {
     key: "sales-recommendations",
     label: "Sales Recommendations",
@@ -73,6 +72,121 @@ const PERIOD_CHECKPOINTS: { key: string; label: string; icon: LucideIcon }[] = [
   },
   { key: "staffing", label: "Staffing Insights", icon: Users },
 ];
+
+const STATUS_STYLES: Record<
+  CheckpointStatus,
+  {
+    label: string;
+    container: string;
+    icon: string;
+    dot: string;
+  }
+> = {
+  saved: {
+    label: "Restored",
+    container:
+      "border-emerald-200/80 bg-emerald-50/50 dark:border-emerald-400/15 dark:bg-emerald-400/[0.04]",
+    icon: "text-emerald-600 dark:text-emerald-400",
+    dot: "bg-emerald-500",
+  },
+  generated: {
+    label: "Generated",
+    container:
+      "border-blue-200/80 bg-blue-50/50 dark:border-blue-400/15 dark:bg-blue-400/[0.04]",
+    icon: "text-blue-600 dark:text-blue-400",
+    dot: "bg-blue-500",
+  },
+  loading: {
+    label: "Loading saved data",
+    container:
+      "border-blue-200/80 bg-blue-50/50 dark:border-blue-400/15 dark:bg-blue-400/[0.04]",
+    icon: "text-blue-600 dark:text-blue-400",
+    dot: "bg-blue-500",
+  },
+  generating: {
+    label: "Generating",
+    container:
+      "border-violet-200/80 bg-violet-50/50 dark:border-violet-400/15 dark:bg-violet-400/[0.04]",
+    icon: "text-violet-600 dark:text-violet-400",
+    dot: "bg-violet-500",
+  },
+  failed: {
+    label: "Failed",
+    container:
+      "border-red-200/80 bg-red-50/50 dark:border-red-400/15 dark:bg-red-400/[0.04]",
+    icon: "text-red-600 dark:text-red-400",
+    dot: "bg-red-500",
+  },
+  pending: {
+    label: "Waiting",
+    container:
+      "border-slate-200/80 bg-slate-50/60 dark:border-white/[0.07] dark:bg-white/[0.015]",
+    icon: "text-slate-400 dark:text-slate-500",
+    dot: "bg-slate-300 dark:bg-slate-600",
+  },
+};
+
+const SECTION_ACCENTS: Record<
+  string,
+  { icon: string; glow: string; border: string; text: string }
+> = {
+  retention: {
+    icon: "bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400",
+    glow: "group-hover:shadow-blue-500/10",
+    border: "group-hover:border-blue-300 dark:group-hover:border-blue-500/30",
+    text: "text-blue-600 dark:text-blue-400",
+  },
+  "menu-suggestions": {
+    icon: "bg-pink-100 text-pink-600 dark:bg-pink-500/15 dark:text-pink-400",
+    glow: "group-hover:shadow-pink-500/10",
+    border: "group-hover:border-pink-300 dark:group-hover:border-pink-500/30",
+    text: "text-pink-600 dark:text-pink-400",
+  },
+  "slow-items": {
+    icon: "bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400",
+    glow: "group-hover:shadow-rose-500/10",
+    border:
+      "group-hover:border-emerald-300 dark:group-hover:border-emerald-500/30",
+    text: "text-emerald-600 dark:text-emerald-400",
+  },
+  pricing: {
+    icon: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400",
+    glow: "group-hover:shadow-emerald-500/10",
+    border:
+      "group-hover:border-emerald-300 dark:group-hover:border-emerald-500/30",
+    text: "text-emerald-600 dark:text-emerald-400",
+  },
+
+  "hour-playbook": {
+    icon: "bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400",
+    glow: "group-hover:shadow-violet-500/10",
+    border:
+      "group-hover:border-violet-300 dark:group-hover:border-violet-500/30",
+    text: "text-violet-600 dark:text-violet-400",
+  },
+  "sales-recommendations": {
+    icon: "bg-cyan-100 text-cyan-600 dark:bg-cyan-500/15 dark:text-cyan-400",
+    glow: "group-hover:shadow-cyan-500/10",
+    border: "group-hover:border-cyan-300 dark:group-hover:border-cyan-500/30",
+    text: "text-cyan-600 dark:text-cyan-400",
+  },
+  staffing: {
+    icon: "bg-orange-100 text-orange-600 dark:bg-orange-500/15 dark:text-orange-400",
+    glow: "group-hover:shadow-orange-500/10",
+    border:
+      "group-hover:border-orange-300 dark:group-hover:border-orange-500/30",
+    text: "text-orange-600 dark:text-orange-400",
+  },
+};
+
+const STATUS_LABELS: Record<CheckpointStatus, string> = {
+  saved: "Ready",
+  generated: "Generated",
+  generating: "Generating",
+  loading: "Loading",
+  pending: "Waiting",
+  failed: "Failed",
+};
 
 export default function PeriodProgressVisualizer({
   periodLabel,
@@ -84,33 +198,20 @@ export default function PeriodProgressVisualizer({
   canGenerate,
   onGenerate,
 }: PeriodProgressVisualizerProps) {
-  /**
-   * The card stays on screen for the whole life of the page — during the
-   * initial read, during a generation run, and after everything is settled —
-   * so the fetch/generate journey is visible in both cases. What collapses is
-   * the checklist, not the card: expanded while anything is in flight, then
-   * left to the reader (auto-collapsed once everything is restored/generated
-   * so a finished page reads clean, one click to reopen).
-   */
   const busy = isLoading || isGenerating;
+
   const [expanded, setExpanded] = useState(true);
   const wasBusy = useRef(busy);
 
-  // Gemini's own button colours for the generate action, matching the key
-  // screen: solid brand blue, white ink, darker hover. Read from the provider
-  // meta rather than hardcoded so a theme change propagates.
-  const geminiButton = metaFor("gemini").button;
+  const [hoveredSection, setHoveredSection] = useState<string | null>(null);
 
-  // While work is in flight the detail is forced open — a collapsed card
-  // would hide the very progress it exists to show. When work settles
-  // (busy → idle) it auto-collapses once so a finished period reads clean;
-  // manual toggles in between are left alone.
   useEffect(() => {
     if (busy) {
       setExpanded(true);
     } else if (wasBusy.current) {
       setExpanded(false);
     }
+
     wasBusy.current = busy;
   }, [busy]);
 
@@ -139,178 +240,107 @@ export default function PeriodProgressVisualizer({
     return status === "saved" || status === "generated";
   }).length;
 
-  const percentage = Math.round(
-    (completedCount / PERIOD_CHECKPOINTS.length) * 100,
-  );
+  const totalCount = PERIOD_CHECKPOINTS.length;
 
-  // Order the checkpoints by how quickly the data for each one arrived, so the
-  // card reads fastest-to-slowest: generated, restored, loading, generating,
-  // pending, then failed. Mirrors the ordering in AiInsightsScreen.
+  const percentage = Math.round((completedCount / totalCount) * 100);
+
   const orderCheckpoint = (key: string): [number, number] => {
     const status = getStatus(key);
+
     switch (status) {
       case "generated": {
-        // The stored section's `generatedAt` is the timestamp of when the data
-        // was produced (it predates the visualizer's own progress object). Since
-        // `storedSections` is typed `Record<string, unknown>` but the parent
-        // passes `insights.data.sections` (which is `Record<string, StoredSection>`),
-        // cast it to read the timestamp.
-        const stored = (storedSections[key] ?? null) as
-          | { generatedAt: string | null }
-          | null;
+        const stored = (storedSections[key] ?? null) as {
+          generatedAt: string | null;
+        } | null;
+
         const timestamp =
           progress?.succeeded.includes(key) && stored?.generatedAt
             ? Date.parse(stored.generatedAt)
             : Number.POSITIVE_INFINITY;
+
         return [
           0,
           Number.isNaN(timestamp) ? Number.POSITIVE_INFINITY : timestamp,
         ];
       }
-      case "saved": {
-        // Restored from storage is the next fastest — it needs no network.
+
+      case "saved":
         return [1, 0];
-      }
-      case "loading": {
-        // Currently being fetched.
+
+      case "loading":
         return [2, 0];
-      }
-      case "generating": {
-        // Actively generating right now.
+
+      case "generating":
         return [3, 0];
-      }
-      case "pending": {
-        // Not started yet.
+
+      case "pending":
         return [4, 0];
-      }
-      case "failed": {
-        // Errored last — pull these to the bottom.
+
+      case "failed":
+      default:
         return [5, 0];
-      }
-      default: {
-        return [5, 0];
-      }
     }
   };
 
-  const orderedCheckpoints = PERIOD_CHECKPOINTS.sort((a, b) => {
+  const orderedCheckpoints = [...PERIOD_CHECKPOINTS].sort((a, b) => {
     const [aGroup, aTime] = orderCheckpoint(a.key);
     const [bGroup, bTime] = orderCheckpoint(b.key);
+
     return aGroup - bGroup || aTime - bTime;
   });
 
-  const statusDetails: Record<
-    CheckpointStatus,
-    {
-      label: string;
-      className: string;
-      iconClassName: string;
-      dotClassName: string;
-    }
-  > = {
-    saved: {
-      label: "Restored",
-      className:
-        "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-      iconClassName:
-        "border-emerald-500/25  text-emerald-600 dark:text-emerald-400",
-      dotClassName: "bg-emerald-500",
-    },
-    generated: {
-      label: "Generated",
-      className:
-        "border-blue-500/25 bg-blue-500/10 text-blue-600 dark:text-blue-400",
-      iconClassName: "border-blue-500/25  text-blue-600 dark:text-blue-400",
-      dotClassName: "bg-blue-500",
-    },
-    loading: {
-      label: "Loading…",
-      className:
-        "border-blue-500/25 bg-blue-500/10 text-blue-600 dark:text-blue-400",
-      iconClassName: "border-blue-500/25 text-blue-600 dark:text-blue-400",
-      dotClassName: "bg-blue-500",
-    },
-    generating: {
-      label: "Generating…",
-      className:
-        "border-violet-500/25 bg-violet-500/10 text-violet-600 dark:text-violet-400",
-      iconClassName:
-        "border-violet-500/25 text-violet-600 dark:text-violet-400",
-      dotClassName: "bg-violet-500",
-    },
-    failed: {
-      label: "Failed",
-      className:
-        "border-red-500/25 bg-red-500/10 text-red-600 dark:text-red-400",
-      iconClassName: "border-red-500/25 text-red-600 dark:text-red-400",
-      dotClassName: "bg-red-500",
-    },
-    pending: {
-      label: "Pending",
-      className:
-        "border-gray-300 bg-gray-100 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400",
-      iconClassName:
-        "border-gray-300 text-gray-500 dark:border-gray-700  dark:text-gray-400",
-      dotClassName: "bg-gray-300 dark:bg-gray-600",
-    },
-  };
+  const failedCount = failedSections.size;
 
-  // Collapsed one-liner: what the card says when the checklist is tucked away.
   const summary = busy
     ? isGenerating
-      ? "Generating insights…"
-      : "Loading saved insights…"
-    : failedSections.size > 0
-      ? `${failedSections.size} section${failedSections.size === 1 ? "" : "s"} failed`
-      : completedCount === PERIOD_CHECKPOINTS.length
-        ? "All sections ready"
-        : `${completedCount} of ${PERIOD_CHECKPOINTS.length} sections ready`;
+      ? "Preparing your business insights"
+      : "Restoring your saved insights"
+    : failedCount > 0
+      ? `${failedCount} section${failedCount === 1 ? "" : "s"} need attention`
+      : completedCount === totalCount
+        ? "Your business insights are ready"
+        : `${completedCount} of ${totalCount} insight sections ready`;
+
+  const isComplete = completedCount === totalCount && failedCount === 0;
+
+  const showGenerate = canGenerate && !isLoading && missingSections.length > 0;
 
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900 sm:p-5">
-      {/* The sweep the mark strokes itself with lives in the document here, so
-          `fill="url(#…)"` resolves on this page — the API Keys screen mounts
-          its own copy, but that tree is not present here. */}
-      <ProviderMarkDefs />
-      <div className="flex items-start justify-between gap-2 sm:gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center">
+    <section className="min-w-0">
+      {/* Header */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          {/* Icon */}
+          <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-blue-200/70 bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-700 shadow-sm shadow-blue-500/10 dark:border-blue-400/20 dark:from-blue-500/20 dark:to-indigo-500/15 dark:text-blue-300">
             <Sparkles
-              className="h-[21px] w-[21px] text-violet-500 drop-shadow-[0_2px_5px_rgba(139,92,246,0.35)]"
-              strokeWidth={2}
-              aria-hidden="true"
-              style={{
-                stroke: "url(#ai-icon-gradient)",
-              }}
+              className="relative h-[21px] w-[21px] drop-shadow-[0_1px_2px_rgba(37,99,235,0.15)]"
+              strokeWidth={1.65}
             />
-            <svg width="0" height="0" aria-hidden="true">
-              <defs>
-                <linearGradient
-                  id="ai-icon-gradient"
-                  x1="0%"
-                  y1="0%"
-                  x2="100%"
-                  y2="100%"
-                >
-                  <stop offset="0%" stopColor="#A78BFA" />
-                  <stop offset="50%" stopColor="#818CF8" />
-                  <stop offset="100%" stopColor="#38BDF8" />
-                </linearGradient>
-              </defs>
-            </svg>
           </div>
+
+          {/* Heading */}
           <div className="min-w-0">
-            <h3 className="flex items-center gap-1 text-[13px] sm:text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
-              AI Insights Progress
-            </h3>
-            <p className="mt-0.5 text-[11px] sm:text-xs   max-w-xl truncate  tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
-              {periodLabel ? `${summary} for ${periodLabel}` : summary}
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-[14px] font-medium tracking-[0.015em] text-slate-800 dark:text-slate-100 sm:text-[15px]">
+                Insights overview
+              </h3>
+
+              {isComplete && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200/60 bg-emerald-50/80 px-2 py-0.5 text-[9px] font-semibold tracking-wide text-emerald-700 dark:border-emerald-400/15 dark:bg-emerald-400/[0.08] dark:text-emerald-300">
+                  <Check className="h-3 w-3" strokeWidth={2.2} />
+                  Complete
+                </span>
+              )}
+            </div>
+
+            <p className="mt-1 truncate text-[11px] font-normal tracking-[0.015em] text-slate-500 dark:text-slate-400 sm:text-xs">
+              {periodLabel ? `${periodLabel} · ${summary}` : summary}
             </p>
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-4">
-          {canGenerate && !isLoading && missingSections.length > 0 && (
+        <div className="flex items-center gap-2 sm:shrink-0">
+          {showGenerate && (
             <button
               type="button"
               onClick={onGenerate}
@@ -320,209 +350,304 @@ export default function PeriodProgressVisualizer({
                   ? "Generating AI insights"
                   : `Generate ${missingSections.length} missing AI insight sections`
               }
-              className=" 
-                group relative inline-flex min-h-9 cursor-poicale-[0.98]
-                focus-visible:ring-offset-2
-                focus-visible:ring-2 focus-visible:ring-violet-500
-                disabled:cursor-wait disablnter
-                rounded-lg border border-violet-600/20
-                items-center justify-center gap-2 overflow-hidden
-                px-3.5 py-2 text-xs font-semibold text-white
-                bg-gradient-to-r from-violet-600 to-indigo-600
-                transition-all duration-200 ease-out
-                shadow-md shadow-violet-600/15
-                hover:border-violet-500
-                hover:-translate-y-0.5
-                hover:shadow-lg hover:shadow-violet-600/25
-                hover:from-violet-700 hover:to-indigo-700
-                focus-visible:outline-none
-                active:translate-y-0 active:sed:opacity-70
-                focus-visible:ring-offset-white
-                disabled:hover:shadow-md
-                disabled:hover:translate-y-0
-                dark:from-violet-500 dark:to-indigo-500
-                dark:border-violet-400/25
-                dark:hover:from-violet-400 dark:hover:to-indigo-400
-                dark:shadow-violet-500/10
-                dark:focus-visible:ring-offset-[#161d2e]
-                dark:hover:shadow-violet-400/20
-              "
+              className="group inline-flex min-h-9 items-center justify-center gap-2 rounded-lg bg-[#244074] px-3.5 py-2 text-xs font-semibold text-white shadow-sm shadow-blue-950/10 transition-all hover:-translate-y-0.5 hover:bg-[#1c345f] hover:shadow-md disabled:cursor-wait disabled:opacity-60 disabled:hover:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-400 dark:focus-visible:ring-offset-[#111827]"
             >
-              {/* Subtle shine effect */}
-              <span
-                aria-hidden="true"
-                className="
-                group-hover:opacity-100
-                pointer-events-none absolute inset-0
-                bg-gradient-to-r from-transparent
-                via-white/10 to-transparent
-                opacity-0 transition-opacity duration-200
-                "
-              />
-
               {isGenerating ? (
-                <LoaderCircle
-                  className="relative h-4 w-4 animate-spin"
-                  aria-hidden="true"
-                />
+                <LoaderCircle className="h-4 w-4 animate-spin" />
               ) : (
-                <div className="flex shrink-0 items-center justify-center">
-                  <Sparkles
-                    className="h-4 w-4 text-white drop-shadow-[0_2px_5px_rgba(139,92,246,0.35)]"
-                    strokeWidth={2}
-                    aria-hidden="true"
-                  />
-                </div>
+                <Sparkles className="h-4 w-4" />
               )}
 
-              <span className="relative hidden sm:inline">
-                {isGenerating ? "Generating insights…" : "Generate insights"}
-              </span>
+              <span>{isGenerating ? "Generating…" : "Generate insights"}</span>
 
-              <span className="relative sm:hidden">
-                {isGenerating ? "Generating…" : "Generate"}
-              </span>
-
-              {!isGenerating && missingSections.length > 0 && (
-                <span
-                  className="
-                  tabular-nums text-white
-                  relative inline-flex min-w-5 h-5 items-center
-                  justify-center rounded-md border border-white/20
-                  bg-white/15 px-1 text-[10px] font-bold
-                  "
-                >
+              {!isGenerating && (
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-md bg-white/15 px-1 text-[10px] font-bold tabular-nums">
                   {missingSections.length}
                 </span>
               )}
             </button>
           )}
 
-          <div className="flex items-center gap-2">
-            {" "}
-            <span className="text-[13px] font-medium text-gray-600 dark:text-gray-300">
-              {completedCount}/{PERIOD_CHECKPOINTS.length}
+          <div className="flex h-9 items-center gap-2 rounded-lg border border-slate-200/80 bg-slate-50 px-2.5 dark:border-white/10 dark:bg-white/[0.03]">
+            <span className="text-xs font-semibold tabular-nums text-slate-700 dark:text-slate-200">
+              {completedCount}/{totalCount}
             </span>
-            <button
-              type="button"
-              onClick={() => setExpanded((prev) => !prev)}
-              aria-expanded={expanded}
-              aria-label={
-                expanded
-                  ? "Collapse progress details"
-                  : "Expand progress details"
-              }
-              className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-            >
-              <ChevronDown
-                className={`h-4 w-4 transition-transform duration-300 ease-in-out ${
-                  expanded ? "rotate-180" : ""
-                }`}
-                aria-hidden
-              />
-            </button>
+
+            <span className="text-[10px] text-slate-400">ready</span>
           </div>
         </div>
       </div>
 
-      <div
-        className="mt-4 h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800"
-        role="progressbar"
-        aria-valuemin={0}
-        aria-valuemax={PERIOD_CHECKPOINTS.length}
-        aria-valuenow={completedCount}
-        aria-label="Completed AI insight sections"
-      >
+      {/* Progress */}
+      <div className="mt-4">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+            Overall progress
+          </span>
+
+          <span className="text-[11px] font-semibold tabular-nums text-slate-700 dark:text-slate-200">
+            {percentage}%
+          </span>
+        </div>
+
         <div
-          className="h-full rounded-full transition-all duration-300"
-          style={{ width: `${percentage}%`, background: GEMINI_GRADIENT }}
-        />
-      </div>
-
-      <div
-        aria-hidden={!expanded}
-        className={`
-    grid transition-[grid-template-rows,opacity]
-    duration-300 ease-in-out
-    motion-reduce:transition-none
-    ${expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}
-  `}
-      >
-        <div className="min-h-0 overflow-hidden">
-          <>
-            <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {orderedCheckpoints.map((section) => {
-                const status = getStatus(section.key);
-                const details = statusDetails[status];
-                const failure = failedSections.get(section.key);
-                const SectionIcon = section.icon;
-                const isActive =
-                  status === "loading" || status === "generating";
-
-                return (
-                  <li
-                    key={section.key}
-                    className={`flex items-center gap-2.5 rounded-lg border px-2.5 py-3 ${details.className}`}
-                  >
-                    <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/70 dark:bg-black/20">
-                      {isActive ? (
-                        <LoaderCircle
-                          className="h-4 w-4 animate-spin"
-                          aria-hidden
-                        />
-                      ) : status === "failed" ? (
-                        <CircleAlert className="h-4 w-4" aria-hidden />
-                      ) : status === "saved" ? (
-                        <Database className="h-4 w-4" aria-hidden />
-                      ) : status === "generated" ? (
-                        <Check className="h-4 w-4" aria-hidden />
-                      ) : (
-                        <SectionIcon className="h-4 w-4" aria-hidden />
-                      )}
-                      {/* Live dot so the state reads at a glance on a small screen. */}
-                      <span
-                        className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full ring-2 ring-white dark:ring-gray-900 ${details.dotClassName}`}
-                        aria-hidden
-                      />
-
-                      {!isActive && (
-                        <span
-                          className={`absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-gray-900 ${details.iconClassName}`}
-                        >
-                          {" "}
-                          <SectionIcon className="h-2.5 w-2.5" aria-hidden />
-                        </span>
-                      )}
-                    </span>
-
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[13px] font-medium text-gray-900 dark:text-gray-100">
-                        {section.label}
-                      </span>
-                      <span className="block text-[11px] font-medium opacity-80">
-                        {details.label}
-                      </span>
-                      {failure && (
-                        <span className="mt-0.5 block truncate text-[11px] text-red-600 dark:text-red-400">
-                          {failure.message || "Unable to prepare this section."}
-                        </span>
-                      )}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-
-            {progress && expanded && (
-              <p className="mt-3 border-t border-gray-200 pt-3 text-[11px] text-gray-500 dark:border-gray-800 dark:text-gray-400 sm:text-xs">
-                {progress.done} of {progress.total} generation tasks processed
-                {progress.failed.length > 0 &&
-                  ` · ${progress.failed.length} failed`}
-              </p>
-            )}
-          </>
+          className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-white/[0.07]"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={totalCount}
+          aria-valuenow={completedCount}
+          aria-label="Completed AI insight sections"
+        >
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-[#244074] via-blue-500 to-sky-400 transition-all duration-500 ease-out"
+            style={{ width: `${percentage}%` }}
+          />
         </div>
       </div>
+
+      {/* Checklist toggle */}
+      <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-200/70 pt-3 dark:border-white/[0.07]">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+            Insight sections
+          </span>
+
+          {failedCount > 0 && (
+            <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-medium text-red-600 dark:bg-red-400/10 dark:text-red-400">
+              {failedCount} failed
+            </span>
+          )}
+
+          {busy && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-blue-600 dark:text-blue-400">
+              <LoaderCircle className="h-3 w-3 animate-spin" />
+              Working
+            </span>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setExpanded((previous) => !previous)}
+          aria-expanded={expanded}
+          aria-label={
+            expanded ? "Collapse insight sections" : "Expand insight sections"
+          }
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-slate-200"
+        >
+          {expanded ? "Hide details" : "View details"}
+
+          <ChevronDown
+            className={`h-3.5 w-3.5 transition-transform duration-200 ${
+              expanded ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+      </div>
+
+      {/* Expandable insight cards */}
+      <div
+        aria-hidden={!expanded}
+        className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out motion-reduce:transition-none ${
+          expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {orderedCheckpoints.map((section, index) => {
+              const status = getStatus(section.key);
+              const failure = failedSections.get(section.key);
+              const SectionIcon = section.icon;
+
+              const accent =
+                SECTION_ACCENTS[section.key] ?? SECTION_ACCENTS.retention;
+
+              const isActive = status === "loading" || status === "generating";
+              const isComplete = status === "saved" || status === "generated";
+              const isFailed = status === "failed";
+
+              return (
+                <li
+                  key={section.key}
+                  className={`group relative isolate overflow-hidden rounded-2xl border p-4 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl motion-reduce:transform-none motion-reduce:transition-none ${
+                    isFailed
+                      ? "border-red-400/20 bg-[#211b25] dark:border-red-400/20 dark:bg-[#211b25]"
+                      : "border-slate-200/80 bg-white dark:border-[#293750] dark:bg-[#182338]"
+                  } ${accent.border} ${accent.glow}`}
+                  style={{ animationDelay: `${index * 45}ms` }}
+                >
+                  {/* Decorative background glow */}
+                  <div
+                    className={`pointer-events-none absolute -right-10 -top-10 -z-10 h-36 w-36 rounded-full opacity-15 blur-3xl transition-opacity duration-300 group-hover:opacity-85 ${
+                      isFailed ? "bg-red-500" : accent.icon.split(" ")[0]
+                    }`}
+                  />
+
+                  <div className="flex items-start gap-3">
+                    {/* Large feature icon */}
+                    <div className="relative shrink-0">
+                      <div
+                        className={`flex h-[68px] w-[68px] items-center justify-center rounded-[20px] transition-all duration-300 group-hover:scale-110 group-hover:rotate-[-4deg] ${
+                          accent.icon
+                        }`}
+                      >
+                        <SectionIcon
+                          className={`h-8 w-8 transition-transform duration-300 ${
+                            isActive ? "animate-pulse" : ""
+                          }`}
+                          strokeWidth={1.8}
+                        />
+                      </div>
+
+                      {/* Floating status indicator */}
+                      <div
+                        className={`absolute -bottom-1.5 -right-1.5 flex h-7 w-7 items-center justify-center rounded-full border-[3px] border-white shadow-sm dark:border-[#111827] ${
+                          isComplete
+                            ? "bg-emerald-500 text-white"
+                            : isActive
+                              ? "bg-blue-500 text-white"
+                              : isFailed
+                                ? "bg-red-500 text-white"
+                                : "bg-slate-300 text-white dark:bg-slate-600"
+                        }`}
+                      >
+                        {isComplete && <CheckCircle2 className="h-3.5 w-3.5" />}
+                        {isActive && (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        )}
+                        {isFailed && <X className="h-3.5 w-3.5" />}
+                        {status === "pending" && <Clock className="h-3 w-3" />}
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="min-w-0 flex-1 pt-0.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                            isComplete
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                              : isActive
+                                ? "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+                                : isFailed
+                                  ? "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                                  : "bg-slate-100 text-slate-500 dark:bg-white/[0.06] dark:text-slate-400"
+                          }`}
+                        >
+                          {STATUS_LABELS[status]}
+                        </span>
+
+                        <span className="text-[10px] font-medium text-slate-400">
+                          {String(index + 1).padStart(2, "0")} / 07
+                        </span>
+                      </div>
+
+                      <h4 className="mt-2 text-sm font-bold leading-snug text-slate-800 dark:text-slate-100">
+                        {section.label}
+                      </h4>
+
+                      <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                        {isComplete
+                          ? "Insights are ready to explore"
+                          : isActive
+                            ? "Analyzing your business data..."
+                            : isFailed
+                              ? "Generation couldn't be completed"
+                              : "Waiting for generation"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Bottom accent */}
+                  <div className="mt-4 flex items-center justify-between border-t border-slate-200/70 pt-3 dark:border-white/[0.07]">
+                    <span
+                      className={`text-[11px] font-semibold ${accent.text}`}
+                    >
+                      {section.label}
+                    </span>
+
+                    <div className="flex items-center gap-1.5">
+                      {isComplete && (
+                        <>
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                          <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                            Completed
+                          </span>
+                        </>
+                      )}
+
+                      {isActive && (
+                        <>
+                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500" />
+                          <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+                            In progress
+                          </span>
+                        </>
+                      )}
+
+                      {status === "pending" && (
+                        <span className="text-[10px] font-medium text-slate-400">
+                          Not started
+                        </span>
+                      )}
+
+                      {isFailed && (
+                        <span className="text-[10px] font-semibold text-red-600 dark:text-red-400">
+                          Needs attention
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Failure information */}
+                  {failure && (
+                    <div className="mt-3 rounded-xl border border-red-200/80 bg-red-100/60 px-3 py-2 dark:border-red-500/20 dark:bg-red-500/[0.06]">
+                      <p className="text-xs font-medium text-red-700 dark:text-red-400">
+                        {failure.message}
+                      </p>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* Generation activity footer */}
+          {progress && (
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 px-3 py-2.5 dark:bg-white/[0.025]">
+              <div className="flex items-center gap-2">
+                {isGenerating ? (
+                  <LoaderCircle className="h-3.5 w-3.5 animate-spin text-blue-500" />
+                ) : (
+                  <Sparkles className="h-3.5 w-3.5 text-slate-400" />
+                )}
+
+                <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                  {progress.done} of {progress.total} generation tasks processed
+                </span>
+              </div>
+
+              {progress.failed.length > 0 && (
+                <span className="rounded-full bg-red-100 px-2 py-1 text-[9px] font-semibold text-red-700 dark:bg-red-400/10 dark:text-red-300">
+                  {progress.failed.length} failed
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Small completion hint when collapsed */}
+      {!expanded && !busy && (
+        <div className="mt-3 flex items-center gap-1.5 text-[10px] text-slate-400">
+          <ArrowRight className="h-3 w-3" />
+          {failedCount > 0
+            ? "Expand to review sections that need attention."
+            : completedCount === totalCount
+              ? "All insight sections are available."
+              : `${missingSections.length} sections are waiting to be generated.`}
+        </div>
+      )}
     </section>
   );
 }

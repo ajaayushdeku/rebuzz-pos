@@ -5,7 +5,16 @@ import ProductFormModal from "@/components/product/ProductFormModal";
 import { useProductsList } from "@/hooks/useProductsList";
 import { useSubscriptionType } from "@/hooks/useSubscriptionType";
 import { FREE_PRODUCT_LIMIT, parseSubscription } from "@/lib/config/plans";
-import { Loader2, TriangleAlert } from "lucide-react";
+import {
+  Loader2,
+  Search,
+  X,
+  TriangleAlert,
+  PanelTop,
+  PanelRightOpen,
+  SlidersHorizontal,
+  ChevronDown,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 import AiKeyRequiredNotice from "@/components/aiInsights/AiKeyRequiredNotice";
@@ -40,8 +49,7 @@ import type { SalesRecommendation } from "@/lib/ai-insights/sections/salesRecomm
 import type { SlowItemInsight } from "@/lib/ai-insights/sections/slowItems";
 import type { StaffingInsight } from "@/lib/ai-insights/sections/staffing";
 import type { PeriodKind } from "@/services/apiPeriodInsights.client";
-import PeriodProgressVisualizer from "./PeriodProgressVisualizer";
-import ProviderFallbackStatus from "./ProviderFallbackStatus";
+
 import ProviderSwitchNotice from "./sections/ProviderSwitchNotice";
 import type { Product } from "@/lib/types/product";
 import ProductDetailModal from "../product/ProductDetailModal";
@@ -49,6 +57,7 @@ import EditAddonModal, {
   AddonFormValues,
 } from "../settingsComponents/addons/EditAddonModal";
 import { useCreateAddon } from "@/hooks/useAddons";
+import PeriodInsightsOverview from "./PeriodInsightsOverview";
 
 const emptyAddonForm: AddonFormValues = {
   name: "",
@@ -390,7 +399,7 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
   const stored = insights.data?.sections ?? {};
   const period = insights.data?.period;
   const missing = insights.data?.missing ?? [];
-  const totalSections = insights.data?.totalSections ?? 0;
+  // const totalSections = insights.data?.totalSections ?? 0;
 
   const generation = useGeneratePeriod(kind, periodId ?? "");
 
@@ -401,6 +410,7 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
   const [shortlisted, setShortlisted] = useState<ReadonlySet<string>>(
     new Set(),
   );
+  const [searchQuery, setSearchQuery] = useState("");
 
   const dismiss = (id: string) => setDismissed((prev) => new Set(prev).add(id));
   const toggleShortlist = (id: string) =>
@@ -477,7 +487,13 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
   const sales = keep(salesRecommendations.data?.items ?? []);
   const retention = keep(retentionSection.data?.items ?? []);
   const staffing = keep(staffingSection.data?.items ?? []);
-  const festivals = keep(festivalPrep.data?.items ?? []);
+  const festivals = keep(
+    (festivalPrep.data?.items ?? []).filter(
+      (item) =>
+        !searchQuery ||
+        item.label.toLowerCase().includes(searchQuery.toLowerCase()),
+    ),
+  );
 
   // Generated sections lead in the order they were first generated; sections
   // still working, failed, or not yet generated follow in that order.
@@ -524,6 +540,9 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
           items={pricing}
           state={pricingSection}
           onDismiss={dismiss}
+          kind={kind}
+          periodId={periodId ?? ""}
+          promptVersion={stored.pricing?.promptVersion ?? "v4"}
         />
       ),
     },
@@ -561,35 +580,47 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
       ),
     },
   ];
-  const orderedPeriodSections = periodSections.sort((a, b) => {
-    const order = (section: (typeof periodSections)[number]) => {
-      // Check if data exists AND has items (not empty)
-      const hasDataWithItems = section.state.data
-        ? Array.isArray(section.state.data.items)
-          ? section.state.data.items.length > 0
-          : false
-        : false;
-
-      if (hasDataWithItems) {
-        const generatedAt = section.state.data?.generatedAt;
-        const timestamp = generatedAt
-          ? Date.parse(generatedAt)
-          : Number.POSITIVE_INFINITY;
-        return [
-          0,
-          Number.isNaN(timestamp) ? Number.POSITIVE_INFINITY : timestamp,
-        ];
+  const orderedPeriodSections = periodSections
+    .filter((section) => {
+      const sectionId = section.id;
+      // Filter by search query - match against section id
+      if (
+        searchQuery &&
+        !sectionId.toLowerCase().includes(searchQuery.toLowerCase())
+      ) {
+        return false;
       }
-      if (section.state.isFetching) return [1, 0];
-      if (section.state.isError) return [2, 0];
-      // Sections with data but no items, or no data at all, go to bottom
-      return [3, 0];
-    };
+      return true;
+    })
+    .sort((a, b) => {
+      const order = (section: (typeof periodSections)[number]) => {
+        // Check if data exists AND has items (not empty)
+        const hasDataWithItems = section.state.data
+          ? Array.isArray(section.state.data.items)
+            ? section.state.data.items.length > 0
+            : false
+          : false;
 
-    const [aGroup, aTime] = order(a);
-    const [bGroup, bTime] = order(b);
-    return aGroup - bGroup || aTime - bTime;
-  });
+        if (hasDataWithItems) {
+          const generatedAt = section.state.data?.generatedAt;
+          const timestamp = generatedAt
+            ? Date.parse(generatedAt)
+            : Number.POSITIVE_INFINITY;
+          return [
+            0,
+            Number.isNaN(timestamp) ? Number.POSITIVE_INFINITY : timestamp,
+          ];
+        }
+        if (section.state.isFetching) return [1, 0];
+        if (section.state.isError) return [2, 0];
+        // Sections with data but no items, or no data at all, go to bottom
+        return [3, 0];
+      };
+
+      const [aGroup, aTime] = order(a);
+      const [bGroup, bTime] = order(b);
+      return aGroup - bGroup || aTime - bTime;
+    });
 
   /**
    * Generate whatever this period is missing.
@@ -627,6 +658,9 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
     }
   };
 
+  // const [controlsOpen, setControlsOpen] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+
   if (needsKey) {
     // One notice instead of the whole page: with no key nothing here can be
     // generated, and seven identical panels read as seven broken features.
@@ -634,14 +668,13 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex relative flex-col gap-3">
       <PeriodSelector
         kind={kind}
         periodId={periodId}
         onChange={(next) => {
           if (next.kind !== kind) {
             setKind(next.kind);
-            // The new kind's own default, rather than an id from the old one.
             setChosenId(null);
           } else {
             setChosenId(next.periodId);
@@ -650,114 +683,228 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
           setDismissed(new Set());
           setShortlisted(new Set());
         }}
+        showControls={showControls}
+        onToggleControls={() => setShowControls((prev) => !prev)}
       />
+      {/* 
+      <button
+        type="button"
+        onClick={() => setControlsOpen(true)}
+        aria-label="Open insights controls"
+        aria-expanded={controlsOpen}
+        className="
+    fixed right-0 top-1/2 z-40
+    flex -translate-y-1/2 items-center justify-center
+    rounded-l-xl border border-r-0 border-slate-200
+    bg-white p-3 text-[#244074]
+    shadow-[0_4px_20px_rgba(15,23,42,0.14)]
+    transition-all duration-200
+    hover:bg-blue-50 hover:pr-4
+    dark:border-[#293750] dark:bg-[#182338]
+    dark:text-blue-300 dark:hover:bg-[#263750]
+  "
+      >
+        <SlidersHorizontal size={19} />
+      </button>
 
-      {/* Automatic provider switch notification */}
-      <ProviderSwitchNotice
-        fallbackFrom={keyStatus.data?.fellBackFrom}
-        providerId={keyStatus.data?.provider}
-      />
+    
+      {controlsOpen && (
+        <button
+          type="button"
+          aria-label="Close insights controls"
+          onClick={() => setControlsOpen(false)}
+          className="fixed inset-0 z-50 cursor-default bg-slate-950/35 backdrop-blur-[2px]"
+        />
+      )} */}
 
-      {/* Said once, above the cards: the sales are historical, the prices are
-          not. Per-section tooltips were the wrong place — they open on hover and
-          not at all on a touch screen. */}
-      <PeriodPricesNote period={period} />
+      {/* Controls drawer - kept mounted to preserve component state */}
+      {/* <aside
+        aria-label="Insights controls"
+        aria-hidden={!controlsOpen}
+        inert={!controlsOpen}
+        className={`
+    fixed right-0 top-0 z-[60]
+    flex h-dvh w-full max-w-[730px] flex-col
+    bg-white shadow-2xl
+    transition-transform duration-300 ease-out
+    motion-reduce:transition-none
+    dark:bg-[#111b2d]
+    ${controlsOpen ? "translate-x-0" : "translate-x-full"}
+  `}
+      >
+      
+        <div className="flex shrink-0 items-center justify-between px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-blue-50 text-[#244074] dark:bg-blue-400/10 dark:text-blue-300">
+              <SlidersHorizontal size={17} />
+            </div>
 
-      {/* While a run is going: what is done, and what failed. A spinner alone
-          would say nothing for the minute or so this takes. */}
-      {generation.progress && (
-        <div
-          role="status"
-          className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-3 text-[12px] text-[#3c4043] dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-[#e8ecf4]"
-        >
-          {generation.isRunning ? (
-            <Loader2
-              className="h-3.5 w-3.5 animate-spin text-blue-600 dark:text-blue-300"
-              aria-hidden
+            <div>
+              <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                Insights controls
+              </h2>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Generation status and pricing context
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setControlsOpen(false)}
+            aria-label="Close controls"
+            className="
+        rounded-lg p-2 text-slate-500 transition-colors
+        hover:bg-slate-100 hover:text-slate-800
+        dark:text-slate-400 dark:hover:bg-white/10
+        dark:hover:text-white
+      "
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+   
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 pb-6"> */}
+      <div
+        aria-hidden={!showControls}
+        className={`
+    grid transition-[grid-template-rows,opacity]
+    duration-400 ease-in-out
+    motion-reduce:transition-none
+    ${
+      showControls ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+    }
+  `}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div
+            className={`
+        flex flex-col gap-4
+        transition-transform duration-400 ease-in-out
+        motion-reduce:transition-none
+        ${showControls ? "translate-y-0" : "-translate-y-2"}
+      `}
+          >
+            {generation.progress && (
+              <div
+                role="status"
+                className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-3 text-[12px] text-[#3c4043] dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-[#e8ecf4]"
+              >
+                {generation.isRunning && (
+                  <Loader2
+                    className="h-3.5 w-3.5 animate-spin text-blue-600 dark:text-blue-300"
+                    aria-hidden
+                  />
+                )}
+
+                <span>
+                  {generation.progress.done} of {generation.progress.total}{" "}
+                  sections
+                  {period ? ` for ${period.label}` : ""}
+                  {generation.isRunning ? " — generating…" : " generated."}
+                </span>
+
+                {generation.progress.failed.length > 0 && (
+                  <span className="inline-flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
+                    <TriangleAlert className="h-3.5 w-3.5" aria-hidden />
+                    {generation.progress.failed.length} failed
+                  </span>
+                )}
+              </div>
+            )}
+
+            {!isAdmin && missing.length > 0 && !insights.isLoading && (
+              <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
+                Only the business admin can generate insights.
+              </p>
+            )}
+
+            <PeriodPricesNote period={period} />
+
+            <PeriodInsightsOverview
+              periodLabel={period?.label}
+              isLoading={insights.isLoading || periodList.isLoading}
+              isGenerating={generation.isRunning}
+              storedSections={stored}
+              missingSections={missing}
+              progress={generation.progress}
+              canGenerate={isAdmin && !needsKey}
+              providers={keyStatus.data?.providers ?? []}
+              primaryProvider={keyStatus.data?.provider ?? ""}
+              providerSwitchNotice={
+                <ProviderSwitchNotice
+                  fallbackFrom={keyStatus.data?.fellBackFrom}
+                  providerId={keyStatus.data?.provider}
+                />
+              }
+              onGenerate={() => void generateMissing()}
             />
-          ) : null}
-          <span>
-            {generation.progress.done} of {generation.progress.total} sections
-            {period ? ` for ${period.label}` : ""}
-            {generation.isRunning ? " — generating…" : " generated."}
-          </span>
-          {generation.progress.failed.length > 0 && (
-            <span className="inline-flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
-              <TriangleAlert className="h-3.5 w-3.5" aria-hidden />
-              {generation.progress.failed.length} failed
-            </span>
+          </div>
+          {/* // </aside> */}
+          {/* )} */}
+        </div>
+      </div>
+
+      {/* Insights search */}
+      <div className="flex items-center gap-3 mb-3">
+        <div className="relative min-w-0 flex-1">
+          <Search
+            className="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 transition-colors dark:text-slate-500"
+            aria-hidden="true"
+            strokeWidth={1.8}
+          />
+
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search insights..."
+            aria-label="Search insights"
+            className="h-12 w-full rounded-xl border border-slate-200/90 bg-white pl-11 pr-11 text-[13px] font-normal tracking-[0.01em] text-slate-700 shadow-sm shadow-slate-900/[0.02] outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-[#244074]/50 focus:ring-[3px] focus:ring-[#244074]/[0.08] dark:border-white/[0.09] dark:bg-[#151d2d] dark:text-slate-200 dark:shadow-black/10 dark:placeholder:text-slate-500 dark:hover:border-white/15 dark:focus:border-blue-400/50 dark:focus:ring-blue-400/[0.09]"
+          />
+
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              aria-label="Clear search"
+              className="absolute right-2.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition-all duration-200 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-white/[0.07] dark:hover:text-slate-200"
+            >
+              <X className="h-4 w-4" strokeWidth={1.8} />
+            </button>
           )}
         </div>
-      )}
-
-      {/* The generate action lives inside the progress card below, next to the
-          checklist that names what is missing — not in a banner of its own.
-          Non-admins get the reason there instead of a hidden button. */}
-      {!isAdmin && missing.length > 0 && !insights.isLoading && (
-        <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
-          Only the business admin can generate insights.
-        </p>
-      )}
-
-      <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-10 lg:gap-4">
-        {/* Main progress visualizer - 70% */}
-        <div className="min-w-0 lg:col-span-7">
-          <PeriodProgressVisualizer
-            periodLabel={period?.label}
-            isLoading={insights.isLoading || periodList.isLoading}
-            isGenerating={generation.isRunning}
-            storedSections={stored}
-            missingSections={missing}
-            progress={generation.progress}
-            canGenerate={isAdmin && !needsKey}
-            onGenerate={() => void generateMissing()}
-          />
-        </div>
-
-        {/* Supporting provider status - 30% */}
-        <div className="min-w-0 lg:col-span-3">
-          <ProviderFallbackStatus
-            providers={keyStatus.data?.providers ?? []}
-            primaryProvider={keyStatus.data?.provider ?? ""}
-          />
-        </div>
       </div>
 
-      <div className="flex flex-col gap-3 mt-4">
-        {/* Everything inside names the period in its own copy — "September 2026"
-            rather than "the last 30 days". The festival section below is outside
-            on purpose: it is about what is coming, so the rolling wording it
-            already had is the correct one for it. */}
-        <PeriodLabelProvider
-          value={
-            period
-              ? { label: period.label, previousLabel: period.previous?.label }
-              : null
-          }
-        >
-          {/* One boundary per section, so a failure in one cannot blank the rest. */}
-          <div className="flex flex-col gap-2">
-            {orderedPeriodSections.map(({ id, view }, index) => (
-              <div key={id}>
-                <ChartErrorBoundary>{view}</ChartErrorBoundary>
-                {/* {index < orderedPeriodSections.length - 1 && ( */}
-                <div className="my-6 border-t border-gray-200 dark:border-white/10" />
-                {/* )} */}
-              </div>
-            ))}
-          </div>
-        </PeriodLabelProvider>
+      {/* Period insights and festival prep */}
+      <PeriodLabelProvider
+        value={
+          period
+            ? {
+                label: period.label,
+                previousLabel: period.previous?.label,
+              }
+            : null
+        }
+      >
+        <div className="flex flex-col gap-2">
+          {orderedPeriodSections.map(({ id, view }) => (
+            <div key={id}>
+              <ChartErrorBoundary>{view}</ChartErrorBoundary>
+              <div className="my-6 border-t border-gray-200 dark:border-white/10" />
+            </div>
+          ))}
+        </div>
+      </PeriodLabelProvider>
 
-        {/* Last, and outside the period selector: this one is about what is
-            coming, not about the period above. */}
-        <ChartErrorBoundary>
-          <FestivalPrepSection
-            items={festivals}
-            state={festivalPrep}
-            onDismiss={dismiss}
-          />
-        </ChartErrorBoundary>
-      </div>
+      <ChartErrorBoundary>
+        <FestivalPrepSection
+          items={festivals}
+          state={festivalPrep}
+          onDismiss={dismiss}
+        />
+      </ChartErrorBoundary>
 
       {pendingSuggestionStatus && (
         <div
@@ -795,16 +942,6 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
           </button>
         </div>
       )}
-      {/* <ProductFormModal
-        open={productModalOpen}
-        onClose={() => setProductModalOpen(false)}
-        initialValues={productInitialValues}
-        limitReached={atLimit}
-        onSuccess={() => {
-          setProductModalOpen(false);
-          setSelectedMenuSuggestion(null);
-        }}
-      /> */}
 
       <ProductDetailModal
         open={!!viewingProduct}

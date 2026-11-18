@@ -20,12 +20,6 @@ export default function ProviderLogo({
   provider,
   size = 20,
   className,
-  /**
-   * Overrides the provider's own colours. For a mark sitting on the
-   * provider's button, where the gradient would fight the background it is
-   * drawn on and the button's own ink is the only colour guaranteed to read.
-   * Applies to both themes: a caller that names a colour has already decided.
-   */
   paint: override,
 }: {
   provider: string;

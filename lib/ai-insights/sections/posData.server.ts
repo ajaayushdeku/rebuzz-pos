@@ -134,7 +134,9 @@ export function moreCacheKey(
  * flow has no `after` timestamp to offer, and inventing one to satisfy a
  * parameter that is never read would be worse than widening the door.
  */
-export function alreadyShownBriefing(more: { exclude: string[] } | null): string {
+export function alreadyShownBriefing(
+  more: { exclude: string[] } | null,
+): string {
   if (!more || more.exclude.length === 0) return "";
   return [
     "",
@@ -330,6 +332,12 @@ export async function fetchMenu(token: string): Promise<MenuProduct[]> {
       variantNames: variants
         .map((v) => v.optionValues.join(" · "))
         .filter(Boolean),
+      variants: variants.map((variant) => ({
+        id: variant.id,
+        optionValues: variant.optionValues,
+        price: variant.price,
+        costPrice: variant.costPrice,
+      })),
     };
   });
 }

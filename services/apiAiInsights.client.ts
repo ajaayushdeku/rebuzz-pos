@@ -411,3 +411,93 @@ export async function dismissMenuSuggestion(
 // ): Promise<unknown> {
 //   return patchMenuSuggestion(input, "dismiss");
 // }
+
+type PricingPeriodKind = "month" | "quarter" | "year";
+
+interface PricingActionInput {
+  kind: PricingPeriodKind;
+  id: string;
+  promptVersion: string;
+  suggestionId: string;
+}
+
+/**
+ * Shared request for changing a stored pricing suggestion's status.
+ */
+async function patchPricingSuggestion(
+  input: PricingActionInput,
+  action: "dismiss" | "apply",
+  payload?: {
+    actionType: "price-updated" | "discount-removed";
+    productId: string;
+    variantId?: string;
+    previousValue?: number;
+    appliedValue?: number;
+  },
+): Promise<unknown> {
+  const { kind, id, promptVersion, suggestionId } = input;
+
+  const url =
+    `/api/period-insights/${encodeURIComponent(kind)}` +
+    `/${encodeURIComponent(id)}` +
+    `/pricing/${encodeURIComponent(promptVersion)}` +
+    `/items/${encodeURIComponent(suggestionId)}/${action}`;
+
+  let res: Response;
+
+  try {
+    res = await fetch(url, {
+      method: "PATCH",
+      ...(payload
+        ? {
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }
+        : {}),
+      cache: "no-store",
+    });
+  } catch {
+    throw new AiInsightsError(
+      "NETWORK",
+      "Couldn't reach the server. Check your connection and try again.",
+    );
+  }
+
+  const json = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw errorFromBody(json);
+  }
+
+  return json?.data;
+}
+
+/**
+ * Persist a dismissed pricing suggestion.
+ */
+export async function dismissPricingSuggestion(
+  input: PricingActionInput,
+): Promise<unknown> {
+  return patchPricingSuggestion(input, "dismiss");
+}
+
+/**
+ * Persist an applied pricing action.
+ */
+export async function applyPricingSuggestion(
+  input: PricingActionInput & {
+    actionType: "price-updated" | "discount-removed";
+    productId: string;
+    variantId?: string;
+    previousValue?: number;
+    appliedValue?: number;
+  },
+): Promise<unknown> {
+  const { kind, id, promptVersion, suggestionId, ...payload } = input;
+
+  return patchPricingSuggestion(
+    { kind, id, promptVersion, suggestionId },
+    "apply",
+    payload,
+  );
+}

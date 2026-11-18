@@ -5,6 +5,7 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   BadgePercent,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
   Hourglass,
@@ -42,11 +43,18 @@ import {
 } from "../parts";
 import {
   fetchProductsListClient,
+  fetchProductVariant,
+  updateProductVariant,
   removeProductDiscounts,
   updateProduct,
 } from "@/services/product/apiProduct.client";
 import { useDiscounts } from "@/hooks/useDiscounts";
 import { Discount } from "@/services/apiDiscounts.client";
+import {
+  useApplyPricingSuggestion,
+  useDismissPricingSuggestion,
+} from "@/hooks/usePeriodInsights";
+import type { PeriodKind } from "@/services/apiPeriodInsights.client";
 
 /** Each kind of finding: its label, a small icon, and the card's accent. */
 const KIND: Record<
@@ -244,6 +252,9 @@ function PricingCard({
 
   const up = price !== null && price > f.price;
   const hasSuggestion = price !== null || discount !== null;
+  const isDismissed = item.status === "dismissed";
+  const isApplied = item.status === "applied";
+  const isCompleted = isDismissed || isApplied;
 
   return (
     <InsightCard
@@ -260,11 +271,25 @@ function PricingCard({
         </>
       }
       title={f.name}
-      onDismiss={() => onDismiss(item.id)}
+      onDismiss={() => {
+        if (!isCompleted) onDismiss(item.id);
+      }}
       dismissLabel={f.name}
       metrics={metrics}
       footer={
-        price !== null && f.productId ? (
+        isApplied ? (
+          <div className="flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs font-semibold text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
+            <CheckCircle2 size={14} aria-hidden />
+            {item.actionType === "price-updated"
+              ? "Price updated"
+              : "Discount removed"}
+          </div>
+        ) : isDismissed ? (
+          <div className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f8f9fa] px-3 py-2.5 text-xs font-medium text-[#6b7280] dark:border-white/10 dark:bg-white/[0.03] dark:text-[#a9b4c7]">
+            <CheckCircle2 size={14} aria-hidden />
+            Dismissed
+          </div>
+        ) : price !== null && f.productId ? (
           <button
             type="button"
             onClick={() => onApplyPrice(item)}
@@ -743,10 +768,16 @@ export default function PricingSection({
   items,
   state,
   onDismiss,
+  kind,
+  periodId,
+  promptVersion,
 }: {
   items: PricingInsight[];
   state: AiSectionState<PricingInsight>;
   onDismiss: (id: string) => void;
+  kind: PeriodKind;
+  periodId: string;
+  promptVersion: string;
 }) {
   const windowText = useWindowPhrase(
     `your last ${PRICING_WEEKS} weeks of sales`,
@@ -755,6 +786,8 @@ export default function PricingSection({
   const [isBodyExpanded, setIsBodyExpanded] = useState(true);
 
   const queryClient = useQueryClient();
+  const dismissPricing = useDismissPricingSuggestion();
+  const applyPricing = useApplyPricingSuggestion();
 
   const [selectedItem, setSelectedItem] = useState<PricingInsight | null>(null);
 
@@ -776,6 +809,115 @@ export default function PricingSection({
 
     setSelectedItem(item);
     setPriceDraft(String(item.suggestedPrice));
+  };
+
+  const handleDismiss = async (suggestionId: string) => {
+    if (dismissPricing.isPending) return;
+
+    try {
+      await dismissPricing.mutateAsync({
+        kind,
+        id: periodId,
+        promptVersion,
+        suggestionId,
+      });
+
+      // Update the parent's local dismissed state only after persistence.
+      onDismiss(suggestionId);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to dismiss pricing suggestion.",
+      );
+    }
+  };
+
+  // const persistPricingAction = async ({
+  //   item,
+  //   actionType,
+  //   previousValue,
+  //   appliedValue,
+  // }: {
+  //   item: PricingInsight;
+  //   actionType: "price-updated" | "discount-removed";
+  //   previousValue?: number;
+  //   appliedValue?: number;
+  // }): Promise<boolean> => {
+  //   const productId = item.facts.productId;
+
+  //   if (!productId) return false;
+
+  //   try {
+  //     const url =
+  //       `/api/period-insights/${encodeURIComponent(kind)}` +
+  //       `/${encodeURIComponent(periodId)}` +
+  //       `/pricing/${encodeURIComponent(promptVersion)}` +
+  //       `/items/${encodeURIComponent(item.id)}/apply`;
+
+  //     const response = await fetch(url, {
+  //       method: "PATCH",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         actionType,
+  //         productId,
+  //         ...(item.facts.variantId ? { variantId: item.facts.variantId } : {}),
+  //         ...(previousValue !== undefined ? { previousValue } : {}),
+  //         ...(appliedValue !== undefined ? { appliedValue } : {}),
+  //       }),
+  //     });
+
+  //     if (!response.ok) {
+  //       const result = await response.json().catch(() => ({}));
+
+  //       console.error("[pricing-insights] Failed to persist action:", result);
+
+  //       return false;
+  //     }
+
+  //     return true;
+  //   } catch (error) {
+  //     console.error("[pricing-insights] Failed to persist action:", error);
+
+  //     return false;
+  //   }
+  // };
+  const persistPricingAction = async ({
+    item,
+    actionType,
+    previousValue,
+    appliedValue,
+  }: {
+    item: PricingInsight;
+    actionType: "price-updated" | "discount-removed";
+    previousValue?: number;
+    appliedValue?: number;
+  }): Promise<boolean> => {
+    const productId = item.facts.productId;
+
+    if (!productId) return false;
+
+    try {
+      await applyPricing.mutateAsync({
+        kind,
+        id: periodId,
+        promptVersion,
+        suggestionId: item.id,
+        actionType,
+        productId,
+        ...(item.facts.variantId ? { variantId: item.facts.variantId } : {}),
+        ...(previousValue !== undefined ? { previousValue } : {}),
+        ...(appliedValue !== undefined ? { appliedValue } : {}),
+      });
+
+      return true;
+    } catch (error) {
+      console.error("[pricing-insights] Failed to persist action:", error);
+
+      return false;
+    }
   };
 
   const handleClosePriceModal = () => {
@@ -812,8 +954,43 @@ export default function PricingSection({
     setIsUpdatingPrice(true);
 
     try {
-      await updateProduct(productId, {
-        price: newPrice,
+      if (selectedItem.facts.variantId) {
+        const variantId = selectedItem.facts.variantId;
+
+        // Always fetch the latest complete variant configuration.
+        const config = await fetchProductVariant(productId);
+
+        const targetExists = config.variantItems.some(
+          (item) => item._id === variantId,
+        );
+
+        if (!targetExists) {
+          throw new Error(
+            "This variant no longer exists. Refresh the pricing insights and try again.",
+          );
+        }
+
+        // Change only the selected variant's price.
+        const updatedVariantItems = config.variantItems.map((item) =>
+          item._id === variantId ? { ...item, price: newPrice } : item,
+        );
+
+        await updateProductVariant(productId, {
+          options: config.options,
+          variantItems: updatedVariantItems,
+        });
+      } else {
+        // Keep the existing regular product update behavior.
+        await updateProduct(productId, {
+          price: newPrice,
+        });
+      }
+
+      const statusSaved = await persistPricingAction({
+        item: selectedItem,
+        actionType: "price-updated",
+        previousValue: currentPrice,
+        appliedValue: newPrice,
       });
 
       await Promise.all([
@@ -830,13 +1007,17 @@ export default function PricingSection({
 
       toast.success(`${selectedItem.facts.name} price updated successfully.`);
 
+      if (!statusSaved) {
+        toast.error(
+          "Price updated, but the insight status could not be saved.",
+        );
+      }
+
       setSelectedItem(null);
       setPriceDraft("");
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to update selling price.",
+        error instanceof Error ? error.message : "Failed to update price.",
       );
     } finally {
       setIsUpdatingPrice(false);
@@ -912,6 +1093,11 @@ export default function PricingSection({
     try {
       await removeProductDiscounts(productId, [discountId]);
 
+      const statusSaved = await persistPricingAction({
+        item: selectedDiscountItem,
+        actionType: "discount-removed",
+      });
+
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: productKeys.lists(),
@@ -931,6 +1117,12 @@ export default function PricingSection({
       toast.success(
         `${discount?.name ?? "Discount"} removed from ${selectedDiscountItem.facts.name}.`,
       );
+
+      if (!statusSaved) {
+        toast.error(
+          "Discount removed, but the insight status could not be saved.",
+        );
+      }
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -963,7 +1155,7 @@ export default function PricingSection({
                 isBodyExpanded ? "Collapse section" : "Expand section"
               }
               title={isBodyExpanded ? "Collapse section" : "Expand section"}
-              className="inline-flex shrink-0 items-center justify-center rounded-lg border border-[#e2e6ed] bg-white p-2 text-[#737b89] transition-all duration-200 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#aab4c4] dark:hover:border-violet-400/40 dark:hover:bg-violet-400/10 dark:hover:text-violet-300"
+              className="inline-flex shrink-0 items-center justify-center rounded-lg border border-[#e2e6ed] bg-white p-2 text-[#737b89] transition-all duration-200 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600 dark:border-[#293750] dark:bg-[#182338] dark:text-[#aab4c4] dark:hover:border-emerald-400/40 dark:hover:bg-emerald-400/10 dark:hover:text-emerald-300"
             >
               {isBodyExpanded ? (
                 <ChevronUp size={15} />
@@ -996,7 +1188,7 @@ export default function PricingSection({
                 <PricingCard
                   key={item.id}
                   item={item}
-                  onDismiss={onDismiss}
+                  onDismiss={(id) => void handleDismiss(id)}
                   onApplyPrice={handleOpenPriceModal}
                   isUpdatingPrice={isUpdatingPrice}
                   onManageDiscounts={handleOpenDiscountModal}

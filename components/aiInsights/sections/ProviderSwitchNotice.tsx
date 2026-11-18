@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, X, RefreshCw } from "lucide-react";
+import { CheckCircle2, X, RefreshCw, ArrowRight, Clock3 } from "lucide-react";
 
 interface ProviderSwitchNoticeProps {
   fallbackFrom?: string | null;
@@ -46,7 +46,7 @@ export default function ProviderSwitchNotice({
 }: ProviderSwitchNoticeProps) {
   const [dismissed, setDismissed] = useState(false);
 
-  if (!fallbackFrom || !providerId || dismissed) {
+  if (!fallbackFrom || !providerId) {
     return null;
   }
 
@@ -55,51 +55,96 @@ export default function ProviderSwitchNotice({
     : null;
 
   return (
-    <div className="relative rounded-xl border border-emerald-200/80 bg-emerald-50/80 p-3.5 dark:border-emerald-400/20 dark:bg-emerald-400/[0.06]">
-      <button
-        type="button"
-        onClick={() => setDismissed(true)}
-        aria-label="Dismiss provider switch notification"
-        className="absolute right-3 top-3 rounded-md p-1 text-emerald-700/70 transition hover:bg-emerald-100 hover:text-emerald-900 dark:text-emerald-300/70 dark:hover:bg-emerald-400/10 dark:hover:text-emerald-200"
-      >
-        <X className="h-4 w-4" />
-      </button>
+    <div
+      className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out motion-reduce:transition-none ${
+        dismissed ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr] opacity-100"
+      }`}
+      aria-hidden={dismissed}
+    >
+      <div className="min-h-0 overflow-hidden">
+        <div className="relative overflow-hidden border-b border-emerald-200/70 bg-gradient-to-r from-emerald-50 via-teal-50/70 to-white p-3.5 dark:border-emerald-400/15 dark:from-emerald-400/[0.09] dark:via-teal-400/[0.045] dark:to-[#111827] sm:p-4">
+          {/* Subtle accent */}
+          <div className="absolute bottom-3 left-0 top-3 w-[3px] rounded-r-full bg-gradient-to-b from-emerald-400 to-teal-500 dark:from-emerald-400/80 dark:to-teal-400/70" />
 
-      <div className="flex items-start gap-3 pr-6">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300">
-          <CheckCircle2 className="h-5 w-5" />
-        </div>
+          {/* Dismiss */}
+          <button
+            type="button"
+            onClick={() => setDismissed(true)}
+            aria-label="Dismiss provider switch notification"
+            className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-lg text-emerald-700/60 transition-all duration-200 hover:bg-emerald-100 hover:text-emerald-900 dark:text-emerald-300/60 dark:hover:bg-emerald-400/10 dark:hover:text-emerald-200"
+          >
+            <X className="h-4 w-4" />
+          </button>
 
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-sm font-semibold text-emerald-900 dark:text-emerald-200">
-              AI provider switched successfully
-            </h3>
+          <div className="flex min-w-0 items-start gap-3 pr-7">
+            {/* Success icon */}
+            <div className="relative mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-[13px] border border-emerald-200/60 bg-gradient-to-br from-white/90 to-emerald-100/80 text-emerald-600 shadow-sm shadow-emerald-500/[0.06] dark:border-emerald-400/15 dark:from-emerald-400/[0.13] dark:to-teal-400/[0.07] dark:text-emerald-300">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent dark:from-white/[0.05]" />
+              <CheckCircle2
+                className="relative h-[21px] w-[21px]"
+                strokeWidth={1.7}
+              />
+            </div>
 
-            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300">
-              <RefreshCw className="h-3 w-3" />
-              Automatic fallback
-            </span>
-          </div>
+            {/* Content */}
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-[14px] font-medium tracking-[0.015em] text-emerald-900 dark:text-emerald-200 sm:text-[15px]">
+                  AI provider switched successfully
+                </h3>
 
-          <p className="mt-1 text-xs leading-relaxed text-emerald-800/90 dark:text-emerald-200/80">
-            Your AI Insights request was continued using{" "}
-            <strong>{getProviderLabel(providerId)}</strong> because{" "}
-            <strong>{getProviderLabel(fallbackFrom)}</strong> could not complete
-            it.
-          </p>
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200/70 bg-white/70 px-2 py-0.5 text-[9px] font-semibold tracking-wide text-emerald-700 dark:border-emerald-400/15 dark:bg-emerald-400/[0.08] dark:text-emerald-300">
+                  <RefreshCw className="h-3 w-3" />
+                  Automatic fallback
+                </span>
+              </div>
 
-          <div className="mt-2 rounded-lg bg-white/60 px-3 py-2 dark:bg-black/10">
-            <p className="text-xs text-emerald-800 dark:text-emerald-200">
-              <span className="font-semibold">Reason:</span>{" "}
-              {getReasonLabel(reason)}
-            </p>
-
-            {formattedDate && (
-              <p className="mt-1 text-[10px] text-emerald-700/70 dark:text-emerald-300/60">
-                Switched on {formattedDate}
+              <p className="mt-1.5 text-[11px] leading-[1.7] text-emerald-800/90 dark:text-emerald-200/80 sm:text-xs">
+                Your AI Insights request continued using{" "}
+                <strong className="font-semibold text-emerald-900 dark:text-emerald-100">
+                  {getProviderLabel(providerId)}
+                </strong>
+                . The original provider,{" "}
+                <strong className="font-semibold text-emerald-900 dark:text-emerald-100">
+                  {getProviderLabel(fallbackFrom)}
+                </strong>
+                , could not complete it.
               </p>
-            )}
+
+              {/* Provider transition */}
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center rounded-lg border border-emerald-200/70 bg-white/60 px-2.5 py-1.5 text-[10px] font-medium text-slate-600 dark:border-emerald-400/15 dark:bg-white/[0.035] dark:text-slate-300">
+                  {getProviderLabel(fallbackFrom)}
+                </span>
+
+                <ArrowRight
+                  className="h-3.5 w-3.5 text-emerald-600/70 dark:text-emerald-300/70"
+                  strokeWidth={1.8}
+                />
+
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200/70 bg-emerald-100/70 px-2.5 py-1.5 text-[10px] font-semibold text-emerald-800 dark:border-emerald-400/20 dark:bg-emerald-400/[0.09] dark:text-emerald-200">
+                  <CheckCircle2 className="h-3 w-3" />
+                  {getProviderLabel(providerId)}
+                </span>
+              </div>
+
+              {/* Reason and timestamp */}
+              <div className="mt-3 flex flex-col gap-1.5 rounded-xl border border-emerald-200/50 bg-white/50 px-3 py-2.5 dark:border-emerald-400/10 dark:bg-black/[0.10]">
+                <p className="text-[11px] leading-relaxed text-emerald-900/80 dark:text-emerald-200/80">
+                  <span className="font-semibold text-emerald-900 dark:text-emerald-200">
+                    Reason:
+                  </span>{" "}
+                  {getReasonLabel(reason)}
+                </p>
+
+                {formattedDate && (
+                  <p className="inline-flex items-center gap-1.5 text-[10px] text-emerald-700/70 dark:text-emerald-300/60">
+                    <Clock3 className="h-3 w-3" />
+                    Switched on {formattedDate}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

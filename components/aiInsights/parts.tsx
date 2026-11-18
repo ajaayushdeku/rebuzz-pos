@@ -121,44 +121,40 @@ export function SectionHeader({
   iconClassName: string;
   title: string;
   subtitle: ReactNode;
-  /** What the ⓘ beside the title explains: how to read the section. */
   info?: { heading: string; body: ReactNode };
   actions?: ReactNode;
-  /** The section still shows sample content; see SampleDataBadge. */
   sample?: boolean;
   align?: string;
   actionWidth?: string;
 }) {
   return (
-    // `relative`: a few sections pin their controls to the top-right on
-    // mobile, and those measure from here.
     <div
-      className={`relative mb-4 flex ${align}  items-center justify-between gap-3`}
+      className={`relative mb-4 flex ${align} items-center justify-between gap-3`}
     >
       <div className="flex min-w-0 items-center gap-3">
-        {/* A pale frame on a paler fill, as on every dashboard card, so the
-            icon's own colour carries the tile. */}
         <div
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-current/20 ${iconClassName}`}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] border border-current/15 shadow-sm ${iconClassName}`}
         >
-          <Icon size={16} />
+          <Icon size={18} strokeWidth={1.9} />
         </div>
+
         <div className="min-w-0">
-          <h3 className="flex items-center gap-1.5 text-sm font-normal text-[#3c4043] sm:text-[15px] dark:text-[#e8ecf4]">
+          <h3 className="flex min-w-0 items-center gap-1.5 text-[14px] font-medium tracking-[0.01em] text-[#27364e] sm:text-[15px] dark:text-[#e8edf7]">
             <span className="truncate">{title}</span>
             {info && (
               <CardInfo heading={info.heading} body={info.body} label={title} />
             )}
             {sample && <SampleDataBadge />}
           </h3>
-          <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug  tracking-wide text-[#9aa0a6] sm:line-clamp-none sm:text-xs dark:text-[#9aa6bd]">
+
+          <p className="mt-1 line-clamp-2 text-[11px] leading-[1.45] tracking-wide text-slate-500 sm:text-xs dark:text-slate-400">
             {subtitle}
           </p>
         </div>
       </div>
 
       {actions && (
-        <div className={`flex ${actionWidth}   items-center gap-2`}>
+        <div className={`flex ${actionWidth} shrink-0 items-center gap-2`}>
           {actions}
         </div>
       )}
@@ -396,7 +392,6 @@ export function AiSectionBody<T>({
 }: {
   state: AiSectionState<T>;
   visibleCount: number;
-  /** The skeleton's shape: rows, or a grid of cards. */
   layout: "list" | "cards";
   noSalesMessage: string;
   nothingFlaggedMessage?: string;
@@ -404,9 +399,6 @@ export function AiSectionBody<T>({
   children: ReactNode;
 }) {
   const { data } = state;
-  // Which provider is answering. The cache only serves an answer generated
-  // under the provider and model in use, so this always names the one that
-  // actually wrote what is on screen.
   const providerLabel = useAiProviderLabel();
 
   if (state.isLoading) {
@@ -415,7 +407,7 @@ export function AiSectionBody<T>({
         {[0, 1, 2].map((i) => (
           <li
             key={i}
-            className="h-12 animate-pulse rounded-xl border border-[#e8eaed] bg-[#f1f3f4] dark:border-white/10 dark:bg-white/10"
+            className="h-12 animate-pulse rounded-xl border border-slate-200/80 bg-slate-100 dark:border-[#293750] dark:bg-[#182338]"
           />
         ))}
       </ul>
@@ -427,7 +419,7 @@ export function AiSectionBody<T>({
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="h-64 animate-pulse rounded-xl border border-[#e8eaed] bg-[#f1f3f4] dark:border-white/10 dark:bg-white/10"
+            className="h-64 animate-pulse rounded-2xl border border-slate-200/80 bg-slate-100 dark:border-[#293750] dark:bg-[#182338]"
           />
         ))}
       </div>
@@ -438,53 +430,65 @@ export function AiSectionBody<T>({
     return <AiInsightsErrorState error={state.error} onRetry={state.retry} />;
   }
 
-  if (data?.reason === "NO_SALES")
+  if (data?.reason === "NO_SALES") {
     return <EmptySection message={noSalesMessage} />;
+  }
+
   if (data?.reason === "NOTHING_FLAGGED") {
     return <EmptySection message={nothingFlaggedMessage} />;
   }
-  if (visibleCount === 0) return <EmptySection message={emptyMessage} />;
+
+  if (visibleCount === 0) {
+    return <EmptySection message={emptyMessage} />;
+  }
 
   return (
     <>
       <div
-        className={`transition-opacity ${state.isRefreshing ? "opacity-50" : ""}`}
+        className={`transition-opacity duration-300 ${
+          state.isRefreshing ? "opacity-50" : "opacity-100"
+        }`}
       >
         {children}
       </div>
+
       {data?.generatedAt &&
         (data.stale ? (
-          /* Not this model's answer. Said plainly and in amber, because the
-             cards are real but older — reading them as today's work from the
-             model just chosen would be the wrong conclusion. */
-          <p className="mt-2.5 flex flex-wrap items-center justify-end gap-x-1.5 text-right text-[11px] text-amber-700 dark:text-amber-300">
-            <TriangleAlert className="h-3 w-3 shrink-0" aria-hidden />
-            <span>
+          <div className="mt-3 flex items-start justify-end gap-2 text-right">
+            <TriangleAlert
+              className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400"
+              aria-hidden
+            />
+            <p className="text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
               {staleWhy(data.staleReason)} Showing the last answer
               {data.model ? (
                 <>
                   {" from "}
-                  <span className="font-mono">{data.model}</span>
+                  <span className="font-mono font-medium">{data.model}</span>
                 </>
               ) : null}
               , written {updatedLabel(data.generatedAt)}.
-            </span>
-          </p>
+            </p>
+          </div>
         ) : (
-          <p className="mt-2.5 text-right text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
-            Written by {providerLabel ?? "AI"} from your own sales and menu
-            {/* The model as well as the provider: on OpenRouter's free router
-                the model changes between answers, and "which one wrote this"
-                is the first question when a card reads badly. */}
+          <div className="mt-5 flex flex-wrap items-center justify-end gap-x-1.5 gap-y-1 text-[11px] text-slate-500 dark:text-slate-400">
+            <span>Generated by</span>
+            <span className="font-medium text-slate-700 dark:text-slate-300">
+              {providerLabel ?? "AI"}
+            </span>
+
             {data.model && (
               <>
-                {" · "}
-                <span className="font-mono">{data.model}</span>
+                <span className="text-slate-300 dark:text-slate-600">·</span>
+                <span className="font-mono text-slate-500 dark:text-slate-400">
+                  {data.model}
+                </span>
               </>
             )}
-            {" · Updated "}
-            {updatedLabel(data.generatedAt)}
-          </p>
+
+            <span className="text-slate-300 dark:text-slate-600">·</span>
+            <span>Updated {updatedLabel(data.generatedAt)}</span>
+          </div>
         ))}
     </>
   );
@@ -830,30 +834,38 @@ export function InsightCard({
   dismissible?: boolean;
 }) {
   const a = ACCENTS[accent];
+
   return (
     <article
       className={cn(
-        "relative flex h-full flex-col overflow-hidden rounded-xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] transition-colors hover:border-[#dadce0] dark:hover:border-white/25 dark:border-white/10",
+        "relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/[0.025] transition-all duration-200 hover:border-slate-300 hover:shadow-md dark:border-[#293750] dark:bg-[#182338] dark:shadow-black/10 dark:hover:border-[#40516e]",
         STAT_ROW_ITEM_AI_INSIGHTS,
       )}
     >
-      {/* The kind of card, as a colour, before anything is read. */}
-      {/* <div className={`h-0.75 ${a.bar}`} aria-hidden /> */}
+      {/* Accent strip
+      <div className={`h-[3px] w-full ${a.bar}`} aria-hidden="true" /> */}
 
-      <header className={`flex items-start gap-3 px-5 pb-3.5 pt-4  ${a.bg}`}>
+      {/* Card heading */}
+      <header
+        className={`relative flex items-start gap-3 px-5 pb-4 pt-4 ${a.bg}`}
+      >
         {lead}
+
         <div className={`min-w-0 flex-1 ${corner ? "pr-12" : "pr-6"}`}>
           <p
-            className={`flex flex-wrap items-center gap-1 text-[10px] font-semibold uppercase tracking-wider ${a.text}`}
+            className={`flex flex-wrap items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.1em] ${a.text}`}
           >
             {label}
           </p>
-          <h3 className="mt-0.5 text-[15px] font-medium leading-snug text-[#3c4043] dark:text-[#e8ecf4]">
+
+          <h3 className="mt-1 text-[15px] font-semibold leading-snug tracking-[0.005em] text-slate-800 dark:text-[#e8edf7]">
             {title}
           </h3>
         </div>
-        <div className="absolute right-3 top-4 flex items-center gap-0.5">
+
+        <div className="absolute right-3 top-3.5 flex items-center gap-1">
           {corner}
+
           {dismissible && (
             <DismissButton
               label={dismissLabel}
@@ -864,15 +876,24 @@ export function InsightCard({
         </div>
       </header>
 
+      {/* Metrics */}
       {metrics && metrics.length > 0 && <MetricStrip metrics={metrics} />}
 
+      {/* Main content */}
       <div
-        className={`flex flex-1 flex-col gap-4 px-5 pt-4 ${footer ? "pb-4" : "pb-5"}`}
+        className={`flex flex-1 flex-col gap-4 px-5 pt-4 ${
+          footer ? "pb-4" : "pb-5"
+        }`}
       >
         {children}
       </div>
 
-      {footer && <footer className="mt-auto px-5 pb-5">{footer}</footer>}
+      {/* Footer */}
+      {footer && (
+        <footer className="mt-auto border-t border-slate-100 px-5 pb-4 pt-3 dark:border-[#293750]">
+          {footer}
+        </footer>
+      )}
     </article>
   );
 }

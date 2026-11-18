@@ -1,6 +1,12 @@
 "use client";
 
-import { CalendarRange, Check, Loader2 } from "lucide-react";
+import {
+  CalendarRange,
+  Check,
+  Loader2,
+  SlidersHorizontal,
+  ChevronDown,
+} from "lucide-react";
 
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { usePeriodList } from "@/hooks/usePeriodInsights";
@@ -25,11 +31,15 @@ export default function PeriodSelector({
   kind,
   periodId,
   onChange,
+  showControls,
+  onToggleControls,
 }: {
   kind: PeriodKind;
   /** The chosen period, or null while the default is still being fetched. */
   periodId: string | null;
   onChange: (next: { kind: PeriodKind; periodId: string }) => void;
+  showControls: boolean;
+  onToggleControls: () => void;
 }) {
   const { data, isLoading, isError } = usePeriodList(kind);
 
@@ -62,7 +72,7 @@ export default function PeriodSelector({
   });
 
   return (
-    <div className="sticky top-0 z-20 -mx-2 rounded-2xl border border-[#e3e3e3]/90 bg-white/95 p-3 shadow-md shadow-slate-900/[0.04] backdrop-blur-xl sm:-mx-0 sm:p-4 dark:border-white/10 dark:bg-[#161d2e]/95 dark:shadow-black/20">
+    <div className="sticky top-0 z-20 -mx-2 rounded-xl border border-[#e3e3e3]/90 bg-white/95 p-3 gap-2 shadow-md shadow-slate-900/[0.04] backdrop-blur-xl sm:-mx-0 sm:p-4 dark:border-white/10 dark:bg-[#161d2e]/95 dark:shadow-black/20">
       <div className="flex flex-wrap iteåms-center justify-between gap-3 sm:gap-4">
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#7b8494] dark:text-[#9aa6bd]">
@@ -72,11 +82,12 @@ export default function PeriodSelector({
 
           {/* The kinds. A row rather than a dropdown: there are three, they
               never change, and seeing all three explains what the page offers. */}
-          <div className="mt-2 inline-flex max-w-full overflow-x-auto rounded-xl border border-[#e3e7ef] bg-[#f4f6fa] p-1 dark:border-white/10 dark:bg-[#0f1420]/70">
+          <div className="mt-2 inline-flex max-w-full overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-100/80 p-1 dark:border-[#293750] dark:bg-[#111b2d]">
             {(
               data?.kinds ?? [{ kind: "month" as PeriodKind, label: "Monthly" }]
             ).map((option) => {
               const active = option.kind === kind;
+
               return (
                 <button
                   key={option.kind}
@@ -88,10 +99,10 @@ export default function PeriodSelector({
                     !active &&
                     onChange({ kind: option.kind, periodId: "latest" })
                   }
-                  className={`cursor-pointer rounded-md px-3 py-1.5 text-[12px] font-medium transition ${
+                  className={`relative shrink-0 cursor-pointer rounded-lg px-3.5 py-2 text-[12px] font-semibold tracking-[0.01em] transition-all duration-200 motion-reduce:transition-none ${
                     active
-                      ? "bg-white text-[#1b2537] shadow-sm ring-1 ring-black/[0.04] dark:bg-[#26334b] dark:text-[#f0f3f8] dark:ring-white/[0.06]"
-                      : "text-[#697386] hover:bg-white/70 hover:text-[#27364e] dark:text-[#a9b4c7] dark:hover:bg-white/5 dark:hover:text-[#e8ecf4]"
+                      ? "bg-white text-[#244074] shadow-[0_2px_6px_rgba(15,23,42,0.10)] ring-1 ring-slate-200/80 dark:bg-[#263750] dark:text-[#e6efff] dark:shadow-[0_2px_8px_rgba(0,0,0,0.24)] dark:ring-[#3a4d6b]"
+                      : "text-slate-500 hover:bg-white/70 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-[#1b2940] dark:hover:text-slate-100"
                   }`}
                 >
                   {option.label}
@@ -108,15 +119,12 @@ export default function PeriodSelector({
             onChange={(id) => onChange({ kind, periodId: id })}
             placeholder={isLoading ? "Loading periods…" : "No periods"}
             disabled={isLoading || options.length === 0}
-            // Period labels are names and counts, not words to capitalise.
             preserveCase
             ariaLabel="Period"
             periodSelectorSpread="justify-between"
           />
 
-          {/* The exact dates, because "September 2026" is not the same thing as
-              1–30 September to someone checking a figure against a report. */}
-          <p className="flex flex-wrap items-center justify-end gap-1.5 pr-1 text-right text-[11px] text-[#858d9b] dark:text-[#9aa6bd]">
+          <p className="flex flex-wrap items-center justify-between gap-1.5 px-1 text-right text-[11px] text-[#858d9b] dark:text-[#9aa6bd]">
             {isLoading && (
               <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
             )}
@@ -133,6 +141,45 @@ export default function PeriodSelector({
             )}
           </p>
         </div>
+      </div>
+
+      <div className="mt-4 border-t border-slate-200/80 pt-2.5 dark:border-[#293750]">
+        <button
+          type="button"
+          onClick={onToggleControls}
+          aria-expanded={showControls}
+          aria-label={
+            showControls ? "Hide insights settings" : "Show insights settings"
+          }
+          className="
+      group flex w-full items-center justify-center gap-2
+      rounded-lg py-0.5
+      text-[11px] font-semibold text-slate-500
+      transition-colors duration-200
+      hover:text-[#244074]
+      focus-visible:outline-none focus-visible:ring-2
+      focus-visible:ring-blue-400
+      dark:text-slate-400 dark:hover:text-blue-300 cursor-pointer
+    "
+        >
+          <SlidersHorizontal
+            size={14}
+            className={`transition-transform duration-300 ${
+              showControls ? "rotate-90 text-blue-600 dark:text-blue-300" : ""
+            }`}
+          />
+
+          <span>
+            {showControls ? "Hide insights settings" : "Show insights settings"}
+          </span>
+
+          <ChevronDown
+            size={14}
+            className={`transition-transform duration-300 ${
+              showControls ? "rotate-180" : ""
+            }`}
+          />
+        </button>
       </div>
     </div>
   );

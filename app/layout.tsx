@@ -76,6 +76,10 @@ export const metadata: Metadata = {
     description: "Manage billing, inventory and sales with Rebuzz POS.",
     images: ["/og-image.png"],
   },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default async function RootLayout({

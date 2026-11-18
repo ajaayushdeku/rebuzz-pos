@@ -86,7 +86,7 @@ export default function CustomerRetentionSection({
     <section>
       <SectionHeader
         icon={HeartHandshake}
-        iconClassName="bg-pink-50 text-pink-600 dark:text-pink-300 dark:bg-pink-400/10"
+        iconClassName="border-blue-200 bg-blue-50 text-blue-600 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-300"
         title="Customer Retention Radar"
         subtitle="Personalized messages to reconnect with regular customers"
         info={{
@@ -97,8 +97,9 @@ export default function CustomerRetentionSection({
           <>
             <SectionRefreshButton
               state={state}
-              textClassName="text-pink-700 hover:bg-pink-100 border-pink-300 hover:border-pink-400 dark:hover:border-pink-400/60 dark:hover:bg-pink-400/20 dark:border-pink-400/40 dark:text-pink-300"
-            />{" "}
+              textClassName="text-blue-700 hover:bg-blue-100 border-blue-300 hover:border-blue-400 dark:hover:border-blue-400/60 dark:hover:bg-blue-400/20 dark:border-blue-400/40 dark:text-blue-300"
+            />
+
             {/* Collapse / Expand */}
             <button
               type="button"
@@ -109,15 +110,15 @@ export default function CustomerRetentionSection({
               }
               title={isBodyExpanded ? "Collapse section" : "Expand section"}
               className="
-        inline-flex shrink-0 items-center justify-center
-        rounded-lg border border-[#e2e6ed]
-        bg-white p-2 text-[#737b89]
-        transition-all duration-200
-        hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600
-        dark:border-white/10 dark:bg-white/[0.04]
-        dark:text-[#aab4c4]
-        dark:hover:border-violet-400/40
-        dark:hover:bg-violet-400/10 dark:hover:text-violet-300
+  inline-flex shrink-0 items-center justify-center
+  rounded-lg border border-[#e2e6ed]
+  bg-white p-2 text-[#737b89]
+  transition-all duration-200
+  hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600
+  dark:border-[#293750] dark:bg-[#182338]
+  dark:text-[#aab4c4]
+  dark:hover:border-blue-400/40
+  dark:hover:bg-blue-400/10 dark:hover:text-blue-300
       "
             >
               {isBodyExpanded ? (
@@ -289,10 +290,10 @@ function MessageSelector({
                   setSelectedStyle(index);
                   setSelectedOption(0);
                 }}
-                className={`flex shrink-0 items-center gap-2 rounded-full border px-3 py-1 text-left transition-all duration-200 ${
+                className={`flex shrink-0 items-center gap-2 rounded-full border px-3 py-1 text-left transition-all duration-200 cursor-pointer ${
                   active
-                    ? "border-pink-300 bg-pink-50 shadow-sm dark:border-pink-400/40 dark:bg-pink-400/10"
-                    : "border-[#e8eaed] bg-white hover:border-[#d5d9e1] dark:border-white/10 dark:bg-white/[0.025] dark:hover:border-white/20"
+                    ? "border-pink-300 bg-pink-50 dark:border-pink-400/40 dark:bg-pink-400/10"
+                    : "border-[#e8eaed] bg-white hover:border-pink-200 hover:bg-pink-50/60 dark:border-[#293750] dark:bg-[#182338] dark:hover:border-pink-400/30 dark:hover:bg-pink-400/[0.06] "
                 }`}
               >
                 {/* <span
@@ -304,8 +305,8 @@ function MessageSelector({
                 <span
                   className={`text-[11px] font-semibold ${
                     active
-                      ? "text-pink-700 dark:text-pink-300"
-                      : "text-[#737b89] dark:text-[#aab4c4]"
+                      ? "text-pink-700 dark:text-pink-300 "
+                      : "text-[#737b89] dark:text-[#aab4c4] hover:text-pink-500"
                   }`}
                 >
                   {style.title}

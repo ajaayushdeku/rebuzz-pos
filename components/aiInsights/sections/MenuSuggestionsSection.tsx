@@ -114,8 +114,6 @@ export default function MenuSuggestionsSection({
   productLimitLoading: boolean;
   onViewProduct: (productId: string) => void;
 }) {
-  // The period these cards describe, or this section's own rolling window
-  // when there is none — see components/aiInsights/periodLabel.tsx.
   const windowText = useWindowPhrase(`the last ${SECTION_WINDOW_DAYS} days`);
 
   const money = useMoney();
@@ -124,9 +122,6 @@ export default function MenuSuggestionsSection({
 
   const [isBodyExpanded, setIsBodyExpanded] = useState(true);
 
-  // Search reads the whole idea, not only its title: someone looking for what
-  // to do with their momos types "momo", which is as likely to be in the items
-  // it is built from as in its name.
   const needle = query.trim().toLowerCase();
   const visible = items.filter(
     (item) =>
@@ -143,7 +138,7 @@ export default function MenuSuggestionsSection({
     <section>
       <SectionHeader
         icon={UtensilsCrossed}
-        iconClassName="bg-violet-50 text-violet-600 dark:text-violet-300 dark:bg-violet-400/10"
+        iconClassName="border-pink-200 bg-pink-50 text-pink-600 dark:border-pink-400/20 dark:bg-pink-400/10 dark:text-pink-300"
         title="AI Menu Suggestions"
         subtitle={`Ideas built from your best sellers in ${windowText}`}
         info={{
@@ -154,17 +149,17 @@ export default function MenuSuggestionsSection({
         // actionWidth="w-full"
         actions={
           <div className="flex flex-row w-full md:w-fit items-end justify-end gap-2 ">
-            <SegmentedControl
+            {/* <SegmentedControl
               options={DIFFICULTY_OPTIONS}
               value={difficulty}
               onChange={setDifficulty}
               accent="blue"
               showText={true}
-            />
+            /> */}
 
             <SectionMoreButton
               state={state}
-              textClassName=" text-violet-600 hover:bg-violet-100 border-violet-300 hover:border-violet-400 dark:hover:border-violet-400/60 dark:hover:bg-violet-400/20 dark:border-violet-400/40 dark:text-violet-300"
+              textClassName="text-pink-600 hover:bg-pink-100 border-pink-300 hover:border-pink-400 dark:hover:border-pink-400/60 dark:hover:bg-pink-400/20 dark:border-pink-400/40 dark:text-pink-300"
             />
 
             {/* Collapse / Expand */}
@@ -177,16 +172,16 @@ export default function MenuSuggestionsSection({
               }
               title={isBodyExpanded ? "Collapse section" : "Expand section"}
               className="
-        inline-flex shrink-0 items-center justify-center
-        rounded-lg border border-[#e2e6ed]
-        bg-white p-2 text-[#737b89]
-        transition-all duration-200
-        hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600
-        dark:border-white/10 dark:bg-white/[0.04]
-        dark:text-[#aab4c4]
-        dark:hover:border-violet-400/40
-        dark:hover:bg-violet-400/10 dark:hover:text-violet-300
-      "
+  inline-flex shrink-0 items-center justify-center
+  rounded-lg border border-[#e2e6ed]
+  bg-white p-2 text-[#737b89]
+  transition-all duration-200
+  hover:border-pink-300 hover:bg-pink-50 hover:text-pink-600
+  dark:border-[#293750] dark:bg-[#182338]
+  dark:text-[#aab4c4]
+  dark:hover:border-pink-400/40
+  dark:hover:bg-pink-400/10 dark:hover:text-pink-300
+"
             >
               {isBodyExpanded ? (
                 <ChevronUp size={15} />
@@ -218,7 +213,7 @@ export default function MenuSuggestionsSection({
             noSalesMessage={`No sales in ${windowText}, so there are no best sellers to build ideas on.`}
             emptyMessage="No menu ideas right now."
           >
-            <div className="relative w-full mb-4">
+            {/* <div className="relative w-full mb-4">
               <Search
                 size={14}
                 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9aa0a6] dark:text-[#9aa6bd]"
@@ -230,7 +225,7 @@ export default function MenuSuggestionsSection({
                 aria-label="Search menu ideas"
                 className="h-9 w-full  rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 pl-9 pr-3 text-[13px] outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100  dark:focus:border-violet-400/60 dark:focus:ring-violet-400/25 dark:border-white/15"
               />
-            </div>
+            </div> */}
             {visible.length === 0 ? (
               <EmptySection message="No menu ideas match that search." />
             ) : (
