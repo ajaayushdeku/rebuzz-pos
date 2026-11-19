@@ -5,16 +5,7 @@ import ProductFormModal from "@/components/product/ProductFormModal";
 import { useProductsList } from "@/hooks/useProductsList";
 import { useSubscriptionType } from "@/hooks/useSubscriptionType";
 import { FREE_PRODUCT_LIMIT, parseSubscription } from "@/lib/config/plans";
-import {
-  Loader2,
-  Search,
-  X,
-  TriangleAlert,
-  PanelTop,
-  PanelRightOpen,
-  SlidersHorizontal,
-  ChevronDown,
-} from "lucide-react";
+import { Loader2, Search, X, TriangleAlert } from "lucide-react";
 import toast from "react-hot-toast";
 
 import AiKeyRequiredNotice from "@/components/aiInsights/AiKeyRequiredNotice";
@@ -58,6 +49,7 @@ import EditAddonModal, {
 } from "../settingsComponents/addons/EditAddonModal";
 import { useCreateAddon } from "@/hooks/useAddons";
 import PeriodInsightsOverview from "./PeriodInsightsOverview";
+import ProviderMarkDefs from "../settingsComponents/apiKeys/ProviderMarkDefs";
 
 const emptyAddonForm: AddonFormValues = {
   name: "",
@@ -506,6 +498,9 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
           items={retention}
           state={retentionSection}
           onDismiss={dismiss}
+          kind={kind}
+          periodId={periodId ?? ""}
+          isAdmin={isAdmin}
         />
       ),
     },
@@ -669,6 +664,8 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
 
   return (
     <div className="flex relative flex-col gap-3">
+      <ProviderMarkDefs />
+
       <PeriodSelector
         kind={kind}
         periodId={periodId}
@@ -686,86 +683,7 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
         showControls={showControls}
         onToggleControls={() => setShowControls((prev) => !prev)}
       />
-      {/* 
-      <button
-        type="button"
-        onClick={() => setControlsOpen(true)}
-        aria-label="Open insights controls"
-        aria-expanded={controlsOpen}
-        className="
-    fixed right-0 top-1/2 z-40
-    flex -translate-y-1/2 items-center justify-center
-    rounded-l-xl border border-r-0 border-slate-200
-    bg-white p-3 text-[#244074]
-    shadow-[0_4px_20px_rgba(15,23,42,0.14)]
-    transition-all duration-200
-    hover:bg-blue-50 hover:pr-4
-    dark:border-[#293750] dark:bg-[#182338]
-    dark:text-blue-300 dark:hover:bg-[#263750]
-  "
-      >
-        <SlidersHorizontal size={19} />
-      </button>
 
-    
-      {controlsOpen && (
-        <button
-          type="button"
-          aria-label="Close insights controls"
-          onClick={() => setControlsOpen(false)}
-          className="fixed inset-0 z-50 cursor-default bg-slate-950/35 backdrop-blur-[2px]"
-        />
-      )} */}
-
-      {/* Controls drawer - kept mounted to preserve component state */}
-      {/* <aside
-        aria-label="Insights controls"
-        aria-hidden={!controlsOpen}
-        inert={!controlsOpen}
-        className={`
-    fixed right-0 top-0 z-[60]
-    flex h-dvh w-full max-w-[730px] flex-col
-    bg-white shadow-2xl
-    transition-transform duration-300 ease-out
-    motion-reduce:transition-none
-    dark:bg-[#111b2d]
-    ${controlsOpen ? "translate-x-0" : "translate-x-full"}
-  `}
-      >
-      
-        <div className="flex shrink-0 items-center justify-between px-5 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-blue-50 text-[#244074] dark:bg-blue-400/10 dark:text-blue-300">
-              <SlidersHorizontal size={17} />
-            </div>
-
-            <div>
-              <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                Insights controls
-              </h2>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Generation status and pricing context
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setControlsOpen(false)}
-            aria-label="Close controls"
-            className="
-        rounded-lg p-2 text-slate-500 transition-colors
-        hover:bg-slate-100 hover:text-slate-800
-        dark:text-slate-400 dark:hover:bg-white/10
-        dark:hover:text-white
-      "
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-   
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 pb-6"> */}
       <div
         aria-hidden={!showControls}
         className={`
@@ -832,6 +750,12 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
               canGenerate={isAdmin && !needsKey}
               providers={keyStatus.data?.providers ?? []}
               primaryProvider={keyStatus.data?.provider ?? ""}
+              festivalPrepProgress={{
+                isFetching: festivalPrep.isFetching,
+                isError: festivalPrep.isError,
+                hasData: Boolean(festivalPrep.data),
+                itemCount: festivalPrep.data?.items.length ?? 0,
+              }}
               providerSwitchNotice={
                 <ProviderSwitchNotice
                   fallbackFrom={keyStatus.data?.fellBackFrom}

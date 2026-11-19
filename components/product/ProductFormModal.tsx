@@ -13,6 +13,7 @@ import {
   Package,
   Plus,
   SlidersHorizontal,
+  Sparkles,
   Upload,
   X,
 } from "lucide-react";
@@ -44,6 +45,7 @@ import {
   removeProductAddons,
   removeProductDiscounts,
 } from "@/services/product/apiProduct.client";
+import { useGenerateProductDescription } from "@/hooks/useGenerateProductDescription";
 
 /**
  * Same colour code as the product detail modal: each data domain owns one hue,
@@ -307,6 +309,7 @@ export default function ProductFormModal({
   const { data: categories = [] } = useCategories();
   const createCategoryMutation = useCreateCategory();
   const { data: discounts = [] } = useDiscounts();
+  const generateDescription = useGenerateProductDescription();
 
   const [form, setForm] = useState<ProductFormData>(INITIAL_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -509,6 +512,43 @@ export default function ProductFormModal({
     if (Object.keys(e).length > 0) return { ok: false, step: "details" };
     if (Object.keys(ve).length > 0) return { ok: false, step: "variants" };
     return { ok: true };
+  };
+
+  const handleGenerateDescription = async () => {
+    const productName = form.name.trim();
+
+    if (!productName) {
+      toast.error("Enter a product name first.");
+      return;
+    }
+
+    const selectedCategory = categories.find(
+      (category) => category._id === form.categoryId,
+    );
+
+    if (!selectedCategory) {
+      toast.error("Select a category first.");
+      return;
+    }
+
+    try {
+      const result = await generateDescription.mutateAsync({
+        productName,
+        category: selectedCategory.name,
+      });
+
+      set("description", result.description);
+
+      toast.success("Product description generated!");
+    } catch (error) {
+      console.error("[Product Description] Generation failed:", error);
+
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to generate product description.",
+      );
+    }
   };
 
   const handleSave = async () => {
@@ -1404,13 +1444,43 @@ export default function ProductFormModal({
             </Field>
 
             <Field label="Description">
-              <textarea
-                value={form.description}
-                onChange={(e) => set("description", e.target.value)}
-                placeholder="Short description..."
-                rows={2}
-                className={`${inputClass} h-auto resize-none py-2`}
-              />
+              <div className="space-y-2">
+                <textarea
+                  value={form.description}
+                  onChange={(e) => set("description", e.target.value)}
+                  placeholder="Short description..."
+                  rows={3}
+                  className={`${inputClass} h-auto resize-none py-2`}
+                />
+
+                <div className="flex items-center justify-end">
+                  <button
+                    type="button"
+                    onClick={handleGenerateDescription}
+                    disabled={
+                      generateDescription.isPending ||
+                      !form.name.trim() ||
+                      !form.categoryId
+                    }
+                    className="group inline-flex items-center gap-1.5 text-xs font-medium text-blue-600 transition-colors hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer"
+                  >
+                    {generateDescription.isPending ? (
+                      <>
+                        <Loader2 size={13} className="animate-spin" />
+                        Writing description...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles
+                          size={13}
+                          className="animate-heartbeat transition-transform group-hover:rotate-12 group-hover:scale-110"
+                        />
+                        Write Description with AI
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
             </Field>
           </div>
         </Section>

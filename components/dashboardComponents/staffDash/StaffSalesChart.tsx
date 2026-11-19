@@ -358,7 +358,7 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
           {!isEmpty && allStaffNames.length > 0 && (
             <button
               onClick={() => setModalOpen(true)}
-              className="flex shrink-0 cursor-pointer flex-row items-center gap-1.5 dark:bg-white/5 rounded-full border border-[#dadce0] bg-white px-1 sm:px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+              className="md:hidden flex shrink-0 cursor-pointer flex-row items-center gap-1.5 dark:bg-white/5 rounded-full border border-[#dadce0] bg-white px-1 sm:px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
             >
               <SlidersHorizontal size={12} />
               <span className="truncate hidden sm:block"> Filter employee</span>

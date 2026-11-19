@@ -124,7 +124,7 @@ export default function CustomerDetailPage() {
           loading={historyLoading}
         />
 
-        <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
           <CustomerInfoCard
             customer={customer}
             imageUrl={imageUrl}

@@ -46,50 +46,67 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        "border-r bg-background h-full flex flex-col overflow-hidden transition-[width] duration-300 ease-in-out",
+        "relative flex h-full flex-col overflow-hidden border-r bg-background",
+        "transition-[width] duration-300 ease-in-out",
+        "motion-reduce:transition-none",
         isCollapsed ? "w-12" : "w-60",
       )}
     >
       <div
-        className={`my-1 sm:my-2 flex items-center justify-between gap-1 px-1 py-2 border-b border-gray-100 transition-[width] dark:border-white/10 duration-300 ease-in-out ${isCollapsed ? "justify-center " : "justify-between"}`}
+        className={cn(
+          "my-1 pb-2 flex shrink-0 items-center border-b border-gray-100 px-1  dark:border-white/10 sm:my-2",
+          "transition-all duration-300 ease-in-out motion-reduce:transition-none",
+          isCollapsed ? "justify-center" : "justify-between",
+        )}
       >
-        {!isCollapsed && (
-          <Link href="/invoices/add" className="min-w-0  ml-2">
+        <div
+          className={cn(
+            "min-w-0 overflow-hidden transition-all duration-300 ease-in-out",
+            isCollapsed
+              ? "w-0 -translate-x-2 opacity-0"
+              : "ml-2 flex-1 translate-x-0 opacity-100",
+          )}
+          aria-hidden={isCollapsed}
+        >
+          <Link href="/invoices/add" tabIndex={isCollapsed ? -1 : 0}>
             <Button
-              className="w-full text-left animate-in fade-in-0 bg-white font-bold text-blue-500 duration-300 hover:bg-blue-100 dark:bg-transparent dark:text-[#7ba2e3] dark:hover:bg-white/10"
+              className="w-full py-5 whitespace-nowrap bg-white text-left text-blue-500 hover:bg-blue-100 dark:bg-transparent dark:text-[#7ba2e3] dark:hover:bg-white/10 cursor-pointer"
               size="sm"
             >
-              <Plus className="w-2 h-2 mr-1 font-bold" />
-              <span className="whitespace-nowrap text-[14px] sm:text-[15px]">
+              <Plus className="mr-1 h-3 w-3 shrink-0 font-bold" />
+              <span className="text-[14px] font-bold sm:text-[15px]">
                 Create Invoice
               </span>
             </Button>
           </Link>
-        )}
+        </div>
 
         <Button
           variant="ghost"
           size="icon"
-          className={`h-8 w-8 shrink-0 ${isCollapsed ? "ml-1" : "mr-2"} cursor-pointer text-blue-500 hover:text-blue-600 dark:text-[#7ba2e3] dark:hover:text-[#a8c4ee]`}
+          className={cn(
+            "h-8 w-8 shrink-0 cursor-pointer text-blue-500 hover:text-blue-600 dark:text-[#7ba2e3] dark:hover:text-[#a8c4ee]",
+            "transition-transform duration-300 ease-in-out motion-reduce:transition-none",
+            isCollapsed ? "rotate-180" : "rotate-0",
+          )}
           onClick={toggle}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {isCollapsed ? (
-            <ChevronsRight className="h-4 w-4 " />
-          ) : (
-            <ChevronsLeft className="h-4 w-4 " />
-          )}
+          <ChevronsLeft className="h-4 w-4" />
         </Button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <nav
+        className={cn(
+          "min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-2",
+          "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+          "transition-[padding] duration-300 ease-in-out motion-reduce:transition-none",
+        )}
+      >
         <div className="space-y-1">
           {visibleNavigation.map((item) => {
-            const isSectionActive = activeSectionFromUrl?.label === item.label;
-            const isOpen =
-              openSectionLabel === item.label ||
-              (openSectionLabel === null && isSectionActive);
-
+            // const isSectionActive = activeSectionFromUrl?.label === item.label;
+            const isOpen = openSectionLabel === item.label;
             return item.type === "single" ? (
               <SidebarItem
                 key={item.href}

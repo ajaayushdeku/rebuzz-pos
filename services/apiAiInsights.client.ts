@@ -83,6 +83,9 @@ const MESSAGES: Record<AiInsightsErrorCode | string, string> = {
 
   // Session / transport.
   AUTH_REQUIRED: "Your session has expired — sign in again.",
+
+  FEEDBACK_SERVICE_UNAVAILABLE:
+    "Customer retention feedback is temporarily unavailable. Try again shortly.",
 };
 
 /**

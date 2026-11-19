@@ -56,41 +56,62 @@ export default function SidebarSection({
 
   return (
     <div className="mb-1">
-      <button onClick={onToggle} className={baseClass}>
+      <button onClick={onToggle} aria-expanded={isOpen} className={baseClass}>
         <Icon className="w-4 h-4 shrink-0" />
+
         <span className="flex-1 animate-in fade-in-0 text-left duration-300">
           {label}
         </span>
-        {isOpen ? (
-          <ChevronDown className="w-4 h-4 shrink-0" />
-        ) : (
-          <ChevronRight className="w-4 h-4 shrink-0" />
-        )}
+
+        <ChevronDown
+          className={cn(
+            "w-4 h-4 shrink-0 transition-transform duration-300 ease-in-out",
+            !isOpen && "-rotate-90",
+          )}
+        />
       </button>
 
-      {isOpen && (
-        <div className="ml-7 mt-1 space-y-1">
-          {items.map((item) => {
-            const isActive = pathname === item.href;
-            const SubIcon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-2 whitespace-nowrap px-3 py-2 rounded-md text-sm transition-colors",
-                  isActive
-                    ? "bg-blue-50 text-blue-600 font-medium dark:bg-white/10 dark:text-[#a8c4ee]"
-                    : "text-muted-foreground hover:bg-accent hover:text-blue-600 dark:hover:text-[#a8c4ee]",
-                )}
-              >
-                <SubIcon className="w-3.5 h-3.5 shrink-0" />
-                {item.label}
-              </Link>
-            );
-          })}
+      {/* Animated submenu */}
+      <div
+        aria-hidden={!isOpen}
+        className={cn(
+          "grid transition-[grid-template-rows,opacity] duration-300 ease-in-out",
+          "motion-reduce:transition-none",
+          isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+        )}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div
+            className={cn(
+              "ml-7 mt-1 space-y-1 transition-transform duration-300 ease-in-out",
+              "motion-reduce:transition-none",
+              isOpen ? "translate-y-0" : "-translate-y-1",
+            )}
+          >
+            {items.map((item) => {
+              const isActive = pathname === item.href;
+              const SubIcon = item.icon;
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  tabIndex={isOpen ? 0 : -1}
+                  className={cn(
+                    "flex items-center gap-2 whitespace-nowrap px-3 py-2 rounded-md text-sm transition-colors",
+                    isActive
+                      ? "bg-blue-50 text-blue-600 font-medium dark:bg-white/10 dark:text-[#a8c4ee]"
+                      : "text-muted-foreground hover:bg-accent hover:text-blue-600 dark:hover:text-[#a8c4ee]",
+                  )}
+                >
+                  <SubIcon className="w-3.5 h-3.5 shrink-0" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

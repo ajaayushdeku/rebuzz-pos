@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   Loader2,
   X,
+  CalendarDays,
 } from "lucide-react";
 
 export interface GenerationProgress {
@@ -32,6 +33,13 @@ export interface GenerationProgress {
   }[];
 }
 
+export interface FestivalPrepProgress {
+  isFetching: boolean;
+  isError: boolean;
+  hasData: boolean;
+  itemCount: number;
+}
+
 interface PeriodProgressVisualizerProps {
   periodLabel?: string;
   isLoading: boolean;
@@ -40,6 +48,7 @@ interface PeriodProgressVisualizerProps {
   missingSections: string[];
   progress: GenerationProgress | null;
   canGenerate: boolean;
+  festivalPrepProgress: FestivalPrepProgress;
   onGenerate: () => void;
 }
 
@@ -196,9 +205,20 @@ export default function PeriodProgressVisualizer({
   missingSections,
   progress,
   canGenerate,
+  festivalPrepProgress,
   onGenerate,
 }: PeriodProgressVisualizerProps) {
   const busy = isLoading || isGenerating;
+
+  const festivalStatus = festivalPrepProgress.isError
+    ? "failed"
+    : festivalPrepProgress.hasData
+      ? festivalPrepProgress.isFetching
+        ? "updating"
+        : "ready"
+      : festivalPrepProgress.isFetching
+        ? "loading"
+        : "pending";
 
   const [expanded, setExpanded] = useState(true);
   const wasBusy = useRef(busy);
@@ -452,7 +472,7 @@ export default function PeriodProgressVisualizer({
           expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
         }`}
       >
-        <div className="min-h-0 overflow-hidden">
+        <div className="min-h-0 ">
           <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {orderedCheckpoints.map((section, index) => {
               const status = getStatus(section.key);
@@ -469,7 +489,7 @@ export default function PeriodProgressVisualizer({
               return (
                 <li
                   key={section.key}
-                  className={`group relative isolate overflow-hidden rounded-2xl border p-4 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl motion-reduce:transform-none motion-reduce:transition-none ${
+                  className={`group relative isolate overflow-hidden rounded-2xl border p-4 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg  motion-reduce:transform-none motion-reduce:transition-none ${
                     isFailed
                       ? "border-red-400/20 bg-[#211b25] dark:border-red-400/20 dark:bg-[#211b25]"
                       : "border-slate-200/80 bg-white dark:border-[#293750] dark:bg-[#182338]"
@@ -610,6 +630,160 @@ export default function PeriodProgressVisualizer({
                 </li>
               );
             })}
+
+            {/* Festival preparation — separate from period generation */}
+            <li
+              className={`group relative isolate overflow-hidden rounded-2xl border p-4 transition-all duration-300 sm:col-span-2 ${
+                festivalStatus === "failed"
+                  ? "border-red-200/80 bg-red-50/50 dark:border-red-400/20 dark:bg-red-500/[0.04]"
+                  : "border-amber-200/80 bg-gradient-to-br from-amber-50/70 via-white to-orange-50/40 hover:border-amber-300 dark:border-amber-400/20 dark:from-amber-400/[0.07] dark:via-[#182338] dark:to-orange-400/[0.04] dark:hover:border-amber-400/40"
+              }`}
+            >
+              {/* Decorative glow */}
+              <div
+                className={`pointer-events-none absolute -right-8 -top-12 h-36 w-36 rounded-full opacity-20 blur-3xl ${
+                  festivalStatus === "failed" ? "bg-red-500" : "bg-amber-400"
+                }`}
+              />
+
+              <div className="relative flex items-start gap-3">
+                {/* Festival icon */}
+                <div className="relative flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-[20px] border border-amber-200/70 bg-gradient-to-br from-amber-100 to-orange-100 text-amber-700 shadow-sm shadow-amber-500/10 dark:border-amber-400/20 dark:from-amber-400/15 dark:to-orange-400/10 dark:text-amber-300">
+                  <CalendarDays
+                    className={`h-8 w-8 ${
+                      festivalStatus === "loading" ||
+                      festivalStatus === "updating"
+                        ? "animate-pulse"
+                        : ""
+                    }`}
+                    strokeWidth={1.8}
+                  />
+
+                  {/* Status indicator */}
+                  <div
+                    className={`absolute -bottom-1.5 -right-1.5 flex h-7 w-7 items-center justify-center rounded-full border-[3px] border-white shadow-sm dark:border-[#111827] ${
+                      festivalStatus === "ready"
+                        ? "bg-emerald-500 text-white"
+                        : festivalStatus === "loading" ||
+                            festivalStatus === "updating"
+                          ? "bg-blue-500 text-white"
+                          : festivalStatus === "failed"
+                            ? "bg-red-500 text-white"
+                            : "bg-slate-300 text-white dark:bg-slate-600"
+                    }`}
+                  >
+                    {festivalStatus === "ready" && (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    )}
+
+                    {(festivalStatus === "loading" ||
+                      festivalStatus === "updating") && (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    )}
+
+                    {festivalStatus === "failed" && (
+                      <X className="h-3.5 w-3.5" />
+                    )}
+
+                    {festivalStatus === "pending" && (
+                      <Clock className="h-3 w-3" />
+                    )}
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="min-w-0 flex-1 pt-0.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                        festivalStatus === "ready"
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                          : festivalStatus === "loading" ||
+                              festivalStatus === "updating"
+                            ? "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+                            : festivalStatus === "failed"
+                              ? "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                              : "bg-slate-100 text-slate-500 dark:bg-white/[0.06] dark:text-slate-400"
+                      }`}
+                    >
+                      {festivalStatus === "ready"
+                        ? "Ready"
+                        : festivalStatus === "updating"
+                          ? "Updating"
+                          : festivalStatus === "loading"
+                            ? "Loading"
+                            : festivalStatus === "failed"
+                              ? "Failed"
+                              : "Waiting"}
+                    </span>
+
+                    <span className="text-[10px] font-medium text-amber-700/70 dark:text-amber-300/60">
+                      Daily insight
+                    </span>
+                  </div>
+
+                  <h4 className="mt-2 text-sm font-bold leading-snug text-slate-800 dark:text-slate-100">
+                    Festival Preparation
+                  </h4>
+
+                  <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                    {festivalStatus === "ready"
+                      ? festivalPrepProgress.itemCount > 0
+                        ? `${festivalPrepProgress.itemCount} upcoming festival${festivalPrepProgress.itemCount === 1 ? "" : "s"} with preparation recommendations`
+                        : "No upcoming festivals in the current lookahead period"
+                      : festivalStatus === "updating"
+                        ? "Refreshing upcoming festivals and preparation recommendations..."
+                        : festivalStatus === "loading"
+                          ? "Checking Nepal's upcoming festival calendar..."
+                          : festivalStatus === "failed"
+                            ? "Festival preparation couldn't be loaded"
+                            : "Waiting for festival preparation data"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Bottom accent */}
+              <div className="relative mt-4 flex items-center justify-between border-t border-amber-200/60 pt-3 dark:border-amber-400/10">
+                <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                  Upcoming Festival Prep
+                </span>
+
+                <div className="flex items-center gap-1.5">
+                  {festivalStatus === "ready" && (
+                    <>
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                        Available
+                      </span>
+                    </>
+                  )}
+
+                  {(festivalStatus === "loading" ||
+                    festivalStatus === "updating") && (
+                    <>
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500" />
+                      <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+                        {festivalStatus === "updating"
+                          ? "Refreshing"
+                          : "In progress"}
+                      </span>
+                    </>
+                  )}
+
+                  {festivalStatus === "failed" && (
+                    <span className="text-[10px] font-semibold text-red-600 dark:text-red-400">
+                      Needs attention
+                    </span>
+                  )}
+
+                  {festivalStatus === "pending" && (
+                    <span className="text-[10px] font-medium text-slate-400">
+                      Not started
+                    </span>
+                  )}
+                </div>
+              </div>
+            </li>
           </ul>
 
           {/* Generation activity footer */}

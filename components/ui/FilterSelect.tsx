@@ -104,11 +104,31 @@ export function FilterSelect({
       const menuHeight = panel.offsetHeight;
 
       // Horizontal positioning
-      const spaceRight = window.innerWidth - wrapperRect.left;
-      const spaceLeft = wrapperRect.right;
+      // const spaceRight = window.innerWidth - wrapperRect.left;
+      // const spaceLeft = wrapperRect.right;
+
+      // setMenuSide(
+      //   spaceRight < menuWidth && spaceLeft >= menuWidth ? "right" : "left",
+      // );
+      // Horizontal positioning
+      const viewportPadding = 8;
+      const viewportWidth = window.innerWidth;
+
+      const availableRight = viewportWidth - wrapperRect.left - viewportPadding;
+
+      const availableLeft = wrapperRect.right - viewportPadding;
+
+      const fitsRight = menuWidth <= availableRight;
+      const fitsLeft = menuWidth <= availableLeft;
 
       setMenuSide(
-        spaceRight < menuWidth && spaceLeft >= menuWidth ? "right" : "left",
+        fitsRight
+          ? "left"
+          : fitsLeft
+            ? "right"
+            : availableRight >= availableLeft
+              ? "left"
+              : "right",
       );
 
       // Vertical positioning
@@ -178,42 +198,29 @@ export function FilterSelect({
         <span
           className={`flex min-w-0 flex-1 items-center  ${periodSelectorSpread} gap-1.5`}
         >
-          <span className="truncate">{selected?.label ?? placeholder}</span>
+          <span className="truncate text-[11px] sm:text-[13px] lg:text-sm">
+            {selected?.label ?? placeholder}
+          </span>
           {selected?.suffix}
         </span>
         <ChevronDown
           size={14}
-          className={`text-gray-400 transition-transform duration-200 dark:text-[#7b869b] ${
+          className={`text-gray-400 transition-transformå duration-200 dark:text-[#7b869b] ${
             isOpen ? "rotate-180" : ""
           }`}
         />
       </button>
 
-      {/*
-        Mounted only while open, which is the fix for a panel that was taking up
-        room before it had ever been used.
-
-        It used to stay in the DOM at `opacity-0`. That hides it but changes
-        nothing about layout: a 182px panel on a 100px trigger still hung 63px
-        past the right edge of a phone screen, widening whatever could scroll and
-        covering what sat beside it. Worse, the side was only chosen when the
-        panel first opened — so the overhang was there on every fresh page load
-        and vanished at the first press, which is exactly how it was reported.
-
-        Unmounting also means the side is measured at the moment it is needed,
-        against the space the trigger has right then.
-
-        max-h + scroll engages only once a list outgrows it, so the short filter
-        lists this started with are unchanged; overscroll-contain stops the page
-        scrolling on from the end of a long one. max-w keeps the panel inside the
-        window on a narrow screen whatever width a caller asked for.
-      */}
       {isOpen && (
         <div
           ref={panelRef}
           role="listbox"
           className={cn(
-            "absolute z-30  max-h-72 max-w-[calc(100vw-1rem)] origin-top overflow-y-auto overscroll-contain scrollbar-hide rounded-md border border-gray-200 bg-white p-1 shadow-lg animate-in fade-in-0 zoom-in-95 duration-150 dark:border-white/15 dark:bg-[#1b2436]",
+            "absolute z-30 box-border w-max min-w-full max-w-[calc(100vw-3rem)] sm:w-[280px] sm:max-w-[min(280px,calc(100vw-3rem))]",
+            "max-h-72 overflow-y-auto overscroll-contain scrollbar-hide",
+            "rounded-lg border border-gray-200 bg-white p-1 shadow-xl shadow-slate-900/10",
+            "animate-in fade-in-0 zoom-in-95 duration-150",
+            "dark:border-white/15 dark:bg-[#1b2436]",
             menuClassName,
             menuSide === "left" ? "left-0" : "right-0",
             menuDirection === "top" ? "bottom-full mb-1.5" : "top-full mt-1.5",
@@ -240,7 +247,9 @@ export function FilterSelect({
               }`}
             >
               <span className="flex items-center gap-1.5">
-                <span className="min-w-0 flex-1 truncate">{opt.label}</span>
+                <span className="min-w-0 flex-1 truncate text-[11px] sm:text-[13px] lg:text-sm">
+                  {opt.label}
+                </span>
                 {opt.suffix}
               </span>
             </button>

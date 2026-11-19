@@ -290,6 +290,7 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
                 onChange={handlePresetChange}
                 className="w-[90px] sm:w-[150px] md:w-[180px] py-1.5 text-[13px]"
                 buttonClassName="py-1.5 md:py-2 px-2 md:px-3 text-[11px] md:text-xs rounded-lg tracking-wide"
+                menuClassName="w-[200px] sm:w-[280px] sm:min-w-full"
               />
 
               {/* Vertical divider */}

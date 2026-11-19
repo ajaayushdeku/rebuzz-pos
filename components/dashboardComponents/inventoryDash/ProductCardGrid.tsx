@@ -405,7 +405,7 @@ const ProductCardGrid = ({
           </div>
 
           {/* Vertical divider */}
-          <div className="mx-1 h-6 w-px shrink-0 bg-[#dadce0] dark:bg-white/15" />
+          <div className="mx-1 h-6 w-px shrink-0 bg-[#dadce0] dark:bg-white/15 hidden sm:inline" />
 
           {/* Stock filters */}
           <div className="flex w-full flex-col gap-1.5 sm:w-auto sm:flex-row sm:items-center sm:gap-2.5">

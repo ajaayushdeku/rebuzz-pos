@@ -6,11 +6,17 @@ import {
   Copy,
   HeartHandshake,
   MessageCircle,
-  // Check,
   Star,
   ChevronUp,
   ChevronDown,
+  Check,
+  ThumbsDown,
 } from "lucide-react";
+
+import {
+  useCustomerRetentionFeedback,
+  useSaveCustomerRetentionFeedback,
+} from "@/hooks/useCustomerRetentionFeedback";
 
 import type { AiSectionState } from "@/hooks/useAiSection";
 import { useWindowPhrase } from "@/components/aiInsights/periodLabel";
@@ -33,6 +39,7 @@ import {
   useMoney,
   type AccentName,
 } from "../parts";
+import type { PeriodKind } from "@/services/apiPeriodInsights.client";
 
 const STATUS: Record<RetentionStatus, { accent: AccentName }> = {
   "At risk": { accent: "red" },
@@ -51,7 +58,7 @@ function copyAllMessages(item: RetentionInsight) {
     .map(
       (style) =>
         `${style.title}\n${style.messages
-          .map((message, index) => `Option ${index + 1}: ${message}`)
+          .map((message, index) => `Option ${index + 1}: ${message.text}`)
           .join("\n")}`,
     )
     .join("\n\n");
@@ -69,10 +76,16 @@ export default function CustomerRetentionSection({
   items,
   state,
   onDismiss,
+  kind,
+  periodId,
+  isAdmin,
 }: {
   items: RetentionInsight[];
   state: AiSectionState<RetentionInsight>;
   onDismiss: (id: string) => void;
+  kind: PeriodKind;
+  periodId: string;
+  isAdmin: boolean;
 }) {
   const windowText = useWindowPhrase(
     `the last ${RETENTION_LOOKBACK_DAYS} days`,
@@ -202,7 +215,7 @@ export default function CustomerRetentionSection({
                     footer={
                       item.phone && item.styles[0]?.messages[0] ? (
                         <CardAction
-                          href={`https://wa.me/${item.phone}?text=${encodeURIComponent(item.styles[0].messages[0])}`}
+                          href={`https://wa.me/${item.phone}?text=${encodeURIComponent(item.styles[0].messages[0].text)}`}
                           external
                         >
                           <MessageCircle size={14} aria-hidden />
@@ -236,8 +249,12 @@ export default function CustomerRetentionSection({
 
                     <MessageSelector
                       styles={item.styles}
-                      phone={item.phone}
+                      // phone={item.phone}
                       tip={item.tip}
+                      itemId={item.id}
+                      kind={kind}
+                      periodId={periodId}
+                      isAdmin={isAdmin}
                     />
                   </InsightCard>
                 );
@@ -252,27 +269,89 @@ export default function CustomerRetentionSection({
 
 function MessageSelector({
   styles,
-  phone,
   tip,
+  itemId,
+  kind,
+  periodId,
+  isAdmin,
 }: {
   styles: RetentionInsight["styles"];
-  phone: string | null;
   tip: string;
+  itemId: string;
+  kind: PeriodKind;
+  periodId: string;
+  isAdmin: boolean;
 }) {
   const [selectedStyle, setSelectedStyle] = useState(0);
   const [selectedOption, setSelectedOption] = useState(0);
+
+  const [showRejectionForm, setShowRejectionForm] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+
+  const { data: feedback = [], isLoading: isFeedbackLoading } =
+    useCustomerRetentionFeedback(kind, periodId);
+
+  const saveFeedback = useSaveCustomerRetentionFeedback();
 
   const activeStyle = styles[selectedStyle];
   const activeMessage = activeStyle?.messages[selectedOption];
 
   if (!activeStyle || !activeMessage) return null;
 
+  // Find the saved decision for this exact message.
+  const savedFeedback = feedback.find(
+    (entry) => entry.messageId === activeMessage.id,
+  );
+
+  const isSaving = saveFeedback.isPending || isFeedbackLoading;
+
+  async function handleFeedback(
+    decision: "approved" | "disapproved",
+    reason: string | null = null,
+  ) {
+    if (!isAdmin || !periodId || isSaving) return;
+
+    try {
+      await saveFeedback.mutateAsync({
+        kind,
+        periodId,
+        messageId: activeMessage.id,
+        retentionItemId: itemId,
+        styleId: activeStyle.id,
+        styleTitle: activeStyle.title,
+        optionIndex: selectedOption,
+        message: activeMessage.text,
+        decision,
+        rejectionReason: decision === "disapproved" ? reason : null,
+        style: null,
+      });
+
+      setShowRejectionForm(false);
+      setRejectionReason("");
+
+      toast.success(
+        decision === "approved"
+          ? "Message approved"
+          : "Message marked as not suitable",
+      );
+    } catch (error) {
+      console.error("[Retention Feedback] Save failed:", error);
+
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Couldn't save your feedback. Please try again.",
+      );
+    }
+  }
+
   return (
-    <div className="mt-2 ">
+    <div className="mt-2">
       {/* Style selector */}
       <div>
-        <div className=" flex items-center justify-between">
+        <div className="flex items-center justify-between">
           <BodyLabel>Choose a message style</BodyLabel>
+
           <span className="text-[10px] font-medium text-[#9299a5] dark:text-[#8491a6]">
             {styles.length} available
           </span>
@@ -289,23 +368,19 @@ function MessageSelector({
                 onClick={() => {
                   setSelectedStyle(index);
                   setSelectedOption(0);
+                  setShowRejectionForm(false);
+                  setRejectionReason("");
                 }}
-                className={`flex shrink-0 items-center gap-2 rounded-full border px-3 py-1 text-left transition-all duration-200 cursor-pointer ${
+                className={`flex shrink-0 items-center gap-2 rounded-full border px-3 py-1 text-left transition-all duration-200 ${
                   active
                     ? "border-pink-300 bg-pink-50 dark:border-pink-400/40 dark:bg-pink-400/10"
-                    : "border-[#e8eaed] bg-white hover:border-pink-200 hover:bg-pink-50/60 dark:border-[#293750] dark:bg-[#182338] dark:hover:border-pink-400/30 dark:hover:bg-pink-400/[0.06] "
+                    : "border-[#e8eaed] bg-white hover:border-pink-200 hover:bg-pink-50/60 dark:border-[#293750] dark:bg-[#182338] dark:hover:border-pink-400/30 dark:hover:bg-pink-400/[0.06]"
                 }`}
               >
-                {/* <span
-                  className={`size-1.5 shrink-0 rounded-full ${
-                    active ? "bg-pink-500" : "bg-[#c4c9d2] dark:bg-[#667085]"
-                  }`}
-                /> */}
-
                 <span
                   className={`text-[11px] font-semibold ${
                     active
-                      ? "text-pink-700 dark:text-pink-300 "
+                      ? "text-pink-700 dark:text-pink-300"
                       : "text-[#737b89] dark:text-[#aab4c4] hover:text-pink-500"
                   }`}
                 >
@@ -318,23 +393,23 @@ function MessageSelector({
       </div>
 
       {/* Message preview */}
-      <div className="overflow-hidden rounded-xl  bg-white  dark:bg-[#171e2c]">
+      <div className="overflow-hidden rounded-xl">
         <div className="py-3.5">
           <Recommendation
             details={
               <div className="space-y-1.5">
-                <div className="flex flex-col items-start justify-between gap-3 border-b border-[#edf0f3]  pb-3 dark:border-white/10">
+                <div className="flex flex-col items-start justify-between gap-3 border-b border-[#edf0f3] pb-3 dark:border-white/10">
                   <div className="min-w-0">
                     <p className="text-[12px] font-bold text-[#343a46] dark:text-[#e8ecf4]">
                       {activeStyle.title}
                     </p>
+
                     <p className="mt-0.5 text-[11px] text-[#89909c] dark:text-[#9ca9bc]">
                       {activeStyle.description}
                     </p>
                   </div>
 
                   {/* Option switch */}
-
                   <div className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-[#f1f3f6] p-1 dark:bg-[#151D2E]">
                     {activeStyle.messages.map((_, index) => {
                       const active = selectedOption === index;
@@ -343,7 +418,11 @@ function MessageSelector({
                         <button
                           key={index}
                           type="button"
-                          onClick={() => setSelectedOption(index)}
+                          onClick={() => {
+                            setSelectedOption(index);
+                            setShowRejectionForm(false);
+                            setRejectionReason("");
+                          }}
                           aria-pressed={active}
                           className={`rounded-md px-3 py-1.5 text-[10px] font-semibold transition-all duration-200 ${
                             active
@@ -358,27 +437,208 @@ function MessageSelector({
                   </div>
                 </div>
 
-                <div className="flex mt-3 items-center justify-between gap-2">
+                {/* Preview heading and copy */}
+                <div className="mt-3 flex items-center justify-between gap-2">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9299a5] dark:text-[#8491a6]">
                     Message preview
                   </span>
+
                   <button
                     type="button"
-                    onClick={() => copyMessage(activeMessage)}
-                    className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold text-blue-700 transition-colors hover:bg-blue-50 dark:hover:bg-blue-400/15 dark:text-blue-300"
+                    onClick={() => copyMessage(activeMessage.text)}
+                    className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold text-blue-700 transition-colors hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-400/15"
                   >
                     <Copy size={11} aria-hidden />
                     Copy
                   </button>
-
-                  {/* <span className="rounded-md bg-pink-50 px-2 py-1 text-[10px] font-semibold text-pink-700 dark:bg-pink-400/10 dark:text-pink-300">
-                    Option {selectedOption + 1} of 2
-                  </span> */}
                 </div>
 
-                <p className="mt-1 rounded-md border border-[#e8eaed] bg-white dark:bg-white/5 px-3 py-2 text-[12px] italic leading-relaxed text-[#5f6368] dark:border-white/10 dark:text-[#a9b4c7]">
-                  “{activeMessage}”
+                <p className="mt-1 rounded-md border border-[#e8eaed] bg-white px-3 py-2 text-[12px] italic leading-relaxed text-[#5f6368] dark:border-white/10 dark:bg-white/5 dark:text-[#a9b4c7]">
+                  “{activeMessage.text}”
                 </p>
+
+                {/* Feedback controls */}
+                {isAdmin && (
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#edf0f3] pt-3 dark:border-white/10">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-medium text-[#9299a5] dark:text-[#8491a6]">
+                        Is this message suitable?
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={isSaving}
+                        onClick={() => handleFeedback("approved")}
+                        aria-pressed={savedFeedback?.decision === "approved"}
+                        className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
+                          savedFeedback?.decision === "approved"
+                            ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-300"
+                            : "border-[#e8eaed] bg-white text-[#737b89] hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-[#293750] dark:bg-[#182338] dark:text-[#aab4c4] dark:hover:border-emerald-400/30 dark:hover:text-emerald-300"
+                        }`}
+                      >
+                        <Check size={13} />
+                        Approve
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={isSaving}
+                        onClick={() => {
+                          if (showRejectionForm) {
+                            setShowRejectionForm(false);
+                            return;
+                          }
+
+                          setRejectionReason(
+                            savedFeedback?.decision === "disapproved"
+                              ? (savedFeedback.rejectionReason ?? "")
+                              : "",
+                          );
+
+                          setShowRejectionForm(true);
+                        }}
+                        aria-pressed={savedFeedback?.decision === "disapproved"}
+                        className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
+                          savedFeedback?.decision === "disapproved"
+                            ? "border-red-300 bg-red-50 text-red-700 dark:border-red-400/30 dark:bg-red-400/10 dark:text-red-300"
+                            : "border-[#e8eaed] bg-white text-[#737b89] hover:border-red-300 hover:bg-red-50 hover:text-red-700 dark:border-[#293750] dark:bg-[#182338] dark:text-[#aab4c4] dark:hover:border-red-400/30 dark:hover:text-red-300"
+                        }`}
+                      >
+                        <ThumbsDown size={13} />
+                        Not suitable
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {showRejectionForm && (
+                  <div
+                    className="
+      mt-3 space-y-3 rounded-xl
+      border border-rose-200/80
+      bg-gradient-to-br from-rose-50 via-white to-[#fff7f7]
+      p-3.5 shadow-sm shadow-rose-100/60
+
+      dark:border-rose-400/20
+      dark:bg-gradient-to-br dark:from-[#2b202b]
+      dark:via-[#241e2a] dark:to-[#211e2a]
+      dark:shadow-black/10
+    "
+                  >
+                    <div>
+                      <p className="text-[12px] font-semibold text-rose-800 dark:text-rose-200">
+                        Why is this message not suitable?
+                      </p>
+                      <p className="mt-0.5 text-[11px] leading-relaxed text-rose-700/70 dark:text-[#b9aab9]">
+                        Optionally explain what should be improved.
+                      </p>
+                    </div>
+
+                    <textarea
+                      value={rejectionReason}
+                      onChange={(event) =>
+                        setRejectionReason(event.target.value)
+                      }
+                      placeholder="e.g. The message doesn't reflect this customer's usual preferences..."
+                      maxLength={500}
+                      rows={3}
+                      disabled={isSaving}
+                      className="
+        w-full resize-none rounded-lg
+        border border-rose-200/90
+        bg-white/90 px-3 py-2.5
+        text-[12px] leading-relaxed text-[#37313a]
+        outline-none transition-all duration-200
+        placeholder:text-[#aaa0a7]
+        focus:border-rose-400 focus:ring-2 focus:ring-rose-100
+        disabled:cursor-not-allowed disabled:opacity-50
+
+        dark:border-[#51404e]
+        dark:bg-[#191923]/80
+        dark:text-[#eee7ef]
+        dark:placeholder:text-[#887c8b]
+        dark:focus:border-rose-400/60
+        dark:focus:ring-rose-400/10
+      "
+                    />
+
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-[10px] font-medium text-[#93838c] dark:text-[#a99aa9]">
+                        {rejectionReason.length}/500 characters · Optional
+                      </span>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          disabled={isSaving}
+                          onClick={() => {
+                            setShowRejectionForm(false);
+                            setRejectionReason("");
+                          }}
+                          className="
+            rounded-lg px-3 py-1.5
+            text-[11px] font-semibold
+            text-[#756773] transition-colors
+            hover:bg-rose-100/70
+            disabled:cursor-not-allowed disabled:opacity-50
+            dark:text-[#c0b2c1]
+            dark:hover:bg-white/[0.06]
+          "
+                        >
+                          Cancel
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={isSaving}
+                          onClick={() =>
+                            handleFeedback(
+                              "disapproved",
+                              rejectionReason.trim() || null,
+                            )
+                          }
+                          className="
+            inline-flex items-center gap-1.5
+            rounded-lg border border-rose-700/10
+            bg-rose-600 px-3 py-1.5
+            text-[11px] font-semibold text-white
+            shadow-sm shadow-rose-900/10
+            transition-all duration-200
+            hover:bg-rose-700 hover:shadow-md
+            active:scale-[0.98]
+            disabled:cursor-not-allowed disabled:opacity-50
+            dark:border-rose-300/10
+            dark:bg-rose-500/90
+            dark:hover:bg-rose-500
+          "
+                        >
+                          <ThumbsDown size={12} />
+                          Confirm rejection
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {savedFeedback && (
+                  <div className="mt-2 space-y-1">
+                    <p className="text-[10px] text-[#9299a5] dark:text-[#8491a6]">
+                      {savedFeedback.decision === "approved"
+                        ? "This message has been approved."
+                        : "This message has been marked as not suitable."}
+                    </p>
+
+                    {savedFeedback.decision === "disapproved" &&
+                      savedFeedback.rejectionReason && (
+                        <p className="rounded-lg border border-red-200 bg-red-50/60 px-3 py-2 text-[11px] leading-relaxed text-red-700 dark:border-red-400/20 dark:bg-red-400/[0.05] dark:text-red-300">
+                          <span className="font-semibold">Reason: </span>
+                          {savedFeedback.rejectionReason}
+                        </p>
+                      )}
+                  </div>
+                )}
               </div>
             }
           >

@@ -119,7 +119,7 @@ export default async function Page({
         </ChartErrorBoundary>
         {/* </div> */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ChartErrorBoundary>
             <Suspense fallback={<ChartSkeleton />}>
               <MenuEngineeringMatrixWrapper />
@@ -139,7 +139,7 @@ export default async function Page({
           </Suspense>
         </ChartErrorBoundary>
 
-        <div className="grid grid-cols-1 md:grid-cols-[3fr_3fr] gap-6 ">
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr_3fr] gap-6 ">
           {/* <div className="flex flex-col "> */}
           <ChartErrorBoundary>
             <Suspense fallback={<ChartSkeleton />}>

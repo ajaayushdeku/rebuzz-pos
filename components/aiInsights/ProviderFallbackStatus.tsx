@@ -31,7 +31,6 @@ export default function ProviderFallbackStatus({
     (provider) => provider.id === primaryProvider,
   );
 
-  console.log("Provider:", activeProvider);
   const activeProviderLabel =
     activeProvider?.label ?? primaryProvider ?? "Unknown";
 
@@ -130,11 +129,7 @@ export default function ProviderFallbackStatus({
               <div className="flex min-w-0 items-center gap-2.5">
                 <div className="flex   h-9 w-9 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-400/10">
                   {activeProvider && (
-                    <ProviderLogo
-                      provider={activeProvider.id}
-                      size={24}
-                      paint={"#6f6a6a"}
-                    />
+                    <ProviderLogo provider={activeProvider.id} size={24} />
                   )}
                 </div>
 
@@ -200,11 +195,7 @@ export default function ProviderFallbackStatus({
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-200/70 bg-white shadow-sm dark:border-blue-400/15 dark:bg-white/[0.06]">
                   {activeProvider && (
-                    <ProviderLogo
-                      provider={activeProvider.id}
-                      size={24}
-                      paint={"#6f6a6a"}
-                    />
+                    <ProviderLogo provider={activeProvider.id} size={24} />
                   )}
                 </div>
 
@@ -266,11 +257,7 @@ export default function ProviderFallbackStatus({
                       className="group/provider flex min-w-0 items-center gap-2 rounded-lg border border-emerald-200/70 bg-white/80 px-2.5 py-2 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-sm dark:border-emerald-400/10 dark:bg-white/[0.035] dark:hover:border-emerald-400/30"
                     >
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 transition-transform duration-200 group-hover/provider:scale-105 dark:bg-emerald-400/[0.08]">
-                        <ProviderLogo
-                          provider={provider.id}
-                          size={19}
-                          paint={"#6f6a6a"}
-                        />
+                        <ProviderLogo provider={provider.id} size={19} />
                       </div>
 
                       <span className="min-w-0 flex-1 truncate text-xs font-semibold text-slate-700 dark:text-slate-200">

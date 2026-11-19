@@ -25,7 +25,7 @@ import {
 } from "./shared";
 
 /** Part of the cache key: bump when the prompt or the facts change. */
-export const RETENTION_VERSION = "v3";
+export const RETENTION_VERSION = "v5";
 
 /** How far back visits are read. */
 export const RETENTION_LOOKBACK_DAYS = 120;
@@ -251,9 +251,12 @@ export function retentionBriefing(
   candidates: RetentionCandidate[],
   today: string,
   currencySymbol: string,
+  feedback?: RetentionFeedbackPreferences | null,
 ): string {
   const money = (value: number) => formatMoney(currencySymbol, value);
-  return [
+
+  // Original customer facts — preserve the existing briefing.
+  const customerBriefing = [
     `Today: ${today}. Visits read from the last ${RETENTION_LOOKBACK_DAYS} days. Money is what customers paid, in ${currencySymbol}.`,
     "Customers are named by ref only; write {name} wherever the customer's name belongs.",
     "",
@@ -272,6 +275,37 @@ export function retentionBriefing(
       ].join(" · "),
     ),
   ].join("\n");
+
+  // Business-wide administrator feedback.
+  const feedbackContext =
+    feedback && feedback.totalFeedback.total > 0
+      ? [
+          "",
+          "ADMINISTRATOR WRITING FEEDBACK",
+          "The following preferences are based on previous administrator decisions across completed periods.",
+          `Total decisions: ${feedback.totalFeedback.total} (${feedback.totalFeedback.approved} approved, ${feedback.totalFeedback.disapproved} disapproved).`,
+          "",
+          "Styles with more approvals:",
+          ...(feedback.preferredStyles.length
+            ? feedback.preferredStyles.map(
+                (style) =>
+                  `- ${style.styleId}: ${style.approved} approved, ${style.disapproved} disapproved`,
+              )
+            : ["- No consistently preferred styles yet."]),
+          "",
+          "Styles with more disapprovals:",
+          ...(feedback.avoidStyles.length
+            ? feedback.avoidStyles.map(
+                (style) =>
+                  `- ${style.styleId}: ${style.approved} approved, ${style.disapproved} disapproved`,
+              )
+            : ["- No consistently avoided styles yet."]),
+          "",
+          "Use these patterns as directional guidance when writing messages.",
+        ].join("\n")
+      : "";
+
+  return [customerBriefing, feedbackContext].filter(Boolean).join("\n");
 }
 
 // ── Instructions and answer format ────────────────────────────────────────
@@ -360,7 +394,28 @@ Privacy and accuracy rules:
 - Keep tips concise, actionable and free of emojis.
 
 Return every supplied customer exactly once.
-Return valid structured output only.`;
+Return valid structured output only.
+
+ADMINISTRATOR FEEDBACK LEARNING:
+
+You may receive aggregate administrator feedback from previous retention
+message decisions.
+
+Use this information to improve future message writing:
+
+- Give additional attention to styles that have consistently received more
+  approvals.
+- Treat styles with more disapprovals as a signal to use more careful,
+  restrained, and natural wording.
+- Use feedback as guidance, not as an absolute rule.
+- Never invent customer preferences, discounts, promotions, or offers based
+  on administrator feedback.
+- Never mention administrator feedback or approval statistics in customer
+  messages.
+- The required six style IDs and two messages per style must always be
+  preserved, regardless of the feedback statistics.
+- Do not sacrifice relevance to a customer's actual purchase history merely
+  to follow a style preference.`;
 
 export const RETENTION_SCHEMA = {
   type: "object",
@@ -441,11 +496,16 @@ export type RetentionMessageStyleId =
   | "playful_fun"
   | "come_back_soon";
 
+export interface RetentionMessage {
+  id: string;
+  text: string;
+}
+
 export interface RetentionMessageStyle {
   id: RetentionMessageStyleId;
   title: string;
   description: string;
-  messages: string[];
+  messages: RetentionMessage[];
 }
 
 export interface RetentionInsight {
@@ -462,6 +522,24 @@ export interface RetentionInsight {
   phone: string | null;
   tip: string;
   styles: RetentionMessageStyle[];
+}
+
+export interface RetentionFeedbackPreferences {
+  preferredStyles: {
+    styleId: string;
+    approved: number;
+    disapproved: number;
+  }[];
+  avoidStyles: {
+    styleId: string;
+    approved: number;
+    disapproved: number;
+  }[];
+  totalFeedback: {
+    approved: number;
+    disapproved: number;
+    total: number;
+  };
 }
 
 export const RETENTION_STYLES: Omit<RetentionMessageStyle, "messages">[] = [
@@ -553,6 +631,26 @@ export const RETENTION_STYLES: Omit<RetentionMessageStyle, "messages">[] = [
 
 // export type RetentionResult = AiSectionResult<RetentionInsight>;
 
+function stableMessageId(
+  customerId: string,
+  styleId: string,
+  message: string,
+): string {
+  const input = `${customerId}|${styleId}|${message}`;
+
+  let h1 = 0x811c9dc5;
+  let h2 = 0x01000193;
+
+  for (let i = 0; i < input.length; i++) {
+    const code = input.charCodeAt(i);
+
+    h1 = Math.imul(h1 ^ code, 0x01000193);
+    h2 = Math.imul(h2 ^ code, 0x85ebca6b);
+  }
+
+  return `retmsg_${(h1 >>> 0).toString(36)}${(h2 >>> 0).toString(36)}`;
+}
+
 export function parseRetention(
   value: unknown,
   candidates: RetentionCandidate[],
@@ -621,9 +719,14 @@ export function parseRetention(
 
     const styles: RetentionMessageStyle[] = RETENTION_STYLES.map((style) => ({
       ...style,
-      messages: stylesReceived
-        .get(style.id)!
-        .map((message) => putNamesBack(message, firstName, new Map())),
+      messages: stylesReceived.get(style.id)!.map((message) => {
+        const text = putNamesBack(message, firstName, new Map());
+
+        return {
+          id: stableMessageId(candidate.customerId, style.id, text),
+          text,
+        };
+      }),
     }));
 
     received.set(ref, { tip, styles });

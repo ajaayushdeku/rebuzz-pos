@@ -45,7 +45,7 @@ export default function SubscriptionPage() {
 
         {/* One card per column above `md`; below it, PlanCard hides all but
             the selected one, so this collapses to a single card. */}
-        <div className="grid gap-4 md:grid-cols-3 md:items-stretch">
+        <div className="grid gap-4 lg:grid-cols-3 lg:items-stretch">
           {PLANS.map((plan) => (
             <PlanCard
               key={plan.id}

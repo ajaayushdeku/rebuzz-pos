@@ -142,7 +142,7 @@ export default function TaxAnalyticsPage() {
           </Panel>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Panel>
             <VAT20ReturnSummaryWrapper />
           </Panel>
@@ -158,7 +158,7 @@ export default function TaxAnalyticsPage() {
           </Panel>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1  lg:grid-cols-2 gap-6">
           <Panel>
             <VATUnclaimedBackWrapper />
           </Panel>

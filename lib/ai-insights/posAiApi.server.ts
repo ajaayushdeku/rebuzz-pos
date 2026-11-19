@@ -21,6 +21,21 @@ export function periodApiUrl(path: string): string | null {
   return POS_API_URL ? `${POS_API_URL}/business/period-insights${path}` : null;
 }
 
+/**
+ * Build the Customer Retention Feedback API URL.
+ *
+ * Feedback is stored by the main POS backend, so it always uses
+ * POS_API_URL regardless of whether the standalone AI service is enabled.
+ */
+export function customerRetentionFeedbackApiUrl(path: string): string | null {
+  if (AI_SERVICE_URL) {
+    return `${AI_SERVICE_URL}/customer-retention-feedback${path}`;
+  }
+  return POS_API_URL
+    ? `${POS_API_URL}/business/customer-retention-feedback${path}`
+    : null;
+}
+
 /** Whether this deployment can serve period insights at all. */
 export const periodInsightsAvailable = () => Boolean(AI_SERVICE_URL);
 

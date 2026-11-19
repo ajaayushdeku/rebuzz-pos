@@ -16,6 +16,13 @@ import ProviderFallbackStatus from "./ProviderFallbackStatus";
 
 import type { AiProvider } from "@/services/apiAiKey.client";
 
+export interface FestivalPrepProgress {
+  isFetching: boolean;
+  isError: boolean;
+  hasData: boolean;
+  itemCount: number;
+}
+
 interface PeriodInsightsOverviewProps {
   periodLabel?: string;
   isLoading: boolean;
@@ -27,6 +34,7 @@ interface PeriodInsightsOverviewProps {
   providers: AiProvider[];
   primaryProvider: string;
   providerSwitchNotice?: ReactNode;
+  festivalPrepProgress: FestivalPrepProgress;
   onGenerate: () => void;
 }
 
@@ -40,6 +48,7 @@ export default function PeriodInsightsOverview({
   canGenerate,
   providers,
   primaryProvider,
+  festivalPrepProgress,
   providerSwitchNotice,
   onGenerate,
 }: PeriodInsightsOverviewProps) {
@@ -129,6 +138,7 @@ export default function PeriodInsightsOverview({
               missingSections={missingSections}
               progress={progress}
               canGenerate={canGenerate}
+              festivalPrepProgress={festivalPrepProgress}
               onGenerate={onGenerate}
             />
           </div>
