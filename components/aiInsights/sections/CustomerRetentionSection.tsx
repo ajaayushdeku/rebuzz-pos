@@ -11,6 +11,7 @@ import {
   ChevronDown,
   Check,
   ThumbsDown,
+  History,
 } from "lucide-react";
 
 import {
@@ -40,6 +41,7 @@ import {
   type AccentName,
 } from "../parts";
 import type { PeriodKind } from "@/services/apiPeriodInsights.client";
+import CustomerRetentionFeedbackHistoryModal from "../CustomerRetentionFeedbackHistoryModal";
 
 const STATUS: Record<RetentionStatus, { accent: AccentName }> = {
   "At risk": { accent: "red" },
@@ -53,21 +55,21 @@ function copyMessage(message: string) {
     .catch(() => toast.error("Couldn't copy the message"));
 }
 
-function copyAllMessages(item: RetentionInsight) {
-  const content = item.styles
-    .map(
-      (style) =>
-        `${style.title}\n${style.messages
-          .map((message, index) => `Option ${index + 1}: ${message.text}`)
-          .join("\n")}`,
-    )
-    .join("\n\n");
+// function copyAllMessages(item: RetentionInsight) {
+//   const content = item.styles
+//     .map(
+//       (style) =>
+//         `${style.title}\n${style.messages
+//           .map((message, index) => `Option ${index + 1}: ${message.text}`)
+//           .join("\n")}`,
+//     )
+//     .join("\n\n");
 
-  navigator.clipboard
-    .writeText(content)
-    .then(() => toast.success("All messages copied"))
-    .catch(() => toast.error("Couldn't copy the messages"));
-}
+//   navigator.clipboard
+//     .writeText(content)
+//     .then(() => toast.success("All messages copied"))
+//     .catch(() => toast.error("Couldn't copy the messages"));
+// }
 
 const everyText = (days: number) =>
   days <= 1 ? "every day" : `every ${days} days`;
@@ -95,6 +97,8 @@ export default function CustomerRetentionSection({
 
   const [isBodyExpanded, setIsBodyExpanded] = useState(true);
 
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
   return (
     <section>
       <SectionHeader
@@ -112,6 +116,31 @@ export default function CustomerRetentionSection({
               state={state}
               textClassName="text-blue-700 hover:bg-blue-100 border-blue-300 hover:border-blue-400 dark:hover:border-blue-400/60 dark:hover:bg-blue-400/20 dark:border-blue-400/40 dark:text-blue-300"
             />
+
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => setIsHistoryOpen(true)}
+                className="
+      inline-flex shrink-0 items-center gap-2
+      rounded-lg border border-[#e2e6ed]
+      bg-white px-3 py-2
+      text-xs font-semibold text-[#596579]
+      transition-all duration-200
+      hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700
+
+      dark:border-[#293750]
+      dark:bg-[#182338]
+      dark:text-[#aab4c4]
+      dark:hover:border-blue-400/40
+      dark:hover:bg-blue-400/10
+      dark:hover:text-blue-300
+    "
+              >
+                <History size={14} />
+                Feedback history
+              </button>
+            )}
 
             {/* Collapse / Expand */}
             <button
@@ -143,6 +172,12 @@ export default function CustomerRetentionSection({
           </>
         }
       />
+
+      {isHistoryOpen && (
+        <CustomerRetentionFeedbackHistoryModal
+          onClose={() => setIsHistoryOpen(false)}
+        />
+      )}
 
       <div
         className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${

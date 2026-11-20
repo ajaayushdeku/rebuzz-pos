@@ -42,6 +42,24 @@ export interface SaveRetentionFeedbackInput {
   style?: CustomerRetentionFeedback["style"];
 }
 
+export type RetentionFeedbackHistoryFilter = {
+  page?: number;
+  limit?: number;
+  decision?: RetentionFeedbackDecision | "all";
+  styleId?: string;
+  search?: string;
+};
+
+export interface RetentionFeedbackHistoryResponse {
+  items: CustomerRetentionFeedback[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   let response: Response;
 
@@ -93,6 +111,53 @@ export async function fetchCustomerRetentionFeedback(
   }
 
   return json.feedback;
+}
+
+/** Retrieve business-wide feedback history with filters and pagination. */
+export async function fetchCustomerRetentionFeedbackHistory(
+  filters: RetentionFeedbackHistoryFilter = {},
+): Promise<RetentionFeedbackHistoryResponse> {
+  const params = new URLSearchParams();
+
+  if (filters.page !== undefined) {
+    params.set("page", String(filters.page));
+  }
+
+  if (filters.limit !== undefined) {
+    params.set("limit", String(filters.limit));
+  }
+
+  if (filters.decision && filters.decision !== "all") {
+    params.set("decision", filters.decision);
+  }
+
+  if (filters.styleId && filters.styleId !== "all") {
+    params.set("styleId", filters.styleId);
+  }
+
+  if (filters.search?.trim()) {
+    params.set("search", filters.search.trim());
+  }
+
+  const query = params.toString();
+  const url = `/api/customer-retention-feedback/history${
+    query ? `?${query}` : ""
+  }`;
+
+  const json = await request<RetentionFeedbackHistoryResponse>(url);
+
+  if (
+    !Array.isArray(json.items) ||
+    !json.pagination ||
+    typeof json.pagination.total !== "number"
+  ) {
+    throw new AiInsightsError(
+      "AI_MALFORMED_RESPONSE",
+      aiErrorMessage("AI_MALFORMED_RESPONSE"),
+    );
+  }
+
+  return json;
 }
 
 /** Create or update one message decision. */

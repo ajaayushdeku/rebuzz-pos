@@ -24,6 +24,7 @@ import {
 } from "@/lib/ai-insights/sections/retention";
 import { salesWindows } from "@/lib/ai-insights/sections/shared";
 import { customerRetentionFeedbackApiUrl } from "@/lib/ai-insights/posAiApi.server";
+import { fetchRetentionFeedbackPreferences } from "@/lib/ai-insights/sections/builders.server";
 
 /**
  * Customer Retention Radar for the AI Insights page.
@@ -38,16 +39,6 @@ type RetentionStyleFeedback = {
   styleId: string;
   approved: number;
   disapproved: number;
-};
-
-type RetentionFeedbackPreferences = {
-  preferredStyles: RetentionStyleFeedback[];
-  avoidStyles: RetentionStyleFeedback[];
-  totalFeedback: {
-    approved: number;
-    disapproved: number;
-    total: number;
-  };
 };
 
 function readStyleFeedback(value: unknown): RetentionStyleFeedback[] {
@@ -80,69 +71,6 @@ function readStyleFeedback(value: unknown): RetentionStyleFeedback[] {
       },
     ];
   });
-}
-
-async function fetchRetentionFeedbackPreferences(
-  token: string,
-): Promise<RetentionFeedbackPreferences | null> {
-  const url = customerRetentionFeedbackApiUrl("/preferences");
-
-  if (!url) return null;
-
-  try {
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      throw new Error(`Preferences request failed: ${response.status}`);
-    }
-
-    const json: unknown = await response.json();
-
-    if (!json || typeof json !== "object") return null;
-
-    const data = json as Record<string, unknown>;
-    if (
-      !Array.isArray(data.preferredStyles) ||
-      !Array.isArray(data.avoidStyles) ||
-      !data.totalFeedback ||
-      typeof data.totalFeedback !== "object"
-    ) {
-      throw new Error("Invalid feedback preferences response");
-    }
-
-    const totals =
-      data.totalFeedback && typeof data.totalFeedback === "object"
-        ? (data.totalFeedback as Record<string, unknown>)
-        : {};
-
-    const readCount = (value: unknown) =>
-      typeof value === "number" && Number.isFinite(value)
-        ? Math.max(0, Math.floor(value))
-        : 0;
-
-    return {
-      preferredStyles: readStyleFeedback(data.preferredStyles),
-      avoidStyles: readStyleFeedback(data.avoidStyles),
-      totalFeedback: {
-        approved: readCount(totals.approved),
-        disapproved: readCount(totals.disapproved),
-        total: readCount(totals.total),
-      },
-    };
-  } catch (error) {
-    console.warn(
-      "[Customer Retention] Could not load feedback preferences:",
-      error instanceof Error ? error.message : error,
-    );
-
-    // Feedback is optional. Do not prevent retention insights from generating.
-    return null;
-  }
 }
 
 export async function POST(req: NextRequest) {
@@ -189,6 +117,7 @@ export async function POST(req: NextRequest) {
     ),
     fetchRetentionFeedbackPreferences(token),
   ]);
+
   candidates.forEach((c, i) => {
     c.usualOrder = usualOrderFrom(histories[i]);
   });

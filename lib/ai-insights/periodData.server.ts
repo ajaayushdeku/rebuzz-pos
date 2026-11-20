@@ -339,7 +339,7 @@ export async function draftSection(input: DraftInput): Promise<DraftResult> {
     },
     `POST draft ${input.section}`,
   );
-
+  // console.log("AI Insights Builder PROMPT:", input);
   if (!result.ok) return result;
 
   const data = result.data as Partial<Draft>;

@@ -245,6 +245,38 @@ export function paceLabel(usualGapDays: number): string {
   return `Every ${usualGapDays} days`;
 }
 
+function selectRepresentativeExamples<T extends { styleId: string }>(
+  examples: T[],
+  limit: number,
+): T[] {
+  const selected: T[] = [];
+  const selectedStyles = new Set<string>();
+  const selectedExamples = new Set<T>();
+
+  // First pass: select the latest example from each distinct style.
+  for (const example of examples) {
+    if (selected.length >= limit) break;
+
+    if (!selectedStyles.has(example.styleId)) {
+      selected.push(example);
+      selectedStyles.add(example.styleId);
+      selectedExamples.add(example);
+    }
+  }
+
+  // Second pass: fill remaining slots with the latest examples.
+  for (const example of examples) {
+    if (selected.length >= limit) break;
+
+    if (!selectedExamples.has(example)) {
+      selected.push(example);
+      selectedExamples.add(example);
+    }
+  }
+
+  return selected;
+}
+
 // ── Briefing ──────────────────────────────────────────────────────────────
 
 export function retentionBriefing(
@@ -254,6 +286,26 @@ export function retentionBriefing(
   feedback?: RetentionFeedbackPreferences | null,
 ): string {
   const money = (value: number) => formatMoney(currencySymbol, value);
+
+  const MAX_APPROVED_EXAMPLES = 3;
+  const MAX_DISAPPROVED_EXAMPLES = 3;
+  const MAX_EXAMPLE_LENGTH = 250;
+  const MAX_REASON_LENGTH = 150;
+
+  const approvedExamples = selectRepresentativeExamples(
+    feedback?.approvedExamples ?? [],
+    MAX_APPROVED_EXAMPLES,
+  );
+
+  const disapprovedExamples = selectRepresentativeExamples(
+    feedback?.disapprovedExamples ?? [],
+    MAX_DISAPPROVED_EXAMPLES,
+  );
+
+  const truncate = (value: string, maxLength: number) =>
+    value.length > maxLength
+      ? `${value.slice(0, maxLength).trimEnd()}...`
+      : value;
 
   // Original customer facts — preserve the existing briefing.
   const customerBriefing = [
@@ -301,6 +353,70 @@ export function retentionBriefing(
               )
             : ["- No consistently avoided styles yet."]),
           "",
+          "",
+          "APPROVED MESSAGE EXAMPLES",
+          "These messages were explicitly approved by the administrator.",
+          "Learn from their wording, tone, personalization, and structure.",
+          "Do not copy them verbatim.",
+          ...(approvedExamples.length
+            ? approvedExamples.map((example, index) =>
+                [
+                  `Approved example ${index + 1}:`,
+                  `Style: ${example.styleTitle} (${example.styleId})`,
+                  `Message: ${truncate(example.message, MAX_EXAMPLE_LENGTH)}`,
+                  example.style?.tone ? `Tone: ${example.style.tone}` : null,
+                  example.style?.length
+                    ? `Length: ${example.style.length}`
+                    : null,
+                  example.style?.personalization
+                    ? `Personalization: ${example.style.personalization}`
+                    : null,
+                  example.style?.approach
+                    ? `Approach: ${example.style.approach}`
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join("\n"),
+              )
+            : ["- No approved message examples available."]),
+          "",
+          "DISAPPROVED MESSAGE EXAMPLES",
+          "These messages were explicitly rejected by the administrator.",
+          "Understand what was disliked and avoid repeating those characteristics.",
+          ...(disapprovedExamples.length
+            ? disapprovedExamples.map((example, index) =>
+                [
+                  `Disapproved example ${index + 1}:`,
+                  `Style: ${example.styleTitle} (${example.styleId})`,
+                  `Message: ${truncate(example.message, MAX_EXAMPLE_LENGTH)}`,
+                  example.rejectionReason
+                    ? `Administrator's rejection reason: ${truncate(
+                        example.rejectionReason,
+                        MAX_REASON_LENGTH,
+                      )}`
+                    : "Administrator's rejection reason: Not provided.",
+                  example.style?.tone ? `Tone: ${example.style.tone}` : null,
+                  example.style?.length
+                    ? `Length: ${example.style.length}`
+                    : null,
+                  example.style?.personalization
+                    ? `Personalization: ${example.style.personalization}`
+                    : null,
+                  example.style?.approach
+                    ? `Approach: ${example.style.approach}`
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join("\n"),
+              )
+            : ["- No disapproved message examples available."]),
+          "",
+          "FEEDBACK LEARNING INSTRUCTIONS",
+          "- Learn from the actual wording and structure of approved messages.",
+          "- Use rejection reasons to understand what the administrator dislikes.",
+          "- Avoid repeating the problems found in disapproved messages.",
+          "- Treat these examples as guidance, not templates to copy.",
+          "- Always write messages that are relevant to the current customer.",
           "Use these patterns as directional guidance when writing messages.",
         ].join("\n")
       : "";
@@ -308,114 +424,187 @@ export function retentionBriefing(
   return [customerBriefing, feedbackContext].filter(Boolean).join("\n");
 }
 
-// ── Instructions and answer format ────────────────────────────────────────
+// export const RETENTION_PROMPT = `You help the owner of a small shop, café or restaurant in Nepal win back customers who have become less active.z
 
-// export const RETENTION_PROMPT = `You help the owner of a small shop, café or restaurant in Nepal that uses the Rebuzz POS win back regular customers who have gone quiet. For each customer you receive their habit, how overdue they are, what they spend and what they usually order.
+// You receive anonymized information about each customer. Each customer has a unique reference such as c123abc. Use the customer's own facts to write personalized recommendations.
 
-// For each customer, write:
-// - ref: the customer's ref exactly as given.
-// - tip: what the owner should do, in one or two sentences under 200 characters. A small, specific gesture works best: their usual order, their loyalty points, a reason to come back this week.
-// - message: a short, warm message the owner could send them, under 220 characters, starting with "Hi {name}". Friendly and personal, not salesy. Mention their usual order or points when you have them.
+// For EVERY customer provided, generate:
+// - Exactly one personalized recommendation tip.
+// - Exactly 6 message styles with exactly 2 messages per style.
 
-// Rules:
-// - Write {name} for the customer's name. Never write a ref such as cyaxai4 in the tip or message, and never invent a name.
-// - Never invent figures, prices or discounts that are not in the facts. An offer may be described without a number ("a free drink with your next visit").
-// - A customer at risk needs a stronger reason to return than one cooling off.
-// - Plain words. No markdown, no emojis in the tip. At most one emoji in the message.`;
+// The recommendation tip:
+// - Explain the best approach the owner should take to reconnect with this specific customer.
+// - Use their retention status, visit habits, usual orders, spending pattern and loyalty points where available.
+// - Keep it practical, specific and under 200 characters.
+// - This is internal guidance for the business owner, NOT a message to send to the customer.
+// - Do not invent offers, discounts, rewards, products or customer preferences.
 
-// export const RETENTION_SCHEMA = {
-//   type: "object",
-//   properties: {
-//     customers: {
-//       type: "array",
-//       items: {
-//         type: "object",
-//         properties: {
-//           ref: { type: "string" },
-//           tip: { type: "string" },
-//           message: { type: "string" },
-//         },
-//         required: ["ref", "tip", "message"],
-//       },
-//     },
-//   },
-//   required: ["customers"],
-// } as const;
+// The six styles are:
 
-export const RETENTION_PROMPT = `You help the owner of a small shop, café or restaurant in Nepal win back customers who have become less active.
+// 1. friendly_warm: Friendly, welcoming messages that make the customer feel appreciated.
+// 2. curiosity_led: Create curiosity about visiting again, discovering something new or seeing what's happening.
+// 3. personal_relatable: Relatable messages inspired by the customer's usual orders or familiar experiences.
+// 4. loyalty_appreciation: Express appreciation for the customer's continued support and loyalty.
+// 5. playful_fun: Lighthearted, cheerful messages with a fun conversational tone.
+// 6. come_back_soon: Encourage the customer to visit again soon.
 
-You receive anonymized information about each customer. Each customer has a unique reference such as c123abc. Use the customer's own facts to write personalized recommendations.
+// For each customer return:
+// - ref: The customer's exact reference from the supplied facts.
+// - tip: One personalized recommendation for the business owner.
+// - styles: Exactly six style groups.
+// - Each style must contain its exact style identifier and exactly two distinct messages.
 
-For EVERY customer provided, generate:
-- Exactly one personalized recommendation tip.
-- Exactly 6 message styles with exactly 2 messages per style.
+// Personalization rules:
+// - Start messages naturally with "Hi {name}" when appropriate.
+// - Use the customer's usual orders when available.
+// - Mention loyalty points only when they are greater than zero.
+// - Consider their retention status and how overdue they are.
+// - An At risk customer should receive a stronger invitation than a Cooling off customer.
+// - Make every message relevant to that specific customer.
 
-The recommendation tip:
-- Explain the best approach the owner should take to reconnect with this specific customer.
-- Use their retention status, visit habits, usual orders, spending pattern and loyalty points where available.
-- Keep it practical, specific and under 200 characters.
-- This is internal guidance for the business owner, NOT a message to send to the customer.
-- Do not invent offers, discounts, rewards, products or customer preferences.
+// Privacy and accuracy rules:
+// - Never invent a customer's name, phone number, order, spending, loyalty points or visit history.
+// - Never include the anonymized customer reference in a tip or message.
+// - Use {name} as the only name placeholder.
+// - Do not invent prices, discounts, promotions, free items or rewards.
+// - Never promise an offer that is not supported by the supplied facts.
+// - Keep messages natural, friendly and under 220 characters where possible.
+// - Make the two messages within each style meaningfully different.
+// - Avoid repeating the same message across styles.
+// - Use simple conversational English suitable for customers in Nepal.
+// - At most one emoji per message.
+// - Keep tips concise, actionable and free of emojis.
 
-The six styles are:
+// Return every supplied customer exactly once.
+// Return valid structured output only.
 
-1. friendly_warm: Friendly, welcoming messages that make the customer feel appreciated.
-2. curiosity_led: Create curiosity about visiting again, discovering something new or seeing what's happening.
-3. personal_relatable: Relatable messages inspired by the customer's usual orders or familiar experiences.
-4. loyalty_appreciation: Express appreciation for the customer's continued support and loyalty.
-5. playful_fun: Lighthearted, cheerful messages with a fun conversational tone.
-6. come_back_soon: Encourage the customer to visit again soon.
+// ADMINISTRATOR FEEDBACK LEARNING:
 
-For each customer return:
-- ref: The customer's exact reference from the supplied facts.
-- tip: One personalized recommendation for the business owner.
-- styles: Exactly six style groups.
-- Each style must contain its exact style identifier and exactly two distinct messages.
+// You may receive administrator feedback from previous retention
+// message decisions. This feedback can include:
 
-Personalization rules:
-- Start messages naturally with "Hi {name}" when appropriate.
-- Use the customer's usual orders when available.
-- Mention loyalty points only when they are greater than zero.
-- Consider their retention status and how overdue they are.
-- An At risk customer should receive a stronger invitation than a Cooling off customer.
-- Make every message relevant to that specific customer.
+// - Aggregate approval and disapproval statistics for message styles.
+// - Actual message examples explicitly approved by the administrator.
+// - Actual message examples explicitly disapproved by the administrator.
+// - Reasons provided by the administrator for rejecting messages.
+// - Additional style characteristics such as tone, length,
+//   personalization and approach.
 
-Privacy and accuracy rules:
-- Never invent a customer's name, phone number, order, spending, loyalty points or visit history.
-- Never include the anonymized customer reference in a tip or message.
-- Use {name} as the only name placeholder.
-- Do not invent prices, discounts, promotions, free items or rewards.
-- Never promise an offer that is not supported by the supplied facts.
-- Keep messages natural, friendly and under 220 characters where possible.
-- Make the two messages within each style meaningfully different.
-- Avoid repeating the same message across styles.
+// Use this feedback to improve the quality of future recommendations.
+
+// APPROVED MESSAGE EXAMPLES:
+
+// - Study approved messages to understand the administrator's
+//   preferred wording, tone, sentence structure and level of
+//   personalization.
+// - Use their characteristics as positive writing guidance.
+// - Preserve the qualities that make these messages effective.
+// - Do not copy approved messages verbatim.
+// - Adapt their writing characteristics to each customer's
+//   actual purchase and visit history.
+
+// DISAPPROVED MESSAGE EXAMPLES:
+
+// - Carefully examine rejected messages and their associated
+//   rejection reasons.
+// - Understand the specific characteristics the administrator
+//   disliked.
+// - Avoid repeating those characteristics in future messages.
+// - Pay particular attention to explicit reasons such as
+//   overly formal wording, generic language, excessive length,
+//   unnatural phrasing or insufficient personalization.
+// - Do not assume a rejection reason that the administrator
+//   did not provide.
+// - A disapproved example is negative guidance, not a reason
+//   to avoid its entire style automatically.
+
+// STYLE PREFERENCES:
+
+// - Give additional attention to styles that have received
+//   more approvals than disapprovals.
+// - Treat styles with more disapprovals as a signal to use
+//   more careful and appropriate wording.
+// - Consider the actual approved and disapproved examples,
+//   not just their aggregate statistics.
+// - Do not treat a single approval or rejection as a definitive
+//   preference.
+// - Feedback is directional guidance, not an absolute rule.
+
+// IMPORTANT CONSTRAINTS:
+
+// - Customer facts always take priority over administrator
+//   writing preferences.
+// - Never invent customer preferences, products, discounts,
+//   promotions, rewards or offers based on feedback.
+// - Never include administrator feedback, rejection reasons,
+//   or approval statistics in customer-facing messages.
+// - Never expose the content of another customer's message
+//   as if it were relevant to the current customer.
+// - Never copy an approved message verbatim.
+// - Always preserve all six required style identifiers.
+// - Always generate exactly two distinct messages per style.
+// - Feedback must improve writing quality without reducing
+//   customer-specific relevance.`;
+
+export const RETENTION_PROMPT = `You help small shops, cafés and restaurants in Nepal reconnect with inactive customers.
+
+You receive anonymized customer facts and optional administrator feedback.
+
+FOR EVERY CUSTOMER:
+- Generate exactly one personalized business-owner recommendation tip.
+- Generate exactly 6 message styles, with exactly 2 distinct messages per style.
+- Return the customer's exact ref.
+- Return every supplied customer exactly once.
+
+REQUIRED STYLE IDENTIFIERS:
+1. friendly_warm: Friendly and welcoming.
+2. curiosity_led: Create curiosity about visiting again.
+3. personal_relatable: Relate to familiar orders or experiences.
+4. loyalty_appreciation: Appreciate customer loyalty.
+5. playful_fun: Cheerful and lighthearted.
+6. come_back_soon: Encourage another visit.
+
+RECOMMENDATION TIP:
+- Give practical, customer-specific advice using retention status, visit habits, usual orders, spending and loyalty points where available.
+- Keep under 200 characters.
+- This is internal business guidance, not a customer message.
+- Do not invent offers, rewards or preferences.
+
+MESSAGE RULES:
+- Personalize using the supplied customer facts.
+- Start naturally with "Hi {name}" when appropriate.
+- Use usual orders when available.
+- Mention loyalty points only when greater than zero.
+- At-risk customers should receive a stronger invitation than Cooling off customers.
+- Keep messages natural and under 220 characters where possible.
 - Use simple conversational English suitable for customers in Nepal.
-- At most one emoji per message.
-- Keep tips concise, actionable and free of emojis.
+- Use at most one emoji per message.
+- Make all messages meaningfully different, including across styles.
+- Use {name} as the only name placeholder.
 
-Return every supplied customer exactly once.
-Return valid structured output only.
+ACCURACY AND PRIVACY:
+- Never invent names, phone numbers, orders, spending, loyalty points, visit history, prices, discounts, promotions or rewards.
+- Never include customer references in messages or tips.
+- Never present another customer's message or personal details as relevant to the current customer.
+- Never promise unsupported offers.
 
-ADMINISTRATOR FEEDBACK LEARNING:
+ADMINISTRATOR FEEDBACK:
+The briefing may contain approved examples, disapproved examples, rejection reasons and aggregate style statistics.
 
-You may receive aggregate administrator feedback from previous retention
-message decisions.
+Use approved examples as positive guidance for tone, wording, structure and personalization. Do not copy them verbatim.
 
-Use this information to improve future message writing:
+Study disapproved examples and their rejection reasons. Avoid the specific characteristics the administrator disliked. Do not assume an unstated rejection reason or automatically avoid an entire style because of one rejection.
 
-- Give additional attention to styles that have consistently received more
-  approvals.
-- Treat styles with more disapprovals as a signal to use more careful,
-  restrained, and natural wording.
-- Use feedback as guidance, not as an absolute rule.
-- Never invent customer preferences, discounts, promotions, or offers based
-  on administrator feedback.
-- Never mention administrator feedback or approval statistics in customer
-  messages.
-- The required six style IDs and two messages per style must always be
-  preserved, regardless of the feedback statistics.
-- Do not sacrifice relevance to a customer's actual purchase history merely
-  to follow a style preference.`;
+Use style approval statistics as directional guidance, not absolute rules. Do not treat a single decision as a definitive preference.
+
+Customer facts always take priority over writing preferences. Never mention administrator feedback, rejection reasons or approval statistics in customer-facing messages.
+
+OUTPUT REQUIREMENTS:
+- Preserve all six exact style identifiers.
+- Generate exactly two distinct messages per style.
+- Generate exactly one tip per customer.
+- Return valid structured output matching the supplied response schema.
+- Return structured output only.`;
 
 export const RETENTION_SCHEMA = {
   type: "object",
@@ -524,24 +713,43 @@ export interface RetentionInsight {
   styles: RetentionMessageStyle[];
 }
 
+export interface RetentionFeedbackExample {
+  message: string;
+  styleId: string;
+  styleTitle: string;
+  style?: {
+    tone?: string;
+    length?: string;
+    personalization?: string;
+    approach?: string;
+  } | null;
+  rejectionReason?: string | null;
+}
+
 export interface RetentionFeedbackPreferences {
+  approvedExamples: RetentionFeedbackExample[];
+  disapprovedExamples: RetentionFeedbackExample[];
+
   preferredStyles: {
     styleId: string;
+    styleTitle?: string;
     approved: number;
     disapproved: number;
   }[];
+
   avoidStyles: {
     styleId: string;
+    styleTitle?: string;
     approved: number;
     disapproved: number;
   }[];
+
   totalFeedback: {
     approved: number;
     disapproved: number;
     total: number;
   };
 }
-
 export const RETENTION_STYLES: Omit<RetentionMessageStyle, "messages">[] = [
   {
     id: "friendly_warm",

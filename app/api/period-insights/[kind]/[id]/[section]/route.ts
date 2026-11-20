@@ -39,11 +39,14 @@ import { salesDataUnavailable } from "@/lib/ai-insights/sections/posData.server"
  */
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ kind: string; id: string; section: string }> },
+  {
+    params,
+  }: { params: Promise<{ kind: string; id: string; section: string }> },
 ) {
   const { kind, id, section } = await params;
 
   const builder = getBuilder(section);
+
   if (!builder) {
     // Not a section this app generates per period. `festival-prep` lands here,
     // which is correct: it advises on coming festivals, so it has no period to

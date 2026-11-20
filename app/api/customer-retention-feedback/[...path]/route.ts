@@ -25,7 +25,8 @@ async function proxyFeedbackRequest(
   const { path } = await params;
 
   const endpoint = path.map(encodeURIComponent).join("/");
-  const url = customerRetentionFeedbackApiUrl(`/${endpoint}`);
+  const query = req.nextUrl.search;
+  const url = customerRetentionFeedbackApiUrl(`/${endpoint}${query}`);
 
   if (!url) {
     return NextResponse.json(

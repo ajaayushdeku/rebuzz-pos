@@ -5,8 +5,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   deleteCustomerRetentionFeedback,
   fetchCustomerRetentionFeedback,
+  fetchCustomerRetentionFeedbackHistory,
   saveCustomerRetentionFeedback,
   type CustomerRetentionFeedback,
+  type RetentionFeedbackHistoryFilter,
+  type RetentionFeedbackHistoryResponse,
   type SaveRetentionFeedbackInput,
 } from "@/services/apiCustomerRetentionFeedback.client";
 
@@ -21,6 +24,9 @@ export const retentionFeedbackKeys = {
     [...retentionFeedbackKeys.all, "period", kind, periodId] as const,
 
   preferences: () => [...retentionFeedbackKeys.all, "preferences"] as const,
+
+  history: (filters: RetentionFeedbackHistoryFilter) =>
+    [...retentionFeedbackKeys.all, "history", filters] as const,
 };
 
 /** Read saved feedback for the currently selected completed period. */
@@ -33,6 +39,21 @@ export function useCustomerRetentionFeedback(
     queryFn: () => fetchCustomerRetentionFeedback(kind, periodId),
     enabled: Boolean(periodId),
     staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+}
+
+/** Read business-wide feedback history for the history modal. */
+export function useCustomerRetentionFeedbackHistory(
+  filters: RetentionFeedbackHistoryFilter = {},
+  enabled = true,
+) {
+  return useQuery<RetentionFeedbackHistoryResponse, AiInsightsError>({
+    queryKey: retentionFeedbackKeys.history(filters),
+    queryFn: () => fetchCustomerRetentionFeedbackHistory(filters),
+    enabled,
+    staleTime: 30 * 1000,
     refetchOnWindowFocus: false,
     retry: false,
   });
@@ -70,6 +91,10 @@ export function useSaveCustomerRetentionFeedback() {
       void queryClient.invalidateQueries({
         queryKey: retentionFeedbackKeys.preferences(),
       });
+
+      void queryClient.invalidateQueries({
+        queryKey: [...retentionFeedbackKeys.all, "history"],
+      });
     },
 
     retry: false,
@@ -96,6 +121,10 @@ export function useDeleteCustomerRetentionFeedback() {
 
       void queryClient.invalidateQueries({
         queryKey: retentionFeedbackKeys.preferences(),
+      });
+
+      void queryClient.invalidateQueries({
+        queryKey: [...retentionFeedbackKeys.all, "history"],
       });
     },
 

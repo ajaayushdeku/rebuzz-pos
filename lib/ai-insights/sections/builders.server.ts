@@ -31,6 +31,7 @@ import {
   retentionWindow,
   usualOrderFrom,
   type CustomerBill,
+  type RetentionFeedbackPreferences,
 } from "@/lib/ai-insights/sections/retention";
 import {
   STAFFING_PROMPT,
@@ -77,6 +78,7 @@ import type {
   DateWindow,
   SalesWindows,
 } from "@/lib/ai-insights/sections/shared";
+import { customerRetentionFeedbackApiUrl } from "@/lib/ai-insights/posAiApi.server";
 
 /**
  * How each section turns a period into something the model can answer.
@@ -165,6 +167,59 @@ export type SectionBuilder = (
 export const isEmptySection = (
   built: BuiltSection | EmptySection,
 ): built is EmptySection => "empty" in built;
+
+export async function fetchRetentionFeedbackPreferences(
+  token: string,
+): Promise<RetentionFeedbackPreferences | null> {
+  try {
+    const url = customerRetentionFeedbackApiUrl("/preferences");
+    if (!url) {
+      return null;
+    }
+
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      console.warn(
+        "[Retention Feedback] Failed to fetch preferences:",
+        res.status,
+      );
+      return null;
+    }
+
+    const data = await res.json();
+
+    return {
+      approvedExamples: Array.isArray(data?.approvedExamples)
+        ? data.approvedExamples
+        : [],
+
+      disapprovedExamples: Array.isArray(data?.disapprovedExamples)
+        ? data.disapprovedExamples
+        : [],
+
+      preferredStyles: Array.isArray(data?.preferredStyles)
+        ? data.preferredStyles
+        : [],
+
+      avoidStyles: Array.isArray(data?.avoidStyles) ? data.avoidStyles : [],
+
+      totalFeedback: {
+        approved: Math.max(0, Number(data?.totalFeedback?.approved) || 0),
+        disapproved: Math.max(0, Number(data?.totalFeedback?.disapproved) || 0),
+        total: Math.max(0, Number(data?.totalFeedback?.total) || 0),
+      },
+    };
+  } catch (error) {
+    console.warn("[Retention Feedback] Could not load preferences:", error);
+    return null;
+  }
+}
 
 /**
  * Pricing Opportunities.
@@ -453,9 +508,12 @@ const retention: SectionBuilder = async ({ token, period, windows }) => {
 
   // What each flagged customer usually orders: one small request each, only for
   // the handful that will appear on the page.
-  const histories = await Promise.all(
-    candidates.map((c) => fetchCustomerHistory(token, c.customerId)),
-  );
+  const [histories, feedbackPreferences] = await Promise.all([
+    Promise.all(
+      candidates.map((c) => fetchCustomerHistory(token, c.customerId)),
+    ),
+    fetchRetentionFeedbackPreferences(token),
+  ]);
   candidates.forEach((candidate, index) => {
     candidate.usualOrder = usualOrderFrom(histories[index]);
   });
@@ -464,7 +522,12 @@ const retention: SectionBuilder = async ({ token, period, windows }) => {
     promptVersion: RETENTION_VERSION,
     systemInstruction: RETENTION_PROMPT,
     responseSchema: RETENTION_SCHEMA,
-    briefing: retentionBriefing(candidates, asOf, await currencySymbol()),
+    briefing: retentionBriefing(
+      candidates,
+      asOf,
+      await currencySymbol(),
+      feedbackPreferences,
+    ),
     basis: {
       customers: customers.length,
       candidates: candidates.length,
