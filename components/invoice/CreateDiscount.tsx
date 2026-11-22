@@ -11,7 +11,6 @@ import { useCreateDiscount } from "@/hooks/useDiscounts";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbolOnly } from "@/utils/helper";
 import HeaderActionButton from "@/components/ui/HeaderActionButton";
-// import FilterSelect from "../ui/FilterSelect";
 
 export const DISCOUNT_TYPES: {
   value: "percentage" | "fixed";
@@ -21,31 +20,69 @@ export const DISCOUNT_TYPES: {
   { value: "fixed", label: "Fixed Amount" },
 ];
 
-export const CreateDiscountDialog = () => {
+interface CreateDiscountDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onCreated?: (discountId: string) => void;
+  initialName?: string;
+  initialRate?: number;
+  initialType?: "percentage" | "fixed";
+}
+
+export const CreateDiscountDialog = ({
+  open: openProp,
+  onOpenChange,
+  onCreated,
+  initialName = "",
+  initialRate = 0,
+  initialType = "percentage",
+}: CreateDiscountDialogProps) => {
   const { currency } = useCurrency();
-  const [open, setOpen] = useState(false);
+
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  const isControlled = openProp !== undefined;
+  const open = isControlled ? openProp : internalOpen;
+
   const { mutate: createDiscount, isPending } = useCreateDiscount();
 
   const [formData, setFormData] = useState({
-    name: "",
-    type: "percentage" as "percentage" | "fixed",
-    rate: 0,
+    name: initialName,
+    type: initialType,
+    rate: initialRate,
   });
 
-  const reset = () => setFormData({ name: "", type: "percentage", rate: 0 });
+  const reset = () => {
+    setFormData({
+      name: initialName,
+      type: initialType,
+      rate: initialRate,
+    });
+  };
 
-  const handleOpenChange = (o: boolean) => {
-    setOpen(o);
-    if (!o) reset();
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!isControlled) {
+      setInternalOpen(nextOpen);
+    }
+
+    onOpenChange?.(nextOpen);
+
+    if (!nextOpen) {
+      reset();
+    }
   };
 
   const handleSave = () => {
     if (!formData.name.trim() || formData.rate <= 0) return;
 
+    if (formData.type === "percentage" && formData.rate > 100) {
+      return;
+    }
+
     const payload = {
       discounts: [
         {
-          name: formData.name,
+          name: formData.name.trim(),
           rate: formData.rate,
           type: formData.type,
           isEnabled: false,
@@ -54,27 +91,41 @@ export const CreateDiscountDialog = () => {
     };
 
     createDiscount(payload, {
-      onSuccess: () => {
-        setOpen(false);
-        reset();
+      onSuccess: (response) => {
+        const result = response as unknown as {
+          data?: {
+            message?: {
+              discounts?: Array<{ _id?: string }>;
+            };
+          };
+        };
+
+        const discountId = result?.data?.message?.discounts?.[0]?._id;
+
+        if (discountId) {
+          onCreated?.(discountId);
+        }
+
+        handleOpenChange(false);
       },
     });
   };
 
-  // Matches SelectMenu's trigger (rounded-xl, py-2.5, 13px) so the Type
-  // dropdown and the Value field sit on the same baseline and height.
-  // const inputClass =
-  //   "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
+  const isInvalidRate =
+    formData.rate <= 0 ||
+    (formData.type === "percentage" && formData.rate > 100);
 
   return (
     <>
-      <HeaderActionButton
-        variant="dashed"
-        hideLabelOnMobile
-        icon={BadgePercent}
-        label="Create New Discount"
-        onClick={() => setOpen(true)}
-      />
+      {!isControlled && (
+        <HeaderActionButton
+          variant="dashed"
+          hideLabelOnMobile
+          icon={BadgePercent}
+          label="Create New Discount"
+          onClick={() => handleOpenChange(true)}
+        />
+      )}
 
       <ModalShell
         open={open}
@@ -95,12 +146,11 @@ export const CreateDiscountDialog = () => {
             >
               Cancel
             </button>
+
             <button
               type="button"
               onClick={handleSave}
-              disabled={
-                isPending || !formData.name.trim() || formData.rate <= 0
-              }
+              disabled={isPending || !formData.name.trim() || isInvalidRate}
               className="rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
             >
               {isPending ? (
@@ -115,7 +165,6 @@ export const CreateDiscountDialog = () => {
           </div>
         }
       >
-        {/* ── Details ── */}
         <div className="space-y-5">
           <div>
             <div className="mb-3">
@@ -136,7 +185,6 @@ export const CreateDiscountDialog = () => {
             />
           </div>
 
-          {/* ── Amount ── */}
           <div>
             <div className="mb-3">
               <SectionLabel>Amount</SectionLabel>
@@ -156,21 +204,8 @@ export const CreateDiscountDialog = () => {
                   capitalize={false}
                   aria-label="Discount type"
                 />
-                {/* <FilterSelect
-                  value={formData.type}
-                  options={DISCOUNT_TYPES}
-                  onChange={(type) =>
-                    setFormData({
-                      ...formData,
-                      type: type as "percentage" | "fixed",
-                    })
-                  }
-                  placeholder="Quick select"
-                  className="w-full"
-                  buttonClassName="px-3 py-2.5 text-[13px] rounded-lg"
-                  menuClassName="min-w-full"
-                /> */}
               </div>
+
               <div>
                 <SectionLabel>Value</SectionLabel>
                 <div className="relative">
@@ -181,20 +216,30 @@ export const CreateDiscountDialog = () => {
                       formatCurrencySymbolOnly(currency.symbol)
                     )}
                   </span>
+
                   <input
                     type="number"
                     min={0}
+                    max={formData.type === "percentage" ? 100 : undefined}
+                    step="any"
                     value={formData.rate}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        rate: Number(e.target.value),
+                        rate:
+                          e.target.value === "" ? 0 : Number(e.target.value),
                       })
                     }
                     className={`${modalInput} pl-7 tabular-nums`}
                     placeholder="0"
                   />
                 </div>
+
+                {formData.type === "percentage" && formData.rate > 100 && (
+                  <p className="mt-1 text-[11px] text-red-500">
+                    Percentage cannot exceed 100%.
+                  </p>
+                )}
               </div>
             </div>
           </div>

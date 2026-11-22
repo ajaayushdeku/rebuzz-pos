@@ -479,13 +479,7 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
   const sales = keep(salesRecommendations.data?.items ?? []);
   const retention = keep(retentionSection.data?.items ?? []);
   const staffing = keep(staffingSection.data?.items ?? []);
-  const festivals = keep(
-    (festivalPrep.data?.items ?? []).filter(
-      (item) =>
-        !searchQuery ||
-        item.label.toLowerCase().includes(searchQuery.toLowerCase()),
-    ),
-  );
+  const festivals = keep(festivalPrep.data?.items ?? []);
 
   // Generated sections lead in the order they were first generated; sections
   // still working, failed, or not yet generated follow in that order.
@@ -577,15 +571,12 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
   ];
   const orderedPeriodSections = periodSections
     .filter((section) => {
-      const sectionId = section.id;
-      // Filter by search query - match against section id
-      if (
-        searchQuery &&
-        !sectionId.toLowerCase().includes(searchQuery.toLowerCase())
-      ) {
-        return false;
-      }
-      return true;
+      if (!searchQuery.trim()) return true;
+
+      return section.id
+        .toLowerCase()
+        .replace(/-/g, " ")
+        .includes(searchQuery.trim().toLowerCase());
     })
     .sort((a, b) => {
       const order = (section: (typeof periodSections)[number]) => {
@@ -827,6 +818,8 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
           items={festivals}
           state={festivalPrep}
           onDismiss={dismiss}
+          products={products}
+          productsLoading={productsLoading}
         />
       </ChartErrorBoundary>
 

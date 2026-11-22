@@ -391,6 +391,20 @@ export async function removeProductDiscounts(
   return mapRawProductToProduct(result.data.product);
 }
 
+export async function applyProductDiscount(
+  productId: string,
+  existingDiscountIds: string[],
+  newDiscountId: string,
+): Promise<Product> {
+  const discountIds = Array.from(
+    new Set([...existingDiscountIds, newDiscountId]),
+  );
+
+  return updateProduct(productId, {
+    discounts: discountIds,
+  });
+}
+
 export async function fetchProductVariant(
   productId: string,
 ): Promise<ProductVariantConfig> {

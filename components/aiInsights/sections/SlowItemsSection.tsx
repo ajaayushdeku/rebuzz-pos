@@ -1,6 +1,13 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronUp, PackageSearch } from "lucide-react";
+
+import {
+  createSuggestedPromoCode,
+  saveOfferCreationDraft,
+} from "@/lib/offers/offerCreationDraft";
 
 import type { AiSectionState } from "@/hooks/useAiSection";
 import { SECTION_WINDOW_DAYS } from "@/lib/ai-insights/sections/shared";
@@ -10,6 +17,7 @@ import type {
   SlowItemMove,
   SlowKind,
 } from "@/lib/ai-insights/sections/slowItems";
+
 import {
   AiSectionBody,
   CardAction,
@@ -21,7 +29,9 @@ import {
   SectionHeader,
   type AccentName,
 } from "../parts";
-import { useState } from "react";
+import { CreateDiscountDialog } from "@/components/invoice/CreateDiscount";
+import ApplySlowItemDiscountDialog from "../ApplySlowItemDiscountDialog";
+import { useDiscounts } from "@/hooks/useDiscounts";
 
 /** Each kind of slow item: its label and the card's accent. */
 const KIND: Record<SlowKind, { label: string; accent: AccentName }> = {
@@ -30,13 +40,7 @@ const KIND: Record<SlowKind, { label: string; accent: AccentName }> = {
   low: { label: "Low seller", accent: "amber" },
 };
 
-/**
- * Where each fix is carried out.
- *
- * The menu price, the recipe and the menu itself on the products page; the two
- * moves that need an offer in the offer builder. Each card's button is a link
- * here, so a move only exists if there is a screen that performs it.
- */
+/** Where each recommended action is carried out. */
 const MOVE_HREF: Record<SlowItemMove, string> = {
   reprice: "/records/products",
   rework: "/records/products",
@@ -45,21 +49,106 @@ const MOVE_HREF: Record<SlowItemMove, string> = {
   freebie: "/offers",
 };
 
+type DiscountItem = {
+  productId: string;
+  productName: string;
+  discountRate: number | null;
+};
+
 export default function SlowItemsSection({
   items,
   state,
   onDismiss,
 }: {
-  /** The cards still on the page, after dismissals. */
   items: SlowItemInsight[];
   state: AiSectionState<SlowItemInsight>;
   onDismiss: (id: string) => void;
 }) {
-  // The period these cards describe, or this section's own rolling window
-  // when there is none — see components/aiInsights/periodLabel.tsx.
+  const router = useRouter();
   const windowText = useWindowPhrase(`the last ${SECTION_WINDOW_DAYS} days`);
 
+  const { refetch: refetchDiscounts } = useDiscounts();
+
   const [isBodyExpanded, setIsBodyExpanded] = useState(true);
+
+  const [selectedDiscountItem, setSelectedDiscountItem] = useState<{
+    productId: string;
+    productName: string;
+    discountId: string;
+  } | null>(null);
+
+  const [itemForDiscount, setItemForDiscount] = useState<DiscountItem | null>(
+    null,
+  );
+
+  const handleOfferSuggestion = (
+    item: SlowItemInsight,
+    move: Extract<SlowItemMove, "discount" | "freebie">,
+  ): void => {
+    saveOfferCreationDraft({
+      source: "slow-item",
+      move,
+      productId: item.productId,
+      productName: item.name,
+      suggestedCode: createSuggestedPromoCode(
+        item.name,
+        move === "freebie" ? "FREE" : "DEAL",
+      ),
+    });
+
+    router.push("/offers");
+  };
+
+  /** Extracts a valid percentage from text such as "Offer 15% off". */
+  const extractDiscountRate = (action: string): number | null => {
+    const match = action.match(/(\d+(?:\.\d+)?)\s*%\s*off/i);
+
+    if (!match) return null;
+
+    const rate = Number(match[1]);
+
+    return rate > 0 && rate <= 100 ? rate : null;
+  };
+
+  const handleDiscountSuggestion = async (item: SlowItemInsight) => {
+    const discountName = `${item.name} - Slow Item Discount`;
+
+    // Fetch the latest discounts before checking for duplicates.
+    const { data: discounts, error } = await refetchDiscounts();
+
+    // Don't create a duplicate if we couldn't verify existing discounts.
+    if (error || !discounts) {
+      return;
+    }
+
+    const existingDiscount = discounts.find(
+      (discount) =>
+        discount.name.trim().toLowerCase() ===
+        discountName.trim().toLowerCase(),
+    );
+
+    if (existingDiscount) {
+      // Reuse the existing discount directly.
+      setItemForDiscount(null);
+
+      setSelectedDiscountItem({
+        productId: item.productId,
+        productName: item.name,
+        discountId: existingDiscount._id,
+      });
+
+      return;
+    }
+
+    // No existing discount: open the creation dialog.
+    setSelectedDiscountItem(null);
+
+    setItemForDiscount({
+      productId: item.productId,
+      productName: item.name,
+      discountRate: extractDiscountRate(item.action),
+    });
+  };
 
   return (
     <section>
@@ -73,13 +162,7 @@ export default function SlowItemsSection({
           body: `An item is flagged when its sales in ${windowText} fall well behind the rest of your menu. A new item with little history can appear here simply because it has not had time to sell.`,
         }}
         actions={
-          <div className=" flex flex-row w-full md:w-fit items-end justify-end">
-            {/* <SectionRefreshButton
-              state={state}
-              textClassName="text-red-600 hover:bg-red-100 border-red-300 hover:border-red-400 dark:hover:border-red-400/60 dark:hover:bg-red-400/20 dark:border-red-400/40 dark:text-red-300"
-            /> */}
-
-            {/* Collapse / Expand */}
+          <div className="flex w-full flex-row items-end justify-end md:w-fit">
             <button
               type="button"
               onClick={() => setIsBodyExpanded((prev) => !prev)}
@@ -89,16 +172,16 @@ export default function SlowItemsSection({
               }
               title={isBodyExpanded ? "Collapse section" : "Expand section"}
               className="
-  inline-flex shrink-0 items-center justify-center
-  rounded-lg border border-[#e2e6ed]
-  bg-white p-2 text-[#737b89]
-  transition-all duration-200
-  hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600
-  dark:border-[#293750] dark:bg-[#182338]
-  dark:text-[#aab4c4]
-  dark:hover:border-rose-400/40
-  dark:hover:bg-rose-400/10 dark:hover:text-rose-300
-"
+                inline-flex shrink-0 items-center justify-center
+                rounded-lg border border-[#e2e6ed]
+                bg-white p-2 text-[#737b89]
+                transition-all duration-200
+                hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600
+                dark:border-[#293750] dark:bg-[#182338]
+                dark:text-[#aab4c4]
+                dark:hover:border-rose-400/40
+                dark:hover:bg-rose-400/10 dark:hover:text-rose-300
+              "
             >
               {isBodyExpanded ? (
                 <ChevronUp size={15} />
@@ -128,6 +211,8 @@ export default function SlowItemsSection({
           >
             <CardGrid>
               {items.map((item) => {
+                const move = item.move;
+
                 return (
                   <InsightCard
                     key={item.id}
@@ -150,14 +235,29 @@ export default function SlowItemsSection({
                       { label: "Pace", value: item.context },
                     ]}
                     footer={
-                      <CardAction href={MOVE_HREF[item.move]}>
-                        {item.action}
-                      </CardAction>
+                      move === "freebie" ? (
+                        <CardAction
+                          onClick={() => handleOfferSuggestion(item, "freebie")}
+                        >
+                          {item.action}
+                        </CardAction>
+                      ) : move === "discount" ? (
+                        <CardAction
+                          onClick={() => handleDiscountSuggestion(item)}
+                        >
+                          {item.action}
+                        </CardAction>
+                      ) : (
+                        <CardAction href={MOVE_HREF[move]}>
+                          {item.action}
+                        </CardAction>
+                      )
                     }
                   >
                     <p className="text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
                       {item.description}
                     </p>
+
                     <div className="mt-auto">
                       <Recommendation
                         title={
@@ -176,6 +276,35 @@ export default function SlowItemsSection({
           </AiSectionBody>
         </div>
       </div>
+
+      {selectedDiscountItem && (
+        <ApplySlowItemDiscountDialog
+          open={true}
+          onClose={() => setSelectedDiscountItem(null)}
+          productId={selectedDiscountItem.productId}
+          productName={selectedDiscountItem.productName}
+          discountId={selectedDiscountItem.discountId}
+        />
+      )}
+
+      {itemForDiscount && (
+        <CreateDiscountDialog
+          open={true}
+          onOpenChange={(nextOpen) => {
+            if (!nextOpen) setItemForDiscount(null);
+          }}
+          initialName={`${itemForDiscount.productName} - Slow Item Discount`}
+          initialRate={itemForDiscount.discountRate ?? 0}
+          initialType="percentage"
+          onCreated={(discountId) => {
+            setSelectedDiscountItem({
+              productId: itemForDiscount.productId,
+              productName: itemForDiscount.productName,
+              discountId,
+            });
+          }}
+        />
+      )}
     </section>
   );
 }

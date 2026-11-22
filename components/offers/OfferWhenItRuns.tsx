@@ -6,9 +6,6 @@ import {
   Check,
   CalendarClock,
   CalendarDays,
-  Clock3,
-  Globe,
-  Languages,
   Loader2,
   Lock,
   PartyPopper,
@@ -477,57 +474,55 @@ export default function OfferWhenItRuns() {
                 Dates
               </p>
               {runDays !== null && (
-                <span className="rounded-full bg-white dark:bg-white/5 px-2 py-0.5 text-[11px] font-medium text-[#5f6368] ring-1 ring-[#dadce0] dark:text-[#a9b4c7] dark:ring-white/15">
+                <span className="inline-flex w-fit shrink-0 flex-row items-center whitespace-nowrap rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-[#5f6368] ring-1 ring-[#dadce0] dark:bg-white/5 dark:text-[#a9b4c7] dark:ring-white/15">
                   {runDays} {runDays === 1 ? "day" : "days"}
                 </span>
               )}
             </div>
 
             {/* The calendars in their own colours, matching the popups. */}
-            <div className="w-full flex flex-row items-center justify-end gap-1">
-              {" "}
-              <span className="px-2 text-[11px] text-right w-full max-sm:hidden text-rose-700/75 dark:text-rose-200/75">
+            <div className="flex w-full items-center justify-end gap-2">
+              <span className="hidden shrink-0 px-1 text-right text-[11px] font-medium text-rose-700/75 dark:text-rose-200/75 sm:block">
                 Browse holiday dates
               </span>
-              <div className="w-full  flex items-center gap-0.5 rounded-lg bg-white dark:bg-white/5 p-0.5 border border-border dark:ring-white/15">
+
+              <div className="flex w-full items-center gap-0.5 rounded-lg border border-border bg-white p-0.5 dark:bg-white/5 dark:ring-1 dark:ring-white/10 sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setCalendar("bs")}
                   aria-haspopup="dialog"
-                  className="inline-flex h-8 sm:h-7 w-full cursor-pointer items-center justify-center gap-2.5 rounded-md px-2.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-400/15 dark:text-[#e8ecf4]"
+                  className="inline-flex h-8 flex-1 cursor-pointer items-center justify-center gap-2 rounded-md px-3 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-rose-50 hover:text-rose-700 dark:text-[#e8ecf4] dark:hover:bg-rose-400/15 sm:h-7 sm:flex-none"
                 >
-                  <div className="relative inline-flex">
+                  <span className="relative inline-flex shrink-0">
                     <CalendarDays
                       size={15}
                       className="text-rose-500 dark:text-rose-400"
                     />
-
-                    <span className="absolute -right-1.5 -bottom-2 flex h-3.5 min-w-3.5 items-center justify-center rounded-full border border-white bg-rose-100 px-0.5 text-[9px] font-bold leading-none text-rose-700 shadow-sm dark:border-[#1e293b] dark:bg-rose-950 dark:text-rose-300">
+                    <span className="absolute -bottom-1.5 -right-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full border border-white bg-rose-100 px-0.5 text-[9px] font-bold leading-none text-rose-700 shadow-sm dark:border-[#1e293b] dark:bg-rose-950 dark:text-rose-300">
                       अ
                     </span>
-                  </div>
-                  Nepali calendar
+                  </span>
+                  <span className="whitespace-nowrap">Nepali</span>
                 </button>
 
-                <div className="mx-0.5 h-5 w-px bg-[#dadce0] dark:bg-white/20" />
+                <div className="h-5 w-px shrink-0 bg-[#dadce0] dark:bg-white/20" />
 
                 <button
                   type="button"
                   onClick={() => setCalendar("ad")}
                   aria-haspopup="dialog"
-                  className="inline-flex h-7 w-full cursor-pointer items-center justify-center gap-2.5 rounded-md px-2.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-400/15 dark:text-[#e8ecf4]"
+                  className="inline-flex h-8 flex-1 cursor-pointer items-center justify-center gap-2 rounded-md px-3 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-teal-50 hover:text-teal-700 dark:text-[#e8ecf4] dark:hover:bg-teal-400/15 sm:h-7 sm:flex-none"
                 >
-                  <div className="relative inline-flex">
+                  <span className="relative inline-flex shrink-0">
                     <CalendarDays
                       size={15}
                       className="text-teal-500 dark:text-teal-400"
                     />
-
-                    <span className="absolute -right-1.5 -bottom-2 flex h-3.5 min-w-3.5 items-center justify-center rounded-full border border-white bg-teal-100 px-0.5 text-[9px] font-bold leading-none text-teal-700 shadow-sm dark:border-[#1e293b] dark:bg-teal-950 dark:text-teal-300">
+                    <span className="absolute -bottom-1.5 -right-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full border border-white bg-teal-100 px-0.5 text-[9px] font-bold leading-none text-teal-700 shadow-sm dark:border-[#1e293b] dark:bg-teal-950 dark:text-teal-300">
                       A
                     </span>
-                  </div>
-                  English calendar
+                  </span>
+                  <span className="whitespace-nowrap">English</span>
                 </button>
               </div>
             </div>
