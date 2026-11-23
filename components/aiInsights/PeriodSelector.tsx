@@ -7,7 +7,6 @@ import {
   Loader2,
   SlidersHorizontal,
   ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 
 import { FilterSelect } from "@/components/ui/FilterSelect";
@@ -68,10 +67,18 @@ export default function PeriodSelector({
   const allGenerated =
     !!current && total > 0 && current.generatedSections >= total;
 
+  const toggleCollapsed = () => {
+    if (!isCollapsed && showControls) {
+      onToggleControls();
+    }
+
+    setIsCollapsed((previous) => !previous);
+  };
+
   return (
     <div
       className="
-        sticky top-0 z-20
+        sticky top-0 z-30
         -mx-2 sm:-mx-0
         rounded-xl border border-slate-200/80
         bg-white/95 px-2.5 py-2
@@ -82,128 +89,102 @@ export default function PeriodSelector({
         dark:shadow-black/20
       "
     >
-      {/* Always-visible header */}
+      {/* Compact header */}
       <div className="flex min-w-0 items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-400/10">
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          aria-expanded={!isCollapsed}
+          aria-label={
+            isCollapsed
+              ? "Expand analytics period selector"
+              : "Collapse analytics period selector"
+          }
+          className="
+            group flex min-w-0 flex-1 items-center gap-1.5
+            rounded-lg text-left
+            outline-none
+            focus-visible:ring-2 focus-visible:ring-blue-400
+          "
+        >
+          <div
+            className="
+              flex h-8 w-8 shrink-0 items-center justify-center
+            "
+          >
             <CalendarRange
-              className="h-[16px] w-[16px] text-[#D96524] dark:text-orange-300"
+              className="h-4 w-4 text-[#D96524] dark:text-orange-300"
               strokeWidth={2.1}
               aria-hidden
             />
           </div>
 
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="flex min-w-0 items-center gap-2">
-              <p className="truncate text-[12px] font-semibold tracking-[0.03em] text-slate-800 dark:text-slate-100">
+              <p className="truncate text-[13px] tracking-[0.04em] text-slate-800 dark:text-slate-100">
                 Analytics period
               </p>
 
-              {!isCollapsed && (
-                <>
-                  <span className="h-1 w-1 shrink-0 rounded-full bg-orange-400" />
-                  <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.2em] text-orange-600/80 dark:text-orange-300/80">
-                    History
-                  </span>
-                </>
-              )}
+              <span className="h-1 w-1 shrink-0 rounded-full bg-orange-400" />
+              <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.2em] text-orange-600/80 dark:text-orange-300/80">
+                History
+              </span>
             </div>
 
-            <p className="mt-0.5 truncate text-[10px] leading-none text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 truncate text-[10px] leading-none text-slate-500 dark:text-slate-400 tracking-[0.04em]">
               {isCollapsed
                 ? (current?.label ??
                   (isLoading ? "Loading periods..." : "No period selected"))
                 : "Choose your reporting period"}
             </p>
           </div>
-        </div>
 
-        <div className="flex shrink-0 items-center gap-1.5">
-          {/* Insights settings control */}
-          {!isCollapsed && (
-            <button
-              type="button"
-              onClick={onToggleControls}
-              aria-expanded={showControls}
-              aria-label={
-                showControls
-                  ? "Hide insights settings"
-                  : "Show insights settings"
-              }
-              className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold transition-colors focus-visible:outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-400 ${
-                showControls
-                  ? "border-blue-200 bg-blue-50 text-[#244074] dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-300"
-                  : "border-slate-200/80 bg-slate-50 text-slate-500 hover:border-slate-300 hover:text-[#244074] dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400 dark:hover:text-blue-300"
-              }`}
-            >
-              <SlidersHorizontal
-                className={`h-3 w-3 transition-transform duration-200 ${
-                  showControls ? "rotate-90" : ""
-                }`}
-                aria-hidden
-              />
-              <span className="hidden sm:inline">
-                {showControls ? "Hide settings" : "Insights settings"}
-              </span>
-              <ChevronDown
-                className={`h-3 w-3 transition-transform duration-200 ${
-                  showControls ? "rotate-180" : ""
-                }`}
-                aria-hidden
-              />
-            </button>
-          )}
+          <ChevronDown
+            size={16}
+            className={`
+              mr-1 shrink-0 text-slate-400
+              transition-transform duration-300
+              group-hover:text-[#244074]
+              dark:group-hover:text-blue-300
+              ${isCollapsed ? "" : "rotate-180"}
+            `}
+            aria-hidden
+          />
+        </button>
 
-          {/* Collapse / expand entire selector */}
+        {/* Secondary insights settings action */}
+        {!isCollapsed && (
           <button
             type="button"
-            onClick={() => {
-              setIsCollapsed((previous) => !previous);
-
-              if (!isCollapsed && showControls) {
-                onToggleControls();
-              }
-            }}
-            aria-expanded={!isCollapsed}
+            onClick={onToggleControls}
+            aria-expanded={showControls}
             aria-label={
-              isCollapsed
-                ? "Expand analytics period selector"
-                : "Collapse analytics period selector"
+              showControls ? "Hide insights settings" : "Show insights settings"
             }
             title={
-              isCollapsed
-                ? "Expand period selector"
-                : "Collapse period selector"
+              showControls ? "Hide insights settings" : "Insights settings"
             }
-            className="
-              inline-flex h-7.5 w-7.5 shrink-0 items-center justify-center
-              rounded-lg border border-slate-200/80
-              bg-slate-50 text-slate-500
-              transition-all duration-200
-              hover:border-slate-300 hover:bg-slate-100 hover:text-[#244074]
+            className={`
+              flex h-8 w-8 shrink-0 items-center justify-center
+              rounded-lg border transition-all duration-200
               focus-visible:outline-none focus-visible:ring-2
               focus-visible:ring-blue-400
-              active:scale-95
-              dark:border-white/10 dark:bg-white/[0.03]
-              dark:text-slate-400 dark:hover:bg-white/[0.07]
-              dark:hover:text-blue-300 cursor-pointer
-            "
+              ${
+                showControls
+                  ? "border-blue-200 bg-blue-50 text-[#244074] dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-300"
+                  : "border-slate-200/80 bg-slate-50 text-slate-500 hover:border-slate-300 hover:bg-slate-100 hover:text-[#244074] dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400 dark:hover:bg-white/[0.07] dark:hover:text-blue-300"
+              }
+            `}
           >
-            {isCollapsed ? (
-              <ChevronDown
-                size={15}
-                className="transition-transform duration-200"
-                aria-hidden
-              />
-            ) : (
-              <ChevronUp
-                size={15}
-                className="transition-transform duration-200"
-                aria-hidden
-              />
-            )}
+            <SlidersHorizontal
+              size={14}
+              className={`transition-transform duration-200 ${
+                showControls ? "rotate-90" : ""
+              }`}
+              aria-hidden
+            />
           </button>
-        </div>
+        )}
       </div>
 
       {/* Animated selector content */}
@@ -214,17 +195,26 @@ export default function PeriodSelector({
           motion-reduce:transition-none
           ${
             isCollapsed
-              ? "mt-0 grid-rows-[0fr] opacity-0"
-              : "mt-2 grid-rows-[1fr] opacity-100"
+              ? "mt-0 grid-rows-[0fr] overflow-hidden opacity-0"
+              : "relative z-30 mt-2 grid-rows-[1fr] overflow-visible opacity-100"
           }
         `}
         aria-hidden={isCollapsed}
+        inert={isCollapsed}
       >
-        <div className="min-h-0 overflow-hidden">
+        <div className="min-h-0">
           {/* Period type and selected period */}
-          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] items-center gap-2">
+          <div className="relative z-30 grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] items-center gap-2">
             {/* Period types */}
-            <div className="flex min-w-0 items-center overflow-x-auto rounded-lg border border-slate-200/80 bg-slate-100/80 p-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden dark:border-[#293750] dark:bg-[#111b2d]">
+            <div
+              className="
+                flex min-w-0 items-center overflow-x-auto
+                rounded-lg border border-slate-200/80
+                bg-slate-100/80 p-0.5
+                [scrollbar-width:none] [&::-webkit-scrollbar]:hidden
+                dark:border-[#293750] dark:bg-[#111b2d]
+              "
+            >
               {kinds.map((option) => {
                 const active = option.kind === kind;
 
@@ -240,11 +230,19 @@ export default function PeriodSelector({
                         periodId: "latest",
                       })
                     }
-                    className={`min-w-0 flex-1 shrink-0 cursor-pointer whitespace-nowrap rounded-md px-2 py-2 text-[10px] font-semibold transition-all duration-200 motion-reduce:transition-none sm:px-2.5 sm:text-[11px] ${
-                      active
-                        ? "bg-white text-[#244074] shadow-sm ring-1 ring-slate-200/70 dark:bg-[#263750] dark:text-[#e6efff] dark:ring-[#3a4d6b]"
-                        : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
-                    }`}
+                    className={`
+                      min-w-0 flex-1 shrink-0 cursor-pointer
+                      whitespace-nowrap rounded-md px-2 py-2
+                      text-[10px] font-semibold
+                      transition-all duration-200
+                      motion-reduce:transition-none
+                      sm:px-2.5 sm:text-[11px]
+                      ${
+                        active
+                          ? "bg-white text-[#244074] shadow-sm ring-1 ring-slate-200/70 dark:bg-[#263750] dark:text-[#e6efff] dark:ring-[#3a4d6b]"
+                          : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+                      }
+                    `}
                   >
                     {option.label.replace("ly", "")}
                   </button>
@@ -253,7 +251,7 @@ export default function PeriodSelector({
             </div>
 
             {/* Period dropdown */}
-            <div className="min-w-0">
+            <div className="relative z-40 min-w-0">
               <FilterSelect
                 value={current?.id ?? ""}
                 options={options}
@@ -269,7 +267,14 @@ export default function PeriodSelector({
           </div>
 
           {/* Date range and generation status */}
-          <div className="mt-2 flex min-w-0 items-center justify-between gap-2 border-t border-slate-100 pt-2 dark:border-white/[0.07]">
+          <div
+            className="
+              relative z-0 mt-2 flex min-w-0 items-center
+              justify-between gap-2
+              border-t border-slate-100 pt-2
+              dark:border-white/[0.07]
+            "
+          >
             <div className="flex min-w-0 items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
               {isLoading ? (
                 <Loader2
@@ -293,7 +298,14 @@ export default function PeriodSelector({
             </div>
 
             {allGenerated && (
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-semibold text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300">
+              <span
+                className="
+                  inline-flex shrink-0 items-center gap-1
+                  rounded-full bg-emerald-50 px-2 py-1
+                  text-[9px] font-semibold text-emerald-700
+                  dark:bg-emerald-400/10 dark:text-emerald-300
+                "
+              >
                 <Check className="h-2.5 w-2.5" aria-hidden />
                 Complete
               </span>

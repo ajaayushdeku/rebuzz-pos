@@ -517,4 +517,7 @@ export function parseFestivalPrep(
   });
 }
 
-export type FestivalPrepResult = AiSectionResult<FestivalPrep>;
+export type FestivalPrepResult = AiSectionResult<FestivalPrep> & {
+  date: string;
+  promptVersion: string;
+};

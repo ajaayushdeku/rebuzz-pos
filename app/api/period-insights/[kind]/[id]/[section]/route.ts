@@ -12,6 +12,7 @@ import {
   isEmptySection,
 } from "@/lib/ai-insights/sections/builders.server";
 import { salesDataUnavailable } from "@/lib/ai-insights/sections/posData.server";
+import { aiApiUrl } from "@/lib/ai-insights/posAiApi.server";
 
 /**
  * Generate one section for one analytics period.
@@ -142,4 +143,53 @@ export async function POST(
     { data: result.data },
     { headers: { "Cache-Control": "no-store" } },
   );
+}
+
+export async function DELETE(
+  request: NextRequest,
+  {
+    params,
+  }: { params: Promise<{ kind: string; id: string; section: string }> },
+) {
+  try {
+    const token = request.cookies.get("token")?.value;
+
+    if (!token) {
+      return NextResponse.json({ error: "AUTH_REQUIRED" }, { status: 401 });
+    }
+
+    const { kind, id, section } = await params;
+
+    const url = aiApiUrl(
+      `/period-insights/${encodeURIComponent(kind)}/${encodeURIComponent(id)}/${encodeURIComponent(section)}`,
+    );
+
+    if (!url) {
+      return NextResponse.json(
+        { error: "AI_SERVICE_UNAVAILABLE" },
+        { status: 503 },
+      );
+    }
+
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    return NextResponse.json(data, {
+      status: response.status,
+    });
+  } catch (error) {
+    console.error("[Period Insights] Delete proxy error:", error);
+
+    return NextResponse.json(
+      { error: "AI_SERVICE_UNAVAILABLE" },
+      { status: 503 },
+    );
+  }
 }

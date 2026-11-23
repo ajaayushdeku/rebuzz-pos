@@ -58,6 +58,8 @@ export async function POST(req: NextRequest) {
       items: [],
       windows,
       reason: "NOTHING_FLAGGED",
+      date: today,
+      promptVersion: FESTIVAL_PREP_VERSION,
     };
     return NextResponse.json({ data: result });
   }
@@ -92,6 +94,8 @@ export async function POST(req: NextRequest) {
       items: [],
       windows,
       reason: "NO_SALES",
+      date: today,
+      promptVersion: FESTIVAL_PREP_VERSION,
     };
     return NextResponse.json({ data: result });
   }
@@ -117,6 +121,8 @@ export async function POST(req: NextRequest) {
     // Passed through so the card can say the model in use did not answer.
     stale: answer.data.stale === true,
     staleReason: answer.data.staleReason,
+    date: today,
+    promptVersion: FESTIVAL_PREP_VERSION,
   };
 
   return NextResponse.json(

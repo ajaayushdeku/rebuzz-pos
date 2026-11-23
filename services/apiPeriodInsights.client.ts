@@ -73,14 +73,48 @@ export interface PeriodInsights {
     label: string;
     from: string;
     to: string;
-    /** The period before it, named — for copy that compares the two. */
     previous?: { id: string; label: string; from: string; to: string };
   };
-  /** Keyed by section name. Absent means never generated, not empty. */
   sections: Record<string, StoredSection>;
-  /** Section names with nothing stored yet — what a Generate button would cover. */
   missing: string[];
   totalSections: number;
+}
+
+/** One saved period + section, grouped across all prompt versions. */
+export interface SavedPeriodInsight {
+  periodKind: PeriodKind;
+  periodId: string;
+  periodStart: string;
+  periodEnd: string;
+  section: string;
+  promptVersion: string;
+  promptVersions: string[];
+  versionCount: number;
+  generatedAt: string | null;
+  lastRegeneratedAt: string | null;
+  lastUpdatedAt: string;
+  provider: string | null;
+  model: string | null;
+  settingsModel: string | null;
+  revision: number;
+  batches: number;
+  itemCount: number;
+}
+
+export interface SavedPeriodInsightsResponse {
+  items: SavedPeriodInsight[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface SavedPeriodInsightsParams {
+  kind?: PeriodKind;
+  section?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
 }
 
 /**
@@ -159,9 +193,12 @@ export const generateSection = async <T = unknown>({
 /** The periods on offer for one kind, newest first. */
 export const fetchPeriods = async (kind: PeriodKind): Promise<PeriodList> =>
   read(
-    await fetch(`/api/period-insights/periods?kind=${encodeURIComponent(kind)}`, {
-      cache: "no-store",
-    }),
+    await fetch(
+      `/api/period-insights/periods?kind=${encodeURIComponent(kind)}`,
+      {
+        cache: "no-store",
+      },
+    ),
   );
 
 /**
@@ -180,3 +217,77 @@ export const fetchPeriodInsights = async (
       { cache: "no-store" },
     ),
   );
+
+/**
+ * Fetch saved period insights for the management page.
+ *
+ * Each result represents one period + section, grouped across prompt versions.
+ */
+export const fetchSavedPeriodInsights = async (
+  params: SavedPeriodInsightsParams = {},
+): Promise<SavedPeriodInsightsResponse> => {
+  const query = new URLSearchParams();
+
+  if (params.kind) query.set("kind", params.kind);
+  if (params.section) query.set("section", params.section);
+  if (params.search?.trim()) query.set("search", params.search.trim());
+
+  query.set("page", String(params.page ?? 1));
+  query.set("limit", String(params.limit ?? 10));
+
+  return read(
+    await fetch(`/api/period-insights/saved?${query.toString()}`, {
+      cache: "no-store",
+    }),
+  );
+};
+
+/**
+ * Delete all saved prompt versions of one section for one period.
+ */
+export async function deletePeriodSection(
+  kind: PeriodKind,
+  id: string,
+  section: string,
+): Promise<{ success: boolean; deletedCount: number }> {
+  let res: Response;
+
+  try {
+    res = await fetch(
+      `/api/period-insights/${encodeURIComponent(kind)}/${encodeURIComponent(id)}/${encodeURIComponent(section)}`,
+      {
+        method: "DELETE",
+        cache: "no-store",
+      },
+    );
+  } catch {
+    throw new AiInsightsError(
+      "NETWORK",
+      "Couldn't reach the server. Check your connection and try again.",
+    );
+  }
+
+  const json = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    const code = String(json?.error ?? "UNKNOWN");
+
+    throw new AiInsightsError(
+      code,
+      json?.detail ?? aiErrorMessage(code),
+      json?.retryAfter,
+    );
+  }
+
+  if (json?.success !== true || typeof json.deletedCount !== "number") {
+    throw new AiInsightsError(
+      "AI_MALFORMED_RESPONSE",
+      "The section deletion couldn't be confirmed. Refresh and try again.",
+    );
+  }
+
+  return {
+    success: true,
+    deletedCount: json.deletedCount,
+  };
+}

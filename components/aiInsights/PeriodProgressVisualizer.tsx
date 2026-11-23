@@ -453,7 +453,7 @@ export default function PeriodProgressVisualizer({
           aria-label={
             expanded ? "Collapse insight sections" : "Expand insight sections"
           }
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-slate-200"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-slate-200 cursor-pointer"
         >
           {expanded ? "Hide details" : "View details"}
 

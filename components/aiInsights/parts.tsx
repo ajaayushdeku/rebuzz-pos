@@ -777,8 +777,8 @@ export function CardAction({
   children: ReactNode;
 }) {
   const className = primary
-    ? "flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#3c4043] px-3 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-[#2b2e31] dark:bg-white/15 dark:hover:bg-white/25"
-    : "flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#dadce0] px-3 py-2.5 text-[13px] font-semibold text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#e8ecf4]";
+    ? "flex w-full items-center justify-center gap-2 rounded-lg border border-[#244074] shadow-sm transition-all duration-200 bg-[#244074] px-3 py-2.5 text-[13px]  font-semibold text-white hover:bg-[#1b3158] hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#244074]/40 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none dark:border-[#42649e] dark:bg-[#244074] dark:hover:bg-[#2e5087] cursor-pointer hover:border-[#1b3158]"
+    : "flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#dadce0] px-3 py-2.5 text-[13px] font-semibold text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#e8ecf4] cursor-pointer";
   const content = (
     <>
       {children}

@@ -40,7 +40,10 @@ const REUSE_MS = 30 * 60 * 1000;
  * card as `describe` puts it), and adds the new cards after the current ones.
  * A Refresh replaces all of them, extra batches included.
  */
-export function useAiSection<T>(
+export function useAiSection<
+  T,
+  TResult extends AiSectionResult<T> = AiSectionResult<T>,
+>(
   section: AiSectionName,
   options: {
     /** A card as the model should read it in "already shown". */
@@ -59,6 +62,7 @@ export function useAiSection<T>(
   const { describe, enabled = true } = options;
   const queryClient = useQueryClient();
   const queryKey = ["ai-insights", "section", section];
+
   // Set the moment a refresh starts, not on the next render. `isPending` only
   // changes after React re-renders, so clicks that land before that — a fast
   // double-click, a stuck key — each read "not running" and each paid for an
@@ -67,18 +71,22 @@ export function useAiSection<T>(
   // run at once and race to write the section.
   const refreshing = useRef(false);
 
-  const query = useQuery<AiSectionResult<T>, AiInsightsError>({
+  const query = useQuery<TResult, AiInsightsError>({
     queryKey,
     queryFn: async () => {
-      const next = await fetchAiSection<T>(section, false);
+      const next = (await fetchAiSection<T>(section, false)) as TResult;
+
       // Asking again ("Try again", the page's "Generate insights") returns
       // the same saved answer. Extra batches added to it stay on screen; only
       // a different answer — a Refresh, a new day — replaces them.
-      const prev = queryClient.getQueryData<AiSectionResult<T>>(queryKey);
+      const prev = queryClient.getQueryData<TResult>(queryKey);
+
       if (!prev?.moreBatches || prev.generatedAt !== next.generatedAt) {
         return next;
       }
+
       const ids = new Set(next.items.map((i) => (i as { id?: string }).id));
+
       return {
         ...next,
         items: [
@@ -97,8 +105,8 @@ export function useAiSection<T>(
     retry: false,
   });
 
-  const refresh = useMutation<AiSectionResult<T>, AiInsightsError>({
-    mutationFn: () => fetchAiSection<T>(section, true),
+  const refresh = useMutation<TResult, AiInsightsError>({
+    mutationFn: async () => (await fetchAiSection<T>(section, true)) as TResult,
     onSuccess: (data) => {
       queryClient.setQueryData(queryKey, data);
     },
@@ -108,14 +116,16 @@ export function useAiSection<T>(
   });
 
   const more = useMutation<
-    AiSectionResult<T>,
+    TResult,
     AiInsightsError,
     { batch: number; after: string; exclude: string[] }
   >({
-    mutationFn: (request) => fetchAiSection<T>(section, false, request),
+    mutationFn: async (request) =>
+      (await fetchAiSection<T>(section, false, request)) as TResult,
   });
 
   const data = query.data;
+
   const canGenerateMore = Boolean(
     describe &&
     data &&
@@ -129,26 +139,33 @@ export function useAiSection<T>(
   const generateMore = () => {
     if (!canGenerateMore || !data?.generatedAt || !describe) return;
     if (refreshing.current) return;
+
     refreshing.current = true;
 
     const extends_ = data.generatedAt;
     const batch = (data.moreBatches ?? 0) + 1;
+
     more.mutate(
       { batch, after: extends_, exclude: data.items.map(describe) },
       {
         onSuccess: (next) => {
           let added = 0;
-          queryClient.setQueryData<AiSectionResult<T>>(queryKey, (prev) => {
+
+          queryClient.setQueryData<TResult>(queryKey, (prev) => {
             // Refreshed while this was running: these cards extend an answer
             // that is no longer on screen.
             if (!prev || prev.generatedAt !== extends_) return prev;
+
             const ids = new Set(
               prev.items.map((item) => (item as { id?: string }).id),
             );
+
             const fresh = next.items.filter(
               (item) => !ids.has((item as { id?: string }).id),
             );
+
             added = fresh.length;
+
             return {
               ...prev,
               items: [...prev.items, ...fresh],
@@ -158,7 +175,10 @@ export function useAiSection<T>(
               noMore: fresh.length === 0 || batch >= MAX_MORE_BATCHES,
             };
           });
-          if (added === 0) toast("The AI has no new ones to add right now.");
+
+          if (added === 0) {
+            toast("The AI has no new ones to add right now.");
+          }
         },
         onError: (error) => {
           toast.error(error.message);
@@ -194,7 +214,9 @@ export function useAiSection<T>(
     refresh: () => {
       // A second click while one is running would pay for a second answer.
       if (refreshing.current) return;
+
       refreshing.current = true;
+
       refresh.mutate(undefined, {
         onSettled: () => {
           refreshing.current = false;
@@ -215,24 +237,31 @@ export function useAiSection<T>(
  *
  * `useAiSection` still satisfies it, and the components still use exactly these.
  */
-export interface AiSectionState<T> {
-  data: AiSectionResult<T> | undefined;
+export interface AiSectionState<
+  T,
+  TResult extends AiSectionResult<T> = AiSectionResult<T>,
+> {
+  data: TResult | undefined;
+
   /** A further batch of cards can be asked for. */
   canGenerateMore: boolean;
   generateMore: () => void;
   isGeneratingMore: boolean;
   error: AiInsightsError | undefined;
   isLoading: boolean;
+
   /** First load failed; there is nothing on screen to keep. */
   isError: boolean;
   retry: () => void;
+
   /**
    * Ask again, and report how it went.
    *
    * The caller only reads whether it failed and what came back, so that is all
    * this promises — not the shape of any particular data library's result.
    */
-  reload: () => Promise<{ isError: boolean; data?: AiSectionResult<T> } | undefined>;
+  reload: () => Promise<{ isError: boolean; data?: TResult } | undefined>;
+
   /** Any request for this section is running, first load included. */
   isFetching: boolean;
   refresh: () => void;

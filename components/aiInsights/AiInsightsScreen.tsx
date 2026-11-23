@@ -27,11 +27,12 @@ import {
   usePeriodInsights,
   usePeriodList,
   useGeneratePeriod,
+  useGenerateSection,
+  useDeletePeriodSection,
   useMarkMenuSuggestionAdded,
   useDismissMenuSuggestion,
 } from "@/hooks/usePeriodInsights";
 import { usePeriodSection } from "@/hooks/usePeriodSection";
-import type { FestivalPrep } from "@/lib/ai-insights/sections/festivalPrep";
 import type { HourInsight } from "@/lib/ai-insights/sections/hourPlaybook";
 import type { MenuSuggestion } from "@/lib/ai-insights/sections/menuSuggestions";
 import type { PricingInsight } from "@/lib/ai-insights/sections/pricing";
@@ -50,6 +51,10 @@ import EditAddonModal, {
 import { useCreateAddon } from "@/hooks/useAddons";
 import PeriodInsightsOverview from "./PeriodInsightsOverview";
 import ProviderMarkDefs from "../settingsComponents/apiKeys/ProviderMarkDefs";
+import type {
+  FestivalPrep,
+  FestivalPrepResult,
+} from "@/lib/ai-insights/sections/festivalPrep";
 
 const emptyAddonForm: AddonFormValues = {
   name: "",
@@ -82,6 +87,8 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
   const needsKey = keyStatus.data?.configured === false;
 
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
+
+  const deleteSectionMutation = useDeletePeriodSection();
 
   // Product limit — reuse the same logic as the Products page.
   const { data: products = [], isLoading: productsLoading } = useProductsList();
@@ -468,9 +475,12 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
    * Held back until a key is known to exist, so a page without one does not fire
    * a request whose route gathers POS data before it can be refused.
    */
-  const festivalPrep = useAiSection<FestivalPrep>("festival-prep", {
-    enabled: !needsKey,
-  });
+  const festivalPrep = useAiSection<FestivalPrep, FestivalPrepResult>(
+    "festival-prep",
+    {
+      enabled: !needsKey,
+    },
+  );
 
   const menu = keep(menuSuggestions.data?.items ?? []);
   const slow = keep(slowItems.data?.items ?? []);
@@ -518,7 +528,14 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
       id: "slow-items",
       state: slowItems,
       view: (
-        <SlowItemsSection items={slow} state={slowItems} onDismiss={dismiss} />
+        <SlowItemsSection
+          items={slow}
+          state={slowItems}
+          onDismiss={dismiss}
+          kind={kind}
+          periodId={periodId ?? ""}
+          promptVersion={stored["slow-items"]?.promptVersion ?? ""}
+        />
       ),
     },
     {
@@ -647,6 +664,31 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
   // const [controlsOpen, setControlsOpen] = useState(false);
   const [showControls, setShowControls] = useState(true);
 
+  const handleDeleteSection = async (section: string) => {
+    if (!isAdmin) {
+      toast.error("Only the business admin can delete saved insights.");
+      return;
+    }
+
+    if (!periodId || deleteSectionMutation.isPending) return;
+
+    try {
+      await deleteSectionMutation.mutateAsync({
+        kind,
+        id: periodId,
+        section,
+      });
+
+      toast.success("Saved insight deleted successfully.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Couldn't delete this saved insight.",
+      );
+    }
+  };
+
   if (needsKey) {
     // One notice instead of the whole page: with no key nothing here can be
     // generated, and seven identical panels read as seven broken features.
@@ -729,8 +771,6 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
               </p>
             )}
 
-            <PeriodPricesNote period={period} />
-
             <PeriodInsightsOverview
               periodLabel={period?.label}
               isLoading={insights.isLoading || periodList.isLoading}
@@ -755,9 +795,9 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
               }
               onGenerate={() => void generateMissing()}
             />
+
+            <PeriodPricesNote period={period} />
           </div>
-          {/* // </aside> */}
-          {/* )} */}
         </div>
       </div>
 
@@ -820,6 +860,8 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
           onDismiss={dismiss}
           products={products}
           productsLoading={productsLoading}
+          date={festivalPrep.data?.date ?? ""}
+          promptVersion={festivalPrep.data?.promptVersion ?? ""}
         />
       </ChartErrorBoundary>
 

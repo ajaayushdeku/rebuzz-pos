@@ -251,7 +251,7 @@ export default function OfferPromoCode() {
           Four steps of separate controls are hard to hold in the head at once,
           so this is the last chance to notice the offer says something other
           than what was meant. */}
-      <div className="flex items-start gap-3 w-full rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 dark:border-emerald-400/25 dark:bg-[#142F38] ">
+      <div className="flex mt-3 items-start gap-3 w-full rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 dark:border-emerald-400/25 dark:bg-[#142F38] ">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-white/10">
           <ClipboardList
             size={17}

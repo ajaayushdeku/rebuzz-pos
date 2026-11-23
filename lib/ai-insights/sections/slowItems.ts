@@ -346,7 +346,11 @@ export const SLOW_ITEMS_SCHEMA = {
  * lands on a builder with no bundle in it has sent the owner on an errand.
  */
 export type SlowItemMove =
-  "discount" | "freebie" | "reprice" | "rework" | "remove";
+  | "discount"
+  | "freebie"
+  | "reprice"
+  | "rework"
+  | "remove";
 
 const MOVES: readonly SlowItemMove[] = [
   "discount",
@@ -379,15 +383,15 @@ export interface SlowItemInsight {
   icon: string;
   name: string;
   kind: SlowKind;
-  /** "-27%", "No sales" or "Low seller" — from the app, never the model. */
   signal: string;
-  /** "94 → 6.1/week", "8/week", "12 sold the month before" — from the app. */
   context: string;
   description: string;
-  /** Two or three fixes to try, best first. Never empty. */
   tips: string[];
   action: string;
   move: SlowItemMove;
+
+  status?: "active" | "dismissed" | "applied";
+  actionType?: "discount-applied" | "freebie-created";
 }
 
 const MAX_ITEMS = 4;

@@ -37,6 +37,7 @@ import {
   LifeBuoy,
   Palette,
   Shapes,
+  Archive,
 } from "lucide-react";
 
 export type NavigationItem =
@@ -139,6 +140,12 @@ export const navigationConfig: NavigationItem[] = [
         label: "AI Insights",
         icon: Sparkles,
         href: "/dashboard/ai-insights",
+        requiresAiKey: true,
+      },
+      {
+        label: "Saved Insights",
+        href: "/dashboard/ai-insights/saved",
+        icon: Archive,
         requiresAiKey: true,
       },
     ],

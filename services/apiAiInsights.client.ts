@@ -424,6 +424,18 @@ interface PricingActionInput {
   suggestionId: string;
 }
 
+type SlowItemCompletionInput = {
+  kind: "month" | "quarter" | "year";
+  id: string;
+  promptVersion: string;
+  suggestionId: string;
+  actionType: "discount-applied" | "freebie-created";
+  productId: string;
+  variantId?: string;
+  discountId?: string;
+  offerId?: string;
+};
+
 /**
  * Shared request for changing a stored pricing suggestion's status.
  */
@@ -503,4 +515,188 @@ export async function applyPricingSuggestion(
     "apply",
     payload,
   );
+}
+
+/**
+ * Persist a successfully completed Slow-Moving Items action.
+ */
+export async function completeSlowItemAction(
+  input: SlowItemCompletionInput,
+): Promise<unknown> {
+  const { kind, id, promptVersion, suggestionId, ...payload } = input;
+
+  const url =
+    `/api/period-insights/${encodeURIComponent(kind)}` +
+    `/${encodeURIComponent(id)}` +
+    `/slow-items/${encodeURIComponent(promptVersion)}` +
+    `/items/${encodeURIComponent(suggestionId)}/complete`;
+
+  let res: Response;
+
+  try {
+    res = await fetch(url, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      cache: "no-store",
+    });
+  } catch {
+    throw new AiInsightsError(
+      "NETWORK",
+      "Couldn't reach the server. Check your connection and try again.",
+    );
+  }
+
+  const json = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw errorFromBody(json);
+  }
+
+  return json?.data;
+}
+
+type FestivalPrepActionInput = {
+  date: string;
+  promptVersion: string;
+  recommendationId: string;
+};
+
+type FestivalPrepCompletionInput = FestivalPrepActionInput & {
+  offerId: string;
+};
+
+export type FestivalPrepAction = {
+  date: string;
+  promptVersion: string;
+  recommendationId: string;
+  actionType: "offer-created";
+  offerId: string;
+  completedAt: string;
+};
+
+export type FestivalPrepActionResponse = {
+  success: boolean;
+  completed: boolean;
+  action: FestivalPrepAction | null;
+};
+
+/**
+ * Build the URL shared by Festival Prep completion requests.
+ */
+function festivalPrepActionUrl(input: FestivalPrepActionInput): string {
+  const { date, promptVersion, recommendationId } = input;
+
+  return (
+    `/api/ai-insights/festival-prep-actions/${encodeURIComponent(date)}` +
+    `/${encodeURIComponent(promptVersion)}` +
+    `/${encodeURIComponent(recommendationId)}`
+  );
+}
+
+/**
+ * Retrieve the saved completion status of a Festival Prep recommendation.
+ */
+export async function getFestivalPrepAction(
+  input: FestivalPrepActionInput,
+): Promise<FestivalPrepActionResponse> {
+  const url = festivalPrepActionUrl(input);
+
+  let res: Response;
+
+  try {
+    res = await fetch(url, {
+      method: "GET",
+      cache: "no-store",
+    });
+  } catch {
+    throw new AiInsightsError(
+      "NETWORK",
+      "Couldn't reach the server. Check your connection and try again.",
+    );
+  }
+
+  const json = (await res.json().catch(() => ({}))) as {
+    success?: boolean;
+    completed?: boolean;
+    action?: FestivalPrepAction | null;
+    error?: unknown;
+    retryAfter?: unknown;
+  };
+
+  if (!res.ok) {
+    throw errorFromBody(json);
+  }
+
+  if (
+    typeof json.completed !== "boolean" ||
+    (json.completed &&
+      (!json.action ||
+        typeof json.action.offerId !== "string" ||
+        !json.action.offerId))
+  ) {
+    throw new AiInsightsError(
+      "AI_MALFORMED_RESPONSE",
+      "The saved Festival Prep action couldn't be read. Try again.",
+    );
+  }
+
+  return {
+    success: json.success === true,
+    completed: json.completed,
+    action: json.action ?? null,
+  };
+}
+
+/**
+ * Persist a successfully created offer against a Festival Prep recommendation.
+ *
+ * This endpoint only records the completion. It does not create the offer.
+ */
+export async function completeFestivalPrepAction(
+  input: FestivalPrepCompletionInput,
+): Promise<FestivalPrepActionResponse> {
+  const { offerId } = input;
+  const url = `${festivalPrepActionUrl(input)}/complete`;
+
+  let res: Response;
+
+  try {
+    res = await fetch(url, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ offerId }),
+      cache: "no-store",
+    });
+  } catch {
+    throw new AiInsightsError(
+      "NETWORK",
+      "Couldn't reach the server. Check your connection and try again.",
+    );
+  }
+
+  const json = (await res.json().catch(() => ({}))) as {
+    success?: boolean;
+    alreadyCompleted?: boolean;
+    action?: FestivalPrepAction;
+    error?: unknown;
+    retryAfter?: unknown;
+  };
+
+  if (!res.ok) {
+    throw errorFromBody(json);
+  }
+
+  if (!json.action || typeof json.action.offerId !== "string") {
+    throw new AiInsightsError(
+      "AI_MALFORMED_RESPONSE",
+      "The Festival Prep completion couldn't be confirmed. Try again.",
+    );
+  }
+
+  return {
+    success: json.success === true,
+    completed: true,
+    action: json.action,
+  };
 }

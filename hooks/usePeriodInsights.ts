@@ -6,10 +6,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchPeriodInsights,
   fetchPeriods,
+  fetchSavedPeriodInsights,
   generateSection,
+  deletePeriodSection,
   type GenerateMode,
   type PeriodInsights,
   type PeriodKind,
+  type SavedPeriodInsightsParams,
+  type SavedPeriodInsightsResponse,
   type StoredSection,
 } from "@/services/apiPeriodInsights.client";
 import {
@@ -41,6 +45,8 @@ export const periodKeys = {
   list: (kind: PeriodKind) => ["period-insights", "periods", kind] as const,
   insights: (kind: PeriodKind, id: string) =>
     ["period-insights", "period", kind, id] as const,
+  saved: (params: SavedPeriodInsightsParams) =>
+    ["period-insights", "saved", params] as const,
 };
 
 /** The periods on offer, and how much of each is already generated. */
@@ -70,6 +76,22 @@ export function usePeriodInsights(kind: PeriodKind, id: string | null) {
     queryKey: periodKeys.insights(kind, id ?? "pending"),
     queryFn: () => fetchPeriodInsights(kind, id as string),
     enabled: Boolean(id),
+    staleTime: REUSE_MS,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+}
+
+/**
+ * All saved period insights for the management page.
+ *
+ * Supports searching, filtering and pagination.
+ * Reading saved insights never triggers AI generation or spends quota.
+ */
+export function useSavedPeriodInsights(params: SavedPeriodInsightsParams = {}) {
+  return useQuery<SavedPeriodInsightsResponse, AiInsightsError>({
+    queryKey: periodKeys.saved(params),
+    queryFn: () => fetchSavedPeriodInsights(params),
     staleTime: REUSE_MS,
     refetchOnWindowFocus: false,
     retry: false,
@@ -118,6 +140,61 @@ export function useGenerateSection(kind: PeriodKind, id: string) {
 
     // No retry. Every attempt can spend the merchant's quota, and the codes that
     // come back — a rate limit, a missing key — are not things a retry fixes.
+    retry: false,
+  });
+}
+
+/**
+ * Delete all saved prompt versions of one section for one period.
+ *
+ * Other sections and other periods remain untouched.
+ * After deletion, the section becomes missing again and can be generated
+ * normally.
+ */
+export function useDeletePeriodSection() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    unknown,
+    AiInsightsError,
+    { kind: PeriodKind; id: string; section: string }
+  >({
+    mutationFn: ({ kind, id, section }) =>
+      deletePeriodSection(kind, id, section),
+
+    onSuccess: async (_data, { kind, id, section }) => {
+      // Remove the deleted section from the currently cached period.
+      queryClient.setQueryData<PeriodInsights>(
+        periodKeys.insights(kind, id),
+        (previous) => {
+          if (!previous) return previous;
+
+          const sections = { ...previous.sections };
+          delete sections[section];
+
+          return {
+            ...previous,
+            sections,
+            missing: previous.missing.includes(section)
+              ? previous.missing
+              : [...previous.missing, section],
+          };
+        },
+      );
+
+      // The generated-section count and last-generated date may have changed.
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: periodKeys.list(kind),
+        }),
+
+        // Refresh every Saved Insights filter and pagination combination.
+        queryClient.invalidateQueries({
+          queryKey: ["period-insights", "saved"],
+        }),
+      ]);
+    },
+
     retry: false,
   });
 }

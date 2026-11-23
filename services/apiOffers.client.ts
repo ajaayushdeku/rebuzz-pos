@@ -107,7 +107,16 @@ export async function createOffer(data: OfferFormData): Promise<Offer> {
     throw new Error(errorData.error || "Failed to create offer");
   }
 
-  return res.json();
+  const json = await res.json();
+  const offer = json?.data?.offer;
+
+  if (!offer?._id) {
+    throw new Error(
+      "Offer was created, but its details could not be retrieved.",
+    );
+  }
+
+  return offer as Offer;
 }
 
 export async function updateOffer(

@@ -93,11 +93,11 @@ export default function PeriodInsightsOverview({
               onClick={() => setIsMinimized(false)}
               aria-expanded={false}
               aria-label="Expand insights overview"
-              className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-lg border border-slate-200/80 bg-slate-50 px-3 text-[11px] font-medium text-slate-600 transition-all duration-200 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300 dark:hover:border-blue-400/20 dark:hover:bg-blue-400/[0.08] dark:hover:text-blue-300 cursor-pointer"
+              className="inline-flex h-7 items-center gap-1.5 rounded-lg px-2 text-[10px] font-medium tracking-wide text-slate-400 transition-colors duration-200 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-white/[0.06]"
             >
               <Maximize2 className="h-3 w-3" />
               <span>Expand</span>
-              <ChevronDown className="h-3.5 w-3.5" />
+              <ChevronDown className="h-3 w-3" />
             </button>
           </div>
         </div>

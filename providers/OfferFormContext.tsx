@@ -6,7 +6,12 @@ import toast from "react-hot-toast";
 import { useCreateOffer } from "@/hooks/useOffers";
 import { hasAmount } from "@/services/apiOffers.client";
 import { offerItemId } from "@/lib/productVariants";
-import type { DiscountType, OfferFormData } from "@/services/apiOffers.client";
+
+import type {
+  DiscountType,
+  Offer,
+  OfferFormData,
+} from "@/services/apiOffers.client";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -28,7 +33,10 @@ export type { DiscountType };
  * yet, which is why the audience picker is shown locked.
  */
 export type CustomerAudience =
-  "all" | "first-time" | "loyalty-tier" | "birthday";
+  | "all"
+  | "first-time"
+  | "loyalty-tier"
+  | "birthday";
 
 export type ActiveHours = "all-day" | "happy" | "lunch" | "evening";
 
@@ -326,11 +334,10 @@ interface OfferFormContextValue {
     key: K,
     value: OfferFormState[K],
   ) => void;
-  /** Merge several fields at once (e.g. applying a ready-made preset). */
   patchForm: (partial: Partial<OfferFormState>) => void;
   resetForm: () => void;
   isSaving: boolean;
-  handleSave: () => Promise<void>;
+  handleSave: () => Promise<Offer | null>;
 }
 
 const OfferFormContext = createContext<OfferFormContextValue | null>(null);
@@ -372,20 +379,24 @@ export function OfferFormProvider({ children }: { children: React.ReactNode }) {
     setForm(INITIAL_STATE);
   }, []);
 
-  const handleSave = useCallback(async () => {
+  const handleSave = useCallback(async (): Promise<Offer | null> => {
     const problem = firstProblem(form);
+
     if (problem) {
       toast.error(problem);
-      return;
+      return null;
     }
 
     try {
-      await mutateAsync(toPayload(form));
+      const createdOffer = await mutateAsync(toPayload(form));
+
       resetForm();
+
+      return createdOffer;
     } catch {
-      // The mutation has already said what went wrong. The form is left as it
-      // was so one field can be fixed and Create pressed again — which is why
-      // the reset sits inside the success path rather than in a `finally`.
+      // The mutation already displays the creation error.
+      // Keep the form intact so the user can correct and retry.
+      return null;
     }
   }, [form, mutateAsync, resetForm]);
 
