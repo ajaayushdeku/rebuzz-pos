@@ -11,13 +11,21 @@ import HeaderActionButton from "@/components/ui/HeaderActionButton";
 
 type Tab = "normal" | "group";
 
+type NormalTaxForm = {
+  name: string;
+  rate: number | undefined;
+};
+
 export const CreateTaxDialog = () => {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("normal");
 
   // Normal tax form
   const { mutate: createTax, isPending: creatingTax } = useCreateTax();
-  const [normalForm, setNormalForm] = useState({ name: "", rate: 0 });
+  const [normalForm, setNormalForm] = useState<NormalTaxForm>({
+    name: "",
+    rate: 0,
+  });
 
   // Group tax form
   const { mutate: createGroupTax, isPending: creatingGroup } =
@@ -52,13 +60,18 @@ export const CreateTaxDialog = () => {
   };
 
   const handleSaveNormal = () => {
-    if (!normalForm.name.trim() || normalForm.rate <= 0) return;
+    if (
+      !normalForm.name.trim() ||
+      normalForm.rate == null ||
+      normalForm.rate <= 0
+    )
+      return;
     createTax(
       {
         taxes: [
           {
             name: normalForm.name,
-            rate: normalForm.rate,
+            rate: normalForm.rate ?? 0,
             _id: null,
             adminId: null,
             isSelected: false,
@@ -97,7 +110,7 @@ export const CreateTaxDialog = () => {
   };
 
   const inputClass =
-    "w-full h-9 rounded-lg border border-slate-200 px-3 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
+    "w-full h-10 rounded-lg border px-3 text-[13px] text-slate-800 placeholder:text-slate-300 dark:bg-white/5 focus:outline-none focus:ring-2 focus:border-transparent transition dark:placeholder:text-[#7b869b] dark:text-[#e8ecf4]";
 
   return (
     <>
@@ -135,7 +148,9 @@ export const CreateTaxDialog = () => {
               disabled={
                 isPending ||
                 (tab === "normal" &&
-                  (!normalForm.name.trim() || normalForm.rate <= 0)) ||
+                  (!normalForm.name.trim() ||
+                    normalForm.rate == null ||
+                    normalForm.rate <= 0)) ||
                 (tab === "group" &&
                   (!groupName.trim() || selectedTaxIds.length === 0))
               }
@@ -202,7 +217,7 @@ export const CreateTaxDialog = () => {
                       name: e.target.value,
                     })
                   }
-                  className={inputClass}
+                  className={modalInput}
                 />
               </div>
 
@@ -226,10 +241,21 @@ export const CreateTaxDialog = () => {
                     onChange={(e) =>
                       setNormalForm({
                         ...normalForm,
-                        rate: Number(e.target.value),
+                        rate:
+                          e.target.value === ""
+                            ? undefined
+                            : Number(e.target.value),
                       })
                     }
                     className={`${modalInput} pl-8`}
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                        e.preventDefault();
+                      }
+                    }}
+                    onWheelCapture={(e) => {
+                      e.currentTarget.blur();
+                    }}
                     placeholder="0"
                   />
                 </div>

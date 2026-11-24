@@ -179,7 +179,15 @@ function DiscountRow({
             value={value}
             disabled={!editable}
             onChange={(e) => onValueChange(Number(e.target.value))}
-            className="h-8 w-20 sm:w-24 rounded-lg border border-gray-200 px-2  text-xs sm:text-[13px] font-semibold  tracking-wider text-right tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 dark:disabled:bg-[#161D2E] dark:disabled:text-white/50 dark:border-white/15"
+            className="h-8 w-20 sm:w-24 rounded-lg border border-gray-200 px-2  text-xs sm:text-[13px] font-semibold  tracking-wider text-right tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 dark:disabled:bg-[#161D2E] dark:disabled:text-white/50 dark:border-white/15 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]"
+            onKeyDown={(e) => {
+              if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                e.preventDefault();
+              }
+            }}
+            onWheelCapture={(e) => {
+              e.currentTarget.blur();
+            }}
           />
           <TypeDropdown
             value={type}

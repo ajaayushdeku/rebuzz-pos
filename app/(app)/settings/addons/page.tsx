@@ -31,7 +31,7 @@ const emptyForm: AddonFormValues = {
   name: "",
   price: 0,
   description: "",
-  maxAvailable: undefined,
+  maxAvailable: 0,
 };
 
 export default function AddonSettingsPage() {
@@ -64,7 +64,7 @@ export default function AddonSettingsPage() {
       name: selectedAddon.name,
       price: selectedAddon.price,
       description: selectedAddon.description ?? "",
-      maxAvailable: selectedAddon.maxAvailable,
+      maxAvailable: selectedAddon.maxAvailable ?? 0,
     });
   }, [selectedAddon, editTarget]);
 
@@ -87,7 +87,7 @@ export default function AddonSettingsPage() {
       name: addon.name,
       price: addon.price,
       description: addon.description ?? "",
-      maxAvailable: addon.maxAvailable,
+      maxAvailable: addon.maxAvailable ?? 0,
     });
 
     setModalOpen(true);
@@ -120,7 +120,7 @@ export default function AddonSettingsPage() {
       return;
     }
 
-    if (!Number.isFinite(form.price) || form.price < 0) {
+    if (!Number.isFinite(form.price) || (form.price ?? 0) < 0) {
       toast.error("Please enter a valid price");
       return;
     }

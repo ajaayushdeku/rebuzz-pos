@@ -133,9 +133,17 @@ export default function SlowProducts({
               }}
               // Spinner arrows hidden: at this size they covered the
               // placeholder ("Custo…"), and the field is for typing a number.
-              className="h-[26px] w-[72px] rounded-lg border bg-white px-2.5 text-[11px] outline-none [appearance:textfield] placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4] dark:bg-white/5"
+              className="h-[30px] w-[72px] rounded-lg border bg-white px-3 text-[13px] outline-none [appearance:textfield] placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4] dark:bg-white/5"
+              onKeyDown={(e) => {
+                if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                  e.preventDefault();
+                }
+              }}
+              onWheelCapture={(e) => {
+                e.currentTarget.blur();
+              }}
             />
-            <span className="text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
+            <span className="text-[12px] text-[#5f6368] dark:text-[#a9b4c7]">
               days
             </span>
           </div>
@@ -210,10 +218,18 @@ export default function SlowProducts({
                 }}
                 // Spinner arrows hidden: at this size they covered the
                 // placeholder ("Custo…"), and the field is for typing a number.
-                className="h-[26px] w-[72px] rounded-lg border bg-white py-2 px-2.5 text-[11px] outline-none [appearance:textfield] placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4] dark:bg-white/5"
+                className="h-[26px] w-[72px] rounded-lg border bg-white py-3 px-2.5 text-[11px] outline-none [appearance:textfield] placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4] dark:bg-white/5"
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                    e.preventDefault();
+                  }
+                }}
+                onWheelCapture={(e) => {
+                  e.currentTarget.blur();
+                }}
               />
               <span className="text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
-                days
+                dayssddd
               </span>
             </div>
             <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />

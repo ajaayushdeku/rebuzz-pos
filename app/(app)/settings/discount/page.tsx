@@ -28,7 +28,7 @@ type DiscountType = "percentage" | "fixed";
 type DiscountForm = {
   name: string;
   type: DiscountType;
-  rate: number;
+  rate: number | undefined;
 };
 
 export default function DiscountSettingsPage() {
@@ -91,7 +91,7 @@ export default function DiscountSettingsPage() {
   };
 
   const handleSave = () => {
-    if (!form.name.trim() || form.rate <= 0) return;
+    if (!form.name.trim() || (form.rate ?? 0) <= 0) return;
 
     if (!editTarget) return;
     if (!editTarget._docId) {
@@ -103,7 +103,7 @@ export default function DiscountSettingsPage() {
       {
         docId: editTarget._docId,
         discountId: editTarget._id,
-        payload: { name: form.name, rate: form.rate, type: form.type },
+        payload: { name: form.name, rate: form.rate ?? 0, type: form.type },
       },
       {
         onSuccess: () => {

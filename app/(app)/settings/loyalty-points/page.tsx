@@ -39,9 +39,7 @@ import {
 import PageHeader from "@/components/ui/PageHeader";
 import { formatNumber } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
-
-const inputClass =
-  "w-full rounded-lg border border-[#dadce0] px-3 py-2.5 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
+import { modalInput } from "@/components/ui/ModalShell";
 
 function FieldCard({
   icon: Icon,
@@ -152,7 +150,7 @@ export default function LoyaltyPointPage() {
           const settingsData = data as LoyaltyPointSettings;
           setSettings(settingsData);
           setForm({
-            loyaltyPoint: settingsData.loyaltyPointPercentage,
+            loyaltyPoint: settingsData.loyaltyPointPercentage ?? 0,
             redeemLimit: settingsData.redeemLimit,
             basePoint: settingsData.basePoint,
           });
@@ -166,17 +164,17 @@ export default function LoyaltyPointPage() {
     load();
   }, []);
 
-  const set = (key: keyof LoyaltyPointPayload, value: number) => {
+  const set = (key: keyof LoyaltyPointPayload, value: number | undefined) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     if (errors[key]) setErrors((prev) => ({ ...prev, [key]: false }));
   };
 
   const validate = (): boolean => {
     const e: Partial<Record<keyof LoyaltyPointPayload, boolean>> = {};
-    if (form.loyaltyPoint <= 0 || form.loyaltyPoint > 100)
+    if ((form.loyaltyPoint ?? 0) <= 0 || (form.loyaltyPoint ?? 0) > 100)
       e.loyaltyPoint = true;
-    if (form.redeemLimit <= 0) e.redeemLimit = true;
-    if (form.basePoint <= 0) e.basePoint = true;
+    if ((form.redeemLimit ?? 0) <= 0) e.redeemLimit = true;
+    if ((form.basePoint ?? 0) <= 0) e.basePoint = true;
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -209,7 +207,9 @@ export default function LoyaltyPointPage() {
     ? form.loyaltyPoint !== settings.loyaltyPointPercentage ||
       form.redeemLimit !== settings.redeemLimit ||
       form.basePoint !== settings.basePoint
-    : form.loyaltyPoint > 0 || form.redeemLimit > 0 || form.basePoint > 0;
+    : (form.loyaltyPoint ?? 0) > 0 ||
+      (form.redeemLimit ?? 0) > 0 ||
+      (form.basePoint ?? 0) > 0;
 
   // ── Loyalty Status Handlers ──────────────────────────────────────────────
   const openAddStatus = () => {
@@ -400,9 +400,24 @@ export default function LoyaltyPointPage() {
                   min={1}
                   max={100}
                   value={form.loyaltyPoint}
-                  onChange={(e) => set("loyaltyPoint", Number(e.target.value))}
-                  className={`${inputClass} pr-8 ${errors.redeemLimit ? "border-red-300 focus:ring-red-400 dark:border-red-400/50" : ""}`}
+                  onChange={(e) =>
+                    set(
+                      "loyaltyPoint",
+                      e.target.value === ""
+                        ? undefined
+                        : Number(e.target.value),
+                    )
+                  }
+                  className={`${modalInput} pr-8 ${errors.redeemLimit ? "border-red-300 focus:ring-red-400 dark:border-red-400/50" : ""}`}
                   placeholder="e.g. 30"
+                  onKeyDown={(e) => {
+                    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                      e.preventDefault();
+                    }
+                  }}
+                  onWheelCapture={(e) => {
+                    e.currentTarget.blur();
+                  }}
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#9aa0a6] dark:text-[#7b869b]">
                   %
@@ -432,10 +447,25 @@ export default function LoyaltyPointPage() {
                   type="number"
                   min={1}
                   max={100}
-                  value={form.redeemLimit}
-                  onChange={(e) => set("redeemLimit", Number(e.target.value))}
-                  className={`${inputClass} pr-8 ${errors.redeemLimit ? "border-red-300 focus:ring-red-400 dark:border-red-400/50" : ""}`}
+                  value={form.redeemLimit ?? ""}
+                  onChange={(e) =>
+                    set(
+                      "redeemLimit",
+                      e.target.value === ""
+                        ? undefined
+                        : Number(e.target.value),
+                    )
+                  }
+                  className={`${modalInput} pr-8 ${errors.redeemLimit ? "border-red-300 focus:ring-red-400 dark:border-red-400/50" : ""}`}
                   placeholder="e.g. 50"
+                  onKeyDown={(e) => {
+                    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                      e.preventDefault();
+                    }
+                  }}
+                  onWheelCapture={(e) => {
+                    e.currentTarget.blur();
+                  }}
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#9aa0a6] dark:text-[#7b869b]">
                   %
@@ -461,9 +491,22 @@ export default function LoyaltyPointPage() {
                 type="number"
                 min={1}
                 value={form.basePoint}
-                onChange={(e) => set("basePoint", Number(e.target.value))}
-                className={`${inputClass} w-full sm:w-[50%] md:w-[25%] ${errors.basePoint ? "border-red-300 focus:ring-red-400 dark:border-red-400/50" : ""}`}
+                onChange={(e) =>
+                  set(
+                    "basePoint",
+                    e.target.value === "" ? undefined : Number(e.target.value),
+                  )
+                }
+                className={`${modalInput} w-full sm:w-[50%] md:w-[25%] ${errors.basePoint ? "border-red-300 focus:ring-red-400 dark:border-red-400/50" : ""}`}
                 placeholder="e.g. 10"
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                    e.preventDefault();
+                  }
+                }}
+                onWheelCapture={(e) => {
+                  e.currentTarget.blur();
+                }}
               />
               {errors.basePoint && (
                 <p className="mt-1 text-xs text-red-500 dark:text-[#f87171]">

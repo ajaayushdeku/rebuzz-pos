@@ -20,7 +20,7 @@ import { getVariants, productLabel, variantLabel } from "@/lib/productVariants";
 import { Product } from "@/lib/types/product";
 
 const FIELD =
-  "h-11 w-full rounded-xl border border-emerald-600/30 bg-white/90 px-3.5 text-sm text-[#3c4043] outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 dark:border-emerald-400/20 dark:bg-white/5 dark:text-[#e8ecf4]";
+  "h-11 w-full rounded-xl border border-emerald-600/30 bg-white/90 px-3.5 text-sm text-[#3c4043] outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 dark:border-emerald-400/20 dark:bg-white/5 dark:text-[#e8ecf4] appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]";
 
 const LABEL =
   "mb-1.5 block text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]";
@@ -522,6 +522,14 @@ export default function OfferDeal() {
                   value: amount,
                   ...retitle(form.discountKind, amount),
                 });
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                  e.preventDefault();
+                }
+              }}
+              onWheelCapture={(e) => {
+                e.currentTarget.blur();
               }}
               placeholder={selected.value.placeholder}
               className={`${FIELD} tabular-nums ${

@@ -16,7 +16,7 @@ type DiscountType = "percentage" | "fixed";
 type DiscountForm = {
   name: string;
   type: DiscountType;
-  rate: number;
+  rate: number | undefined;
 };
 
 // const inputClass =
@@ -64,7 +64,7 @@ const EditDiscountModal = ({
           <button
             type="button"
             onClick={onSave}
-            disabled={isPending || !form.name.trim() || form.rate <= 0}
+            disabled={isPending || !form.name.trim() || (form.rate ?? 0) <= 0}
             className="rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
           >
             {isPending ? (
@@ -143,9 +143,23 @@ const EditDiscountModal = ({
                   min={0}
                   value={form.rate}
                   onChange={(e) =>
-                    onFormChange({ ...form, rate: Number(e.target.value) })
+                    onFormChange({
+                      ...form,
+                      rate:
+                        e.target.value === ""
+                          ? undefined
+                          : Number(e.target.value),
+                    })
                   }
                   className={`${modalInput} pl-7`}
+                  onKeyDown={(e) => {
+                    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                      e.preventDefault();
+                    }
+                  }}
+                  onWheelCapture={(e) => {
+                    e.currentTarget.blur();
+                  }}
                   placeholder="0"
                 />
               </div>

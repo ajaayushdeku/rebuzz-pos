@@ -268,9 +268,18 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                 type="number"
                 min={0}
                 max={23}
-                value={fromHour}
+                value={fromHour || ""}
                 onChange={(e) => handleFromChange(Number(e.target.value))}
-                className="w-12 md:w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-1.5 md:py-2 text-[11px] md:text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]"
+                className="w-12 md:w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-1.5 md:py-2 text-[11px] md:text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]"
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                    e.preventDefault();
+                  }
+                }}
+                onWheelCapture={(e) => {
+                  e.currentTarget.blur();
+                }}
+                placeholder="e.g. 8"
               />
               <label className="whitespace-nowrap text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                 To
@@ -279,9 +288,18 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                 type="number"
                 min={0}
                 max={23}
-                value={toHour}
+                value={toHour || ""}
                 onChange={(e) => handleToChange(Number(e.target.value))}
-                className="w-12 md:w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-1.5 md:py-2 text-[11px] md:text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]"
+                className="w-12 md:w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-1.5 md:py-2 text-[11px] md:text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]"
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                    e.preventDefault();
+                  }
+                }}
+                onWheelCapture={(e) => {
+                  e.currentTarget.blur();
+                }}
+                placeholder="e.g. 16"
               />
             </div>
           </div>

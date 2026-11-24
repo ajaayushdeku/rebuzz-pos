@@ -257,7 +257,7 @@ export default function SetTargetsModal({
                         </span>
                         <input
                           type="number"
-                          value={targetValue}
+                          value={targetValue || ""}
                           onChange={(e) =>
                             handleChange(row.month, e.target.value)
                           }
@@ -265,6 +265,15 @@ export default function SetTargetsModal({
                           min={0}
                           step={1000}
                           className="h-8 w-full rounded-lg border border-gray-200 bg-white pl-7 pr-2 text-right text-[12px] tabular-nums text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 [appearance:textfield] dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                          onKeyDown={(e) => {
+                            if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                              e.preventDefault();
+                            }
+                          }}
+                          onWheelCapture={(e) => {
+                            e.currentTarget.blur();
+                          }}
+                          placeholder="e.g. 1000"
                         />
                       </div>
                     </td>

@@ -194,7 +194,15 @@ export default function AddTableModal({
             value={seats}
             onChange={(e) => setSeats(e.target.value)}
             placeholder="e.g. 4"
-            className={`mt-2 ${modalInput} ${modalInputIdle} tabular-nums`}
+            className={`mt-2 ${modalInput} ${modalInputIdle} tabular-nums  appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]`}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                e.preventDefault();
+              }
+            }}
+            onWheelCapture={(e) => {
+              e.currentTarget.blur();
+            }}
           />
         </div>
 

@@ -147,9 +147,20 @@ export default function LoyaltyPointModal({
               min={0}
               value={points}
               onChange={(e) => setPoints(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSave()}
               placeholder="0"
-              className={`${modalInput} ${modalInputIdle} pl-9 tabular-nums`}
+              className={`h-10 sm:h-11 w-full rounded-lg sm:rounded-xl border border-gray-300 bg-white tracking-[0.05em] px-3.5 text-[13px] outline-none transition focus:ring-2 dark:bg-white/5 dark:text-[#e8ecf4] dark:border-white/15 dark:placeholder:text-[#7b869b] appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield] ${modalInputIdle} pl-9 tabular-nums appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]`}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                  e.preventDefault();
+                }
+
+                if (e.key === "Enter") {
+                  handleSave();
+                }
+              }}
+              onWheelCapture={(e) => {
+                e.currentTarget.blur();
+              }}
             />
           </div>
           <p className="mt-1.5 text-[11px] text-gray-400 dark:text-[#7b869b]">

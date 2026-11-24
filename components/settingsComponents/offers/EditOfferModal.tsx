@@ -403,6 +403,14 @@ const EditOfferModal = ({
                       onChange={(e) => set("value", Number(e.target.value))}
                       placeholder={form.type === "percent" ? "15" : "100"}
                       className={`${input} mt-1 tabular-nums ${form.type === "percent" ? "pr-9" : ""}`}
+                      onKeyDown={(e) => {
+                        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                        }
+                      }}
+                      onWheelCapture={(e) => {
+                        e.currentTarget.blur();
+                      }}
                     />
                     {form.type === "percent" && (
                       <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400 dark:text-[#9aa6bd]">
@@ -471,6 +479,14 @@ const EditOfferModal = ({
                 onChange={(e) => set("minSpend", Number(e.target.value))}
                 placeholder="No minimum"
                 className={`${input} tabular-nums`}
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                    e.preventDefault();
+                  }
+                }}
+                onWheelCapture={(e) => {
+                  e.currentTarget.blur();
+                }}
               />
             </div>
             <div>
@@ -484,6 +500,14 @@ const EditOfferModal = ({
                 }
                 placeholder="No limit"
                 className={`${input} tabular-nums`}
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                    e.preventDefault();
+                  }
+                }}
+                onWheelCapture={(e) => {
+                  e.currentTarget.blur();
+                }}
               />
             </div>
           </div>
@@ -585,7 +609,7 @@ const EditOfferModal = ({
                 // is not a mistake worth letting a customer make.
                 onChange={(e) => set("code", e.target.value.toUpperCase())}
                 placeholder="DASHAIN15"
-                className={`${input} font-mono tracking-wider sm:max-w-xs`}
+                className={`${input} ml-4 font-mono tracking-wider sm:max-w-xs`}
               />
             </div>
 

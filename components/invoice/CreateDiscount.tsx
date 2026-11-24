@@ -29,6 +29,12 @@ interface CreateDiscountDialogProps {
   initialType?: "percentage" | "fixed";
 }
 
+type DiscountFormData = {
+  name: string;
+  type: "percentage" | "fixed";
+  rate: number | undefined;
+};
+
 export const CreateDiscountDialog = ({
   open: openProp,
   onOpenChange,
@@ -46,7 +52,7 @@ export const CreateDiscountDialog = ({
 
   const { mutate: createDiscount, isPending } = useCreateDiscount();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<DiscountFormData>({
     name: initialName,
     type: initialType,
     rate: initialRate,
@@ -73,9 +79,9 @@ export const CreateDiscountDialog = ({
   };
 
   const handleSave = () => {
-    if (!formData.name.trim() || formData.rate <= 0) return;
+    if (!formData.name.trim() || (formData.rate ?? 0) <= 0) return;
 
-    if (formData.type === "percentage" && formData.rate > 100) {
+    if (formData.type === "percentage" && (formData.rate ?? 0) > 100) {
       return;
     }
 
@@ -112,8 +118,8 @@ export const CreateDiscountDialog = ({
   };
 
   const isInvalidRate =
-    formData.rate <= 0 ||
-    (formData.type === "percentage" && formData.rate > 100);
+    (formData.rate ?? 0) <= 0 ||
+    (formData.type === "percentage" && (formData.rate ?? 0) > 100);
 
   return (
     <>
@@ -227,19 +233,30 @@ export const CreateDiscountDialog = ({
                       setFormData({
                         ...formData,
                         rate:
-                          e.target.value === "" ? 0 : Number(e.target.value),
+                          e.target.value === ""
+                            ? undefined
+                            : Number(e.target.value),
                       })
                     }
                     className={`${modalInput} pl-7 tabular-nums`}
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                        e.preventDefault();
+                      }
+                    }}
+                    onWheelCapture={(e) => {
+                      e.currentTarget.blur();
+                    }}
                     placeholder="0"
                   />
                 </div>
 
-                {formData.type === "percentage" && formData.rate > 100 && (
-                  <p className="mt-1 text-[11px] text-red-500">
-                    Percentage cannot exceed 100%.
-                  </p>
-                )}
+                {formData.type === "percentage" &&
+                  (formData.rate ?? 0) > 100 && (
+                    <p className="mt-1 text-[11px] text-red-500">
+                      Percentage cannot exceed 100%.
+                    </p>
+                  )}
               </div>
             </div>
           </div>

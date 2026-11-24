@@ -11,7 +11,7 @@ export interface Addon {
 
 export interface CreateAddonPayload {
   name: string;
-  price: number;
+  price: number | undefined;
   description?: string;
   maxAvailable?: number;
 }
@@ -19,7 +19,7 @@ export interface CreateAddonPayload {
 export interface UpdateAddonPayload {
   _id: string;
   name: string;
-  price: number;
+  price: number | undefined;
   description?: string;
   maxAvailable?: number;
 }

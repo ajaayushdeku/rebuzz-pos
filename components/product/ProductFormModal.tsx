@@ -63,13 +63,13 @@ const DOMAIN = {
 
 type ProductFormData = {
   name: string;
-  price: number;
-  costPrice: number;
+  price: number | undefined;
+  costPrice: number | undefined;
   description: string;
   isTaxable: boolean;
   usesStocks: boolean;
-  inStock: number;
-  lowStock: number;
+  inStock: number | undefined;
+  lowStock: number | undefined;
   categoryId: string;
   addons: string[];
   discounts: string[];
@@ -279,7 +279,7 @@ function Field({
 
 const inputBase =
   "w-full h-10 rounded-lg border px-3 text-[13px] text-slate-800 placeholder:text-slate-300 dark:bg-white/5 focus:outline-none focus:ring-2 focus:border-transparent transition dark:placeholder:text-[#7b869b] dark:text-[#e8ecf4]";
-const inputClass = `${inputBase} border-slate-300 focus:ring-blue-500 dark:border-white/15`;
+const inputClass = `${inputBase} appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none  border-slate-300 focus:ring-blue-500 dark:border-white/15`;
 const inputErrorClass = `${inputBase} border-rose-300 focus:ring-rose-400 dark:border-rose-400/40`;
 
 interface ProductFormModalProps {
@@ -470,14 +470,16 @@ export default function ProductFormModal({
   const validate = (): { ok: boolean; step?: Step } => {
     const e: FormErrors = {};
     if (!form.name.trim()) e.name = "Product name is required.";
-    if (form.price < 0) e.price = "Price cannot be negative.";
-    if (form.costPrice < 0) e.costPrice = "Cost price cannot be negative.";
+    if ((form.price ?? 0) < 0) e.price = "Price cannot be negative.";
+    if ((form.costPrice ?? 0) < 0)
+      e.costPrice = "Cost price cannot be negative.";
     // Stock lives on the variants when there are any, so the parent's own
     // stock fields aren't in play.
     if (form.usesStocks && !hasVariants) {
-      if (form.inStock < 0) e.inStock = "In stock cannot be negative.";
-      if (form.lowStock < 0) e.lowStock = "Low stock cannot be negative.";
-      if (form.lowStock > form.inStock)
+      if ((form.inStock ?? 0) < 0) e.inStock = "In stock cannot be negative.";
+      if ((form.lowStock ?? 0) < 0)
+        e.lowStock = "Low stock cannot be negative.";
+      if ((form.lowStock ?? 0) > (form.inStock ?? 0))
         e.lowStock = "Low stock cannot exceed in stock.";
     }
 
@@ -493,13 +495,13 @@ export default function ProductFormModal({
       }
 
       for (const row of variantRows) {
-        if (row.price < 0 || row.costPrice < 0) {
+        if ((row.price ?? 0) < 0 || (row.costPrice ?? 0) < 0) {
           ve[row.key] = "Price and cost cannot be negative.";
         } else if (form.usesStocks) {
           // Stock is only in play while the product tracks it.
-          if (row.inStock < 0 || row.lowStock < 0) {
+          if ((row.inStock ?? 0) < 0 || (row.lowStock ?? 0) < 0) {
             ve[row.key] = "Stock values cannot be negative.";
-          } else if (row.lowStock > row.inStock) {
+          } else if ((row.lowStock ?? 0) > (row.inStock ?? 0)) {
             ve[row.key] = "Low stock cannot exceed in stock.";
           }
         }
@@ -639,43 +641,8 @@ export default function ProductFormModal({
           ),
         ]
       : [];
-    // `mutateAsync` rejects on failure and both `onError` callbacks were
-    // commented out, so a failed save previously surfaced nothing at all.
-    try {
-      // if (isEditMode && product) {
-      //   await updateMutation.mutateAsync(
-      //     {
-      //       productId: product.id,
-      //       fields: {
-      //         name: form.name,
-      //         price: parentPrice,
-      //         costPrice: parentCostPrice,
-      //         description: form.description,
-      //         isTaxable: form.isTaxable,
-      //         usesStocks: form.usesStocks,
-      //         inStock: parentInStock,
-      //         lowStock: parentLowStock,
-      //         soldBy: "each",
-      //         categories: categoryId,
-      //         image: imageFile,
-      //         addons: selectedAddonIds,
-      //         discounts: form.discounts,
-      //         discountType: "applyEverytime",
-      //         ...variantFields,
-      //       },
-      //     },
-      //     {
-      //       onSuccess: () => {
-      //         // toast.success(`Product "${form.name}" updated`);
-      //         resetForm();
-      //         onClose();
-      //       },
-      //       // onError: (err) => {
-      //       //   toast.error(`Update failed: ${err.message}`);
-      //       // },
-      //     },
-      //   );
 
+    try {
       if (isEditMode && product) {
         // Find addons that existed before editing but are no longer selected.
         const originalAddonIds = (product.addons ?? []).flatMap((id) =>
@@ -823,9 +790,11 @@ export default function ProductFormModal({
   const variantErrorCount = Object.keys(variantErrors).length;
 
   // Live margin — both figures are on screen, so show what they add up to.
-  const margin = form.price - form.costPrice;
+  const margin = (form.price ?? 0) - (form.costPrice ?? 0);
   const marginPct =
-    form.costPrice > 0 ? Math.round((margin / form.costPrice) * 100) : null;
+    (form.costPrice ?? 0) > 0
+      ? Math.round((margin / (form.costPrice ?? 0)) * 100)
+      : null;
 
   /**
    * The Free plan is full.
@@ -1235,15 +1204,33 @@ export default function ProductFormModal({
                     <input
                       type="number"
                       min="0"
-                      value={newAddon.price}
-                      onChange={(e) =>
+                      value={newAddon.price ?? ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+
                         setNewAddon((prev) => ({
                           ...prev,
-                          price: Number(e.target.value),
-                        }))
-                      }
+                          price: value === "" ? undefined : Number(value),
+                        }));
+                      }}
+                      onFocus={(e) => {
+                        if (e.target.value === "0") {
+                          setNewAddon((prev) => ({
+                            ...prev,
+                            price: undefined,
+                          }));
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                        }
+                      }}
+                      onWheelCapture={(e) => {
+                        e.currentTarget.blur();
+                      }}
                       placeholder="Enter addon price"
-                      className="w-full rounded-lg border border-[#dce3ed] bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#244074] dark:border-white/10 dark:bg-[#171e2c] dark:text-white"
+                      className="w-full appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none rounded-lg border border-[#dce3ed] bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#244074] dark:border-white/10 dark:bg-[#171e2c] dark:text-white"
                     />
                   </div>
 
@@ -1268,8 +1255,16 @@ export default function ProductFormModal({
                               : Number(e.target.value),
                         }))
                       }
+                      onKeyDown={(e) => {
+                        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                        }
+                      }}
+                      onWheelCapture={(e) => {
+                        e.currentTarget.blur();
+                      }}
                       placeholder="Leave empty for unlimited"
-                      className="w-full rounded-lg border border-[#dce3ed] bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#244074] dark:border-white/10 dark:bg-[#171e2c] dark:text-white"
+                      className="w-full appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none rounded-lg border border-[#dce3ed] bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#244074] dark:border-white/10 dark:bg-[#171e2c] dark:text-white"
                     />
                     <p className="text-[11px] text-gray-400 dark:text-gray-500">
                       Set the maximum quantity customers can select for this
@@ -1320,7 +1315,7 @@ export default function ProductFormModal({
                       type="button"
                       disabled={
                         !newAddon.name.trim() ||
-                        newAddon.price < 0 ||
+                        (newAddon.price ?? 0) <= 0 ||
                         createAddonMutation.isPending
                       }
                       onClick={async () => {
@@ -1528,8 +1523,23 @@ export default function ProductFormModal({
                 <input
                   type="number"
                   min={0}
-                  value={form.price}
-                  onChange={(e) => set("price", Number(e.target.value))}
+                  value={form.price ?? ""}
+                  onChange={(e) =>
+                    set(
+                      "price",
+                      e.target.value === ""
+                        ? undefined
+                        : Number(e.target.value),
+                    )
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                      e.preventDefault();
+                    }
+                  }}
+                  onWheelCapture={(e) => {
+                    e.currentTarget.blur();
+                  }}
                   className={`${errors.price ? inputErrorClass : inputClass} pl-9 tabular-nums`}
                   placeholder="0"
                 />
@@ -1543,9 +1553,24 @@ export default function ProductFormModal({
                 </span>
                 <input
                   type="number"
-                  min={0}
+                  min="0"
                   value={form.costPrice}
-                  onChange={(e) => set("costPrice", Number(e.target.value))}
+                  onChange={(e) =>
+                    set(
+                      "costPrice",
+                      e.target.value === ""
+                        ? undefined
+                        : Number(e.target.value),
+                    )
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                      e.preventDefault();
+                    }
+                  }}
+                  onWheelCapture={(e) => {
+                    e.currentTarget.blur();
+                  }}
                   className={`${errors.costPrice ? inputErrorClass : inputClass} pl-9 tabular-nums`}
                   placeholder="0"
                 />
@@ -1691,10 +1716,19 @@ export default function ProductFormModal({
                     <input
                       type="number"
                       min={0}
-                      value={form.inStock}
+                      value={form.inStock ?? ""}
                       onChange={(e) => {
-                        set("inStock", Number(e.target.value));
-                        if (form.lowStock > Number(e.target.value)) {
+                        const value =
+                          e.target.value === ""
+                            ? undefined
+                            : Number(e.target.value);
+
+                        set("inStock", value);
+
+                        if (
+                          value !== undefined &&
+                          (form.lowStock ?? 0) > value
+                        ) {
                           setErrors((prev) => ({
                             ...prev,
                             lowStock: "Low stock cannot exceed in stock.",
@@ -1706,9 +1740,15 @@ export default function ProductFormModal({
                           }));
                         }
                       }}
-                      className={`${
-                        errors.inStock ? inputErrorClass : inputClass
-                      } tabular-nums`}
+                      onKeyDown={(e) => {
+                        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                        }
+                      }}
+                      onWheelCapture={(e) => {
+                        e.currentTarget.blur();
+                      }}
+                      className={`${errors.inStock ? inputErrorClass : inputClass} tabular-nums`}
                       placeholder="e.g. 50"
                     />
                   </Field>
@@ -1719,8 +1759,8 @@ export default function ProductFormModal({
                     error={errors.lowStock}
                     hint={
                       !errors.lowStock &&
-                      form.lowStock > 0 &&
-                      form.lowStock <= 5 ? (
+                      (form.lowStock ?? 0) > 0 &&
+                      (form.lowStock ?? 0) <= 5 ? (
                         <span className="text-amber-600 dark:text-amber-300">
                           Alerts when stock reaches {form.lowStock}
                         </span>
@@ -1730,11 +1770,16 @@ export default function ProductFormModal({
                     <input
                       type="number"
                       min={0}
-                      value={form.lowStock}
+                      value={form.lowStock ?? ""}
                       onChange={(e) => {
-                        const val = Number(e.target.value);
+                        const val =
+                          e.target.value === ""
+                            ? undefined
+                            : Number(e.target.value);
+
                         set("lowStock", val);
-                        if (val > form.inStock) {
+
+                        if (val !== undefined && val > (form.inStock ?? 0)) {
                           setErrors((prev) => ({
                             ...prev,
                             lowStock: "Low stock cannot exceed in stock.",
@@ -1750,12 +1795,20 @@ export default function ProductFormModal({
                         errors.lowStock ? inputErrorClass : inputClass
                       } tabular-nums ${
                         !errors.lowStock &&
-                        form.lowStock > 0 &&
-                        form.lowStock <= form.inStock &&
-                        form.lowStock <= 5
+                        (form.lowStock ?? 0) > 0 &&
+                        (form.lowStock ?? 0) <= (form.inStock ?? 0) &&
+                        (form.lowStock ?? 0) <= 5
                           ? "border-amber-300 focus:ring-amber-400 dark:border-amber-400/40"
                           : ""
                       }`}
+                      onKeyDown={(e) => {
+                        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                        }
+                      }}
+                      onWheelCapture={(e) => {
+                        e.currentTarget.blur();
+                      }}
                       placeholder="e.g. 5"
                     />
                   </Field>

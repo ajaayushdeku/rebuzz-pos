@@ -511,7 +511,16 @@ export default function RecordPaymentModal({
                       discountError
                         ? "border-red-300 focus:border-red-400 dark:focus:border-red-400/60 dark:border-red-400/40"
                         : "border-gray-300 focus:border-blue-500 dark:border-white/15"
-                    }`}
+                    }
+                    appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]`}
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                        e.preventDefault();
+                      }
+                    }}
+                    onWheelCapture={(e) => {
+                      e.currentTarget.blur();
+                    }}
                   />
                   <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[13px] text-gray-400 dark:text-[#9aa6bd]">
                     {discountType === "percentage" ? "%" : currency.symbol}
@@ -615,7 +624,15 @@ export default function RecordPaymentModal({
                           redeemError
                             ? "border-red-300 focus:border-red-400 dark:focus:border-red-400/60 dark:border-red-400/40"
                             : "border-gray-200 focus:border-blue-400 dark:focus:border-blue-400/60 dark:border-white/15"
-                        }`}
+                        }appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]`}
+                        onKeyDown={(e) => {
+                          if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                            e.preventDefault();
+                          }
+                        }}
+                        onWheelCapture={(e) => {
+                          e.currentTarget.blur();
+                        }}
                       />
                       {redeemError ? (
                         <p className="text-[11px] text-red-500 dark:text-red-300">

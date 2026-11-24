@@ -249,6 +249,14 @@ export default function LoyaltyStatusModal({
             className={`${modalInput} tabular-nums ${
               errors.minPoints || clash ? modalInputError : cyanInputIdle
             }`}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                e.preventDefault();
+              }
+            }}
+            onWheelCapture={(e) => {
+              e.currentTarget.blur();
+            }}
           />
           {errors.minPoints ? (
             <p className="mt-1 text-xs text-red-500">{errors.minPoints}</p>

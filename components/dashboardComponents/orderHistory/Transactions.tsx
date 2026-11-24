@@ -429,7 +429,7 @@ export default function Transactions({
       </div>
 
       {/* Search + Filters — stay put across tabs */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-8 mb-4">
+      <div className="mb-4 mt-0 flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="relative flex-1 w-full">
           <Search
             size={14}

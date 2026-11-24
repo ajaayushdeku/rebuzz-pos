@@ -6,7 +6,7 @@ import { Lock, SlidersHorizontal } from "lucide-react";
 import OfferStepCard from "./OfferStepCard";
 
 const FIELD =
-  "h-11 w-full rounded-xl border border-blue-600/25 bg-white/90 px-3.5 text-sm tabular-nums text-[#3c4043] outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 dark:border-blue-400/20 dark:bg-white/5 dark:text-[#e8ecf4]";
+  "h-11 w-full rounded-xl border border-blue-600/25 bg-white/90 px-3.5 text-sm tabular-nums text-[#3c4043] outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 dark:border-blue-400/20 dark:bg-white/5 dark:text-[#e8ecf4] appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]";
 
 const LABEL =
   "mb-1.5 block text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]";
@@ -42,6 +42,14 @@ function LimitField({
           value={value || ""}
           onChange={(e) => onChange(Number(e.target.value))}
           placeholder={placeholder}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+              e.preventDefault();
+            }
+          }}
+          onWheelCapture={(e) => {
+            e.currentTarget.blur();
+          }}
           className={`${FIELD} ${prefix ? "pl-10 pr-3.5" : "px-3.5"}`}
         />
       </div>

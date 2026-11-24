@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Search,
   Archive,
@@ -10,11 +10,19 @@ import {
   ArrowUpDown,
   ChevronUp,
   ChevronDown,
-  CalendarDays,
-  Layers,
   Sparkles,
   RefreshCw,
+  HeartHandshake,
+  UtensilsCrossed,
+  PackageSearch,
+  Tags,
+  Clock,
+  ChartNoAxesCombined,
+  Users,
+  GitBranch,
+  Layers,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import toast from "react-hot-toast";
 
 import LoadingState from "@/components/ui/LoadingState";
@@ -29,6 +37,12 @@ import type {
   PeriodKind,
   SavedPeriodInsight,
 } from "@/services/apiPeriodInsights.client";
+import ColumnPicker, {
+  readStoredColumns,
+  storeColumns,
+  type TableColumn,
+} from "@/components/ui/ColumnPicker";
+import { SECTION_ACCENTS } from "./PeriodProgressVisualizer";
 
 type SortConfig = {
   key: "period" | "section" | "lastUpdatedAt" | "itemCount";
@@ -36,6 +50,49 @@ type SortConfig = {
 } | null;
 
 const PAGE_SIZE = 10;
+
+const SAVED_INSIGHT_COLUMNS: TableColumn[] = [
+  { key: "period", label: "Period" },
+  { key: "section", label: "Insight Section" },
+  { key: "lastUpdatedAt", label: "Last Updated" },
+  { key: "versions", label: "Versions" },
+  { key: "currentversion", label: "Current Version" },
+  { key: "provider", label: "Provider / Model" },
+  { key: "itemCount", label: "Items" },
+  { key: "actions", label: "Actions", locked: true },
+];
+
+const COLUMNS_STORAGE_KEY = "rebuzz-saved-insights-table-columns";
+
+const MIN_COLUMNS = 3;
+
+const COLUMN_WIDTHS: Record<string, string> = {
+  period: "18%",
+  section: "20%",
+  lastUpdatedAt: "17%",
+  versions: "11%",
+  currentversion: "11%",
+  provider: "19%",
+  itemCount: "8%",
+  actions: "7%",
+};
+
+const SECTION_ICONS: Record<string, LucideIcon> = {
+  retention: HeartHandshake,
+  "menu-suggestions": UtensilsCrossed,
+  "slow-items": PackageSearch,
+  pricing: Tags,
+  "hour-playbook": Clock,
+  "sales-recommendations": ChartNoAxesCombined,
+  staffing: Users,
+};
+
+const DEFAULT_SECTION_ACCENT = {
+  icon: "bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-400",
+  glow: "",
+  border: "",
+  text: "text-gray-600 dark:text-gray-400",
+};
 
 const PERIOD_OPTIONS: {
   value: PeriodKind | "";
@@ -101,6 +158,20 @@ function formatDateTime(value: string | null | undefined) {
 }
 
 function PeriodBadge({ kind }: { kind: PeriodKind }) {
+  const styles: Record<PeriodKind, string> = {
+    month:
+      "border-blue-200/80 bg-blue-50/70 text-blue-700 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-300",
+    quarter:
+      "border-violet-200/80 bg-violet-50/70 text-violet-700 dark:border-violet-400/20 dark:bg-violet-400/10 dark:text-violet-300",
+    year: "border-emerald-200/80 bg-emerald-50/70 text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300",
+  };
+
+  const dotStyles: Record<PeriodKind, string> = {
+    month: "bg-blue-500",
+    quarter: "bg-violet-500",
+    year: "bg-emerald-500",
+  };
+
   const labels: Record<PeriodKind, string> = {
     month: "Monthly",
     quarter: "Quarterly",
@@ -108,7 +179,10 @@ function PeriodBadge({ kind }: { kind: PeriodKind }) {
   };
 
   return (
-    <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-[#a8c4ee]">
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-semibold tracking-wide ${styles[kind]}`}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${dotStyles[kind]}`} />
       {labels[kind]}
     </span>
   );
@@ -150,6 +224,107 @@ function EmptyState({
   );
 }
 
+type FilterOption = {
+  value: string;
+  label: string;
+};
+
+function FilterDropdown({
+  value,
+  options,
+  onChange,
+  className = "",
+}: {
+  value: string;
+  options: FilterOption[];
+  onChange: (value: string) => void;
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const selectedOption = options.find((option) => option.value === value);
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={dropdownRef}
+      className={`relative w-full sm:w-[150px] md:w-[170px] ${className}`}
+    >
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+        className="flex w-full items-center justify-between gap-2 rounded-xl border border-gray-200 bg-white py-2.5 pl-3 pr-2.5 text-[13px] text-gray-600 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#a9b4c7]"
+      >
+        <span className="truncate">
+          {selectedOption?.label ?? options[0]?.label}
+        </span>
+
+        <ChevronDown
+          size={14}
+          className={`shrink-0 text-gray-400 transition-transform duration-200 ${
+            open ? "rotate-180" : ""
+          } dark:text-[#9aa6bd]`}
+        />
+      </button>
+
+      <div
+        className={`absolute z-30 mt-1.5 max-h-64 w-full origin-top overflow-y-auto rounded-md border border-gray-200 bg-white p-1 shadow-lg transition-all duration-200 dark:border-white/15 dark:bg-[#1b2436] ${
+          open
+            ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
+            : "pointer-events-none -translate-y-1 scale-95 opacity-0"
+        }`}
+      >
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            role="option"
+            aria-selected={value === option.value}
+            onClick={() => {
+              onChange(option.value);
+              setOpen(false);
+            }}
+            className={`w-full cursor-pointer rounded-md px-3 py-1.5 text-left text-[13px] transition-colors ${
+              value === option.value
+                ? "bg-blue-50 font-medium text-blue-700 dark:bg-blue-400/10 dark:text-blue-300"
+                : "text-gray-600 hover:bg-gray-100 dark:text-[#a9b4c7] dark:hover:bg-white/10"
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function SavedInsightsScreen({
   isAdmin = false,
 }: {
@@ -168,6 +343,35 @@ export default function SavedInsightsScreen({
     null,
   );
 
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(() =>
+    readStoredColumns(COLUMNS_STORAGE_KEY, SAVED_INSIGHT_COLUMNS, MIN_COLUMNS),
+  );
+
+  const shownColumns = new Set(visibleColumns);
+
+  const showColumn = (key: string) =>
+    shownColumns.has(key) ||
+    (isAdmin &&
+      SAVED_INSIGHT_COLUMNS.some(
+        (column) => column.key === key && column.locked,
+      ));
+
+  const colCount = SAVED_INSIGHT_COLUMNS.filter((column) =>
+    showColumn(column.key),
+  ).length;
+
+  const handleColumnsChange = (next: string[]) => {
+    setVisibleColumns(next);
+    storeColumns(COLUMNS_STORAGE_KEY, next);
+
+    // Clear sorting if its column is hidden.
+    setSortConfig((previous) => {
+      if (!previous) return previous;
+
+      return next.includes(previous.key) ? previous : null;
+    });
+  };
+
   const queryParams = useMemo(
     () => ({
       ...(periodKind ? { kind: periodKind } : {}),
@@ -184,7 +388,7 @@ export default function SavedInsightsScreen({
 
   const deleteMutation = useDeletePeriodSection();
 
-  const items = data?.items ?? [];
+  const items = useMemo(() => data?.items ?? [], [data?.items]);
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, data?.totalPages ?? 1);
 
@@ -313,10 +517,19 @@ export default function SavedInsightsScreen({
     setPage(1);
   };
 
+  function getSectionIcon(section: string): LucideIcon {
+    return SECTION_ICONS[section] ?? Sparkles;
+  }
+
+  function getSectionAccent(section: string) {
+    return SECTION_ACCENTS[section] ?? DEFAULT_SECTION_ACCENT;
+  }
+
   return (
     <>
       {/* Search and filters */}
-      <div className="mb-4 mt-6 flex flex-col gap-3 lg:flex-row lg:items-center">
+      <div className="mb-4 mt-0 flex flex-col gap-3 lg:flex-row lg:items-center">
+        {/* Search */}
         <div className="relative min-w-0 flex-1">
           <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]" />
 
@@ -328,42 +541,47 @@ export default function SavedInsightsScreen({
           />
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <select
+        {/* Filters */}
+        <div className="flex w-full flex-row items-center justify-between gap-3 sm:w-fit">
+          <FilterDropdown
             value={periodKind}
-            onChange={(event) => changePeriod(event.target.value)}
-            className="min-w-0 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-[12px] text-gray-600 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:border-white/15 dark:bg-[#151d2d] dark:text-[#c3ccdc]"
-          >
-            {PERIOD_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            options={PERIOD_OPTIONS}
+            onChange={changePeriod}
+          />
 
-          <select
+          <FilterDropdown
             value={section}
-            onChange={(event) => changeSection(event.target.value)}
-            className="min-w-0 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-[12px] text-gray-600 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:border-white/15 dark:bg-[#151d2d] dark:text-[#c3ccdc]"
-          >
-            <option value="">All sections</option>
-
-            {sectionOptions.map((option) => (
-              <option key={option} value={option}>
-                {formatSection(option)}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: "", label: "All sections" },
+              ...sectionOptions.map((option) => ({
+                value: option,
+                label: formatSection(option),
+              })),
+            ]}
+            onChange={changeSection}
+          />
 
           {hasFilters && (
             <button
               type="button"
               onClick={clearFilters}
-              className="whitespace-nowrap rounded-xl border border-gray-200 px-3 py-2 text-[12px] font-medium text-gray-500 transition-colors hover:bg-gray-50 dark:border-white/15 dark:text-[#a9b4c7] dark:hover:bg-white/5"
+              className="shrink-0 whitespace-nowrap rounded-xl border border-gray-200 px-3 py-2.5 text-[12px] font-medium text-gray-500 transition-colors hover:bg-gray-50 dark:border-white/15 dark:text-[#a9b4c7] dark:hover:bg-white/5"
             >
-              Clear filters
+              Clear
             </button>
           )}
+
+          <ColumnPicker
+            columns={
+              isAdmin
+                ? SAVED_INSIGHT_COLUMNS
+                : SAVED_INSIGHT_COLUMNS.filter((column) => !column.locked)
+            }
+            visible={visibleColumns}
+            onChange={handleColumnsChange}
+            minVisible={MIN_COLUMNS}
+            className="w-full sm:w-[150px] md:w-[170px]"
+          />
         </div>
       </div>
 
@@ -388,66 +606,88 @@ export default function SavedInsightsScreen({
 
       {/* Table */}
       <div className="overflow-x-auto bg-white dark:bg-transparent">
-        <table className="w-full min-w-[900px] table-fixed text-sm">
+        <table
+          className="w-full table-fixed text-sm"
+          style={{ minWidth: `${Math.max(760, colCount * 130)}px` }}
+        >
           <colgroup>
-            <col className="w-[18%]" />
-            <col className="w-[20%]" />
-            <col className="w-[17%]" />
-            <col className="w-[11%]" />
-            <col className="w-[19%]" />
-            <col className="w-[8%]" />
-            {isAdmin && <col className="w-[7%]" />}
+            {SAVED_INSIGHT_COLUMNS.filter((column) =>
+              showColumn(column.key),
+            ).map((column) => (
+              <col
+                key={column.key}
+                style={{ width: COLUMN_WIDTHS[column.key] }}
+              />
+            ))}
           </colgroup>
 
           <thead>
             <tr className="border-b border-[#e8eaed] text-[11px] tracking-wider text-[#5f6368] dark:border-white/10 dark:text-[#a9b4c7]">
-              <th
-                className="cursor-pointer px-4 py-3 text-left font-normal hover:text-gray-700 dark:hover:text-[#e8ecf4]"
-                onClick={() => toggleSort("period")}
-              >
-                <span className="flex items-center gap-1">
-                  Period
-                  {SortIcon({ colKey: "period" })}
-                </span>
-              </th>
+              {showColumn("period") && (
+                <th
+                  className="cursor-pointer px-4 py-3 text-left font-normal hover:text-gray-700 dark:hover:text-[#e8ecf4]"
+                  onClick={() => toggleSort("period")}
+                >
+                  <span className="flex items-center gap-1">
+                    Period
+                    {SortIcon({ colKey: "period" })}
+                  </span>
+                </th>
+              )}
 
-              <th
-                className="cursor-pointer px-4 py-3 text-left font-normal hover:text-gray-700 dark:hover:text-[#e8ecf4]"
-                onClick={() => toggleSort("section")}
-              >
-                <span className="flex items-center gap-1">
-                  Insight section
-                  {SortIcon({ colKey: "section" })}
-                </span>
-              </th>
+              {showColumn("section") && (
+                <th
+                  className="cursor-pointer px-4 py-3 text-left font-normal hover:text-gray-700 dark:hover:text-[#e8ecf4]"
+                  onClick={() => toggleSort("section")}
+                >
+                  <span className="flex items-center gap-1">
+                    Insight section
+                    {SortIcon({ colKey: "section" })}
+                  </span>
+                </th>
+              )}
 
-              <th
-                className="cursor-pointer px-4 py-3 text-left font-normal hover:text-gray-700 dark:hover:text-[#e8ecf4]"
-                onClick={() => toggleSort("lastUpdatedAt")}
-              >
-                <span className="flex items-center gap-1">
-                  Last updated
-                  {SortIcon({ colKey: "lastUpdatedAt" })}
-                </span>
-              </th>
+              {showColumn("lastUpdatedAt") && (
+                <th
+                  className="cursor-pointer px-4 py-3 text-left font-normal hover:text-gray-700 dark:hover:text-[#e8ecf4]"
+                  onClick={() => toggleSort("lastUpdatedAt")}
+                >
+                  <span className="flex items-center gap-1">
+                    Last updated
+                    {SortIcon({ colKey: "lastUpdatedAt" })}
+                  </span>
+                </th>
+              )}
 
-              <th className="px-4 py-3 text-center font-normal">Versions</th>
+              {showColumn("versions") && (
+                <th className="px-4 py-3 text-center font-normal">Versions</th>
+              )}
 
-              <th className="px-4 py-3 text-left font-normal">
-                Provider / Model
-              </th>
+              {showColumn("currentversion") && (
+                <th className="px-4 py-3 text-center font-normal">
+                  Current Version
+                </th>
+              )}
 
-              <th
-                className="cursor-pointer px-4 py-3 text-center font-normal hover:text-gray-700 dark:hover:text-[#e8ecf4]"
-                onClick={() => toggleSort("itemCount")}
-              >
-                <span className="flex items-center justify-center gap-1">
-                  Items
-                  {SortIcon({ colKey: "itemCount" })}
-                </span>
-              </th>
+              {showColumn("provider") && (
+                <th className="px-4 py-3 text-left font-normal">
+                  Provider / Model
+                </th>
+              )}
 
-              {isAdmin && (
+              {showColumn("itemCount") && (
+                <th
+                  className="cursor-pointer px-4 py-3 text-center font-normal hover:text-gray-700 dark:hover:text-[#e8ecf4]"
+                  onClick={() => toggleSort("itemCount")}
+                >
+                  <span className="flex items-center justify-center gap-1">
+                    Items
+                    {SortIcon({ colKey: "itemCount" })}
+                  </span>
+                </th>
+              )}
+
+              {showColumn("actions") && isAdmin && (
                 <th className="px-4 py-3 text-right font-normal">Actions</th>
               )}
             </tr>
@@ -490,74 +730,114 @@ export default function SavedInsightsScreen({
                   className="border-b border-gray-50 transition-colors last:border-0 hover:bg-gray-50/70 dark:border-white/5 dark:hover:bg-white/5"
                 >
                   {/* Period */}
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col items-start gap-1.5">
-                      <span className="text-[13px] font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
-                        {formatPeriod(item)}
-                      </span>
-                      <PeriodBadge kind={item.periodKind} />
-                    </div>
-                  </td>
+                  {showColumn("period") && (
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col items-start gap-1.5">
+                        <span className="text-[13px] font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
+                          {formatPeriod(item)}
+                        </span>
+                        <PeriodBadge kind={item.periodKind} />
+                      </div>
+                    </td>
+                  )}
 
                   {/* Section */}
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-400/10 dark:text-[#a8c4ee]">
-                        <Sparkles className="h-3.5 w-3.5" />
-                      </span>
+                  {showColumn("section") && (
+                    <td className="px-4 py-3">
+                      {(() => {
+                        const SectionIcon = getSectionIcon(item.section);
+                        const accent = getSectionAccent(item.section);
 
-                      <span className="truncate text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
-                        {formatSection(item.section)}
-                      </span>
-                    </div>
-                  </td>
+                        return (
+                          <div className="flex min-w-0 items-center gap-2">
+                            <span
+                              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${accent.icon}`}
+                            >
+                              <SectionIcon className="h-4 w-4" />
+                            </span>
+
+                            <span
+                              className={`truncate text-[13px] font-medium ${accent.text}`}
+                              title={formatSection(item.section)}
+                            >
+                              {formatSection(item.section)}
+                            </span>
+                          </div>
+                        );
+                      })()}
+                    </td>
+                  )}
 
                   {/* Last updated */}
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[12px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
-                        {formatDate(item.lastUpdatedAt)}
-                      </span>
-                      <span className="text-[10px] text-gray-400 dark:text-[#7b869b]">
-                        {formatDateTime(item.lastUpdatedAt)}
-                      </span>
-                    </div>
-                  </td>
+                  {showColumn("lastUpdatedAt") && (
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[12px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
+                          {formatDate(item.lastUpdatedAt)}
+                        </span>
+                        <span className="text-[10px] text-gray-400 dark:text-[#7b869b]">
+                          {formatDateTime(item.lastUpdatedAt)}
+                        </span>
+                      </div>
+                    </td>
+                  )}
 
                   {/* Versions */}
-                  <td className="px-4 py-3 text-center">
-                    <span className="inline-flex items-center justify-center gap-1 rounded-full border border-purple-200 bg-purple-50 px-2 py-1 text-[11px] font-semibold tabular-nums text-purple-700 dark:border-purple-400/25 dark:bg-purple-400/10 dark:text-purple-300">
-                      <Layers className="h-3 w-3" />
-                      {item.versionCount}
-                    </span>
-                  </td>
+                  {showColumn("versions") && (
+                    <td className="px-4 py-3 text-center">
+                      <div className="inline-flex items-center gap-1.5">
+                        <Layers className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
+
+                        <span className="text-[12px] font-semibold tabular-nums text-slate-600 dark:text-slate-300">
+                          {item.versionCount}
+                        </span>
+                      </div>
+                    </td>
+                  )}
+
+                  {/* Versions */}
+                  {showColumn("currentversion") && (
+                    <td className="px-4 py-3 text-center">
+                      <div className="inline-flex items-center gap-1.5">
+                        <GitBranch className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
+
+                        <span className="text-[12px] font-semibold tabular-nums text-slate-600 dark:text-slate-300">
+                          {item.promptVersion}
+                        </span>
+                      </div>
+                    </td>
+                  )}
 
                   {/* Provider / model */}
-                  <td className="px-4 py-3">
-                    <div className="flex min-w-0 flex-col gap-1">
-                      <span className="truncate text-[12px] font-medium capitalize text-[#3c4043] dark:text-[#e8ecf4]">
-                        {item.provider || "Unknown provider"}
-                      </span>
-                      <span
-                        title={item.settingsModel || item.model || ""}
-                        className="truncate text-[10px] text-gray-400 dark:text-[#7b869b]"
-                      >
-                        {item.settingsModel ||
-                          item.model ||
-                          "Model unavailable"}
-                      </span>
-                    </div>
-                  </td>
+                  {showColumn("provider") && (
+                    <td className="px-4 py-3">
+                      <div className="flex min-w-0 flex-col gap-1">
+                        <span className="truncate text-[12px] font-medium capitalize text-[#3c4043] dark:text-[#e8ecf4]">
+                          {item.provider || "Unknown provider"}
+                        </span>
+                        <span
+                          title={item.settingsModel || item.model || ""}
+                          className="truncate text-[10px] text-gray-400 dark:text-[#7b869b]"
+                        >
+                          {item.settingsModel ||
+                            item.model ||
+                            "Model unavailable"}
+                        </span>
+                      </div>
+                    </td>
+                  )}
 
                   {/* Item count */}
-                  <td className="px-4 py-3 text-center">
-                    <span className="text-[13px] font-semibold tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
-                      {item.itemCount}
-                    </span>
-                  </td>
+                  {showColumn("itemCount") && (
+                    <td className="px-4 py-3 text-center">
+                      <span className="text-[13px] font-semibold tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
+                        {item.itemCount}
+                      </span>
+                    </td>
+                  )}
 
                   {/* Actions */}
-                  {isAdmin && (
+                  {showColumn("actions") && isAdmin && (
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end">
                         <button

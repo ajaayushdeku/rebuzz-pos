@@ -126,9 +126,9 @@ const OnBoarding = () => {
   const isLastStep = step === TOTAL_STEPS;
 
   return (
-    <div className="min-h-screen flex font-sans bg-slate-100 dark:bg-[#0f1420]">
+    <div className="min-h-screen flex flex-col lg:flex-row font-sans bg-slate-100 dark:bg-[#0f1420]">
       {/* Left: Form Panel */}
-      <div className="flex flex-col justify-center px-16 py-12 bg-white dark:bg-[#161d2e] w-full max-w-140 shadow-[4px_0_40px_rgba(0,0,0,0.06)]">
+      <div className="relative z-10 flex min-h-screen w-full flex-col justify-center bg-white px-5 py-8 shadow-[4px_0_40px_rgba(0,0,0,0.06)] dark:bg-[#161d2e] sm:px-8 sm:py-10 md:px-12 lg:min-h-screen lg:w-[55%] lg:max-w-[760px] lg:px-12 xl:px-16">
         <ProgressBar current={step} />
 
         {/* Animated Step Content */}
@@ -139,6 +139,7 @@ const OnBoarding = () => {
             } as React.CSSProperties
           }
           className={cn(
+            "w-full min-w-0",
             animating
               ? "animate-[slideOut_0.22s_ease_forwards]"
               : "animate-[slideIn_0.3s_ease_forwards]",
@@ -150,40 +151,41 @@ const OnBoarding = () => {
         </div>
 
         {/* Navigation */}
-        <div className="flex gap-3 mt-2 items-center">
+        <div className="mt-5 flex w-full items-center gap-2 sm:gap-3">
           {step > 1 && (
             <Button
               variant="outline"
               onClick={() => navigate(step - 1)}
-              className="rounded-xl"
+              className="h-8 shrink-0 gap-2 rounded-xl border-slate-200 bg-white px-5 text-sm font-semibold shadow-sm transition-all hover:bg-slate-50 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10 sm:h-13 sm:px-6"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-[18px] w-[18px]" />
               Back
             </Button>
           )}
+
           <Button
             onClick={() => (isLastStep ? handleSubmit() : navigate(step + 1))}
             disabled={!canProceed || submitting}
-            className="flex-1 rounded-xl bg-indigo-500 hover:bg-indigo-600 shadow-lg shadow-indigo-200"
+            className="h-8 min-w-0 flex-1 gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 px-6 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:-translate-y-0.5 hover:from-indigo-600 hover:to-indigo-700 hover:shadow-xl hover:shadow-indigo-500/30 disabled:translate-y-0 disabled:opacity-50 disabled:shadow-none sm:h-13 sm:text-[15px]"
           >
             {isLastStep ? (
               <>
                 {submitting ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin" />
                     Submitting...
                   </>
                 ) : (
                   <>
                     Let&lsquo;s get to it
-                    <Rocket className="h-4 w-4" />
+                    <Rocket className="h-5 w-5" />
                   </>
                 )}
               </>
             ) : (
               <>
                 Continue
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-5 w-5" />
               </>
             )}
           </Button>
@@ -210,8 +212,9 @@ const OnBoarding = () => {
       </div>
 
       {/* Right: Illustration Panel */}
-      <PanelIllustration step={step} />
-
+      <div className="hidden min-h-screen flex-1 lg:flex">
+        <PanelIllustration step={step} />
+      </div>
       <style>{`
         @keyframes slideIn {
           from { opacity: 0; transform: translateX(var(--dir)); }

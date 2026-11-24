@@ -19,8 +19,8 @@ const EditNormalTaxModal = ({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   tax: Tax | null;
-  form: { name: string; rate: number };
-  onFormChange: (form: { name: string; rate: number }) => void;
+  form: { name: string; rate: number | undefined };
+  onFormChange: (form: { name: string; rate: number | undefined }) => void;
   onSave: () => void;
   isPending: boolean;
 }) => {
@@ -47,7 +47,7 @@ const EditNormalTaxModal = ({
           <button
             type="button"
             onClick={onSave}
-            disabled={isPending || !form.name.trim() || form.rate <= 0}
+            disabled={isPending || !form.name.trim() || (form.rate ?? 0) <= 0}
             className="rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
           >
             {isPending ? (
@@ -103,9 +103,21 @@ const EditNormalTaxModal = ({
               max={100}
               value={form.rate}
               onChange={(e) =>
-                onFormChange({ ...form, rate: Number(e.target.value) })
+                onFormChange({
+                  ...form,
+                  rate:
+                    e.target.value === "" ? undefined : Number(e.target.value),
+                })
               }
               className={`${modalInput} pl-8`}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                  e.preventDefault();
+                }
+              }}
+              onWheelCapture={(e) => {
+                e.currentTarget.blur();
+              }}
               placeholder="0"
             />
           </div>

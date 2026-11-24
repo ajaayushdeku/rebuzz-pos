@@ -344,7 +344,7 @@ export default function CreditsTable({
   return (
     <>
       {/* Controls */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+      <div className="mb-4 mt-0 flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="relative flex-1">
           <Search
             size={14}
@@ -361,75 +361,79 @@ export default function CreditsTable({
           />
         </div>
 
-        <div className="flex flex-row w-full sm:w-fit items-center justify-between gap-3">
-          {/* Ongoing list only, alongside the column itself — on a settled or
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          {" "}
+          <div className="flex flex-row w-full sm:w-fit items-center justify-between gap-3">
+            {/* Ongoing list only, alongside the column itself — on a settled or
             archived list every row is grey and filtering by deadline sorts
             nothing worth sorting. */}
-          {showDueDate && (
-            <FilterSelect
-              value={dueDateFilter}
-              options={DUE_DATE_FILTER_OPTIONS}
-              onChange={(v) => {
-                setDueDateFilter(v as DueDateFilter);
-                // Otherwise a narrower result set leaves you on a page that no
-                // longer exists, looking at an empty table.
-                setPage(0);
-              }}
+            {showDueDate && (
+              <FilterSelect
+                value={dueDateFilter}
+                options={DUE_DATE_FILTER_OPTIONS}
+                onChange={(v) => {
+                  setDueDateFilter(v as DueDateFilter);
+                  // Otherwise a narrower result set leaves you on a page that no
+                  // longer exists, looking at an empty table.
+                  setPage(0);
+                }}
+                className="w-full sm:w-[150px] md:w-[170px]"
+              />
+            )}{" "}
+            <ColumnPicker
+              columns={creditColumns}
+              visible={visibleColumns}
+              onChange={handleColumnsChange}
+              minVisible={MIN_COLUMNS}
               className="w-full sm:w-[150px] md:w-[170px]"
             />
-          )}{" "}
-          <ColumnPicker
-            columns={creditColumns}
-            visible={visibleColumns}
-            onChange={handleColumnsChange}
-            minVisible={MIN_COLUMNS}
-            className="w-full sm:w-[150px] md:w-[170px]"
-          />
-        </div>
-
-        {showStatusFilter && (
-          <button
-            type="button"
-            role="switch"
-            aria-checked={allExpanded}
-            onClick={toggleAllHistory}
-            className="inline-flex  items-center justify-between gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-white dark:bg-white/5 transition-colors hover:bg-gray-50 cursor-pointer dark:hover:bg-white/5 dark:border-white/15"
-          >
-            <span
-              className={`text-[13px] flex flex-row  items-center gap-2.5 font-medium transition-colors ${
-                allExpanded
-                  ? "text-blue-700 dark:text-blue-300"
-                  : "text-gray-600 dark:text-[#a9b4c7]"
-              }`}
-            >
-              <History
-                size={14}
-                className={`transition-colors ${
-                  allExpanded
-                    ? "text-blue-600 dark:text-blue-300"
-                    : "text-gray-400 dark:text-[#9aa6bd]"
-                }`}
-              />
-              <span>
-                {" "}
-                {allExpanded ? "Hide payment history" : "View payment history"}
-              </span>
-            </span>
-
-            {/* Toggle switch */}
-            <span
-              className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 ${
-                allExpanded ? "bg-blue-600" : "bg-gray-300 dark:bg-white/20"
-              }`}
+          </div>
+          {showStatusFilter && (
+            <button
+              type="button"
+              role="switch"
+              aria-checked={allExpanded}
+              onClick={toggleAllHistory}
+              className="inline-flex  w-full sm:w-fit items-center justify-between gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-white dark:bg-white/5 transition-colors hover:bg-gray-50 cursor-pointer dark:hover:bg-white/5 dark:border-white/15"
             >
               <span
-                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${
-                  allExpanded ? "translate-x-[19px]" : "translate-x-[3px]"
+                className={`text-[13px] flex flex-row  items-center gap-2.5 font-medium transition-colors ${
+                  allExpanded
+                    ? "text-blue-700 dark:text-blue-300"
+                    : "text-gray-600 dark:text-[#a9b4c7]"
                 }`}
-              />
-            </span>
-          </button>
-        )}
+              >
+                <History
+                  size={14}
+                  className={`transition-colors ${
+                    allExpanded
+                      ? "text-blue-600 dark:text-blue-300"
+                      : "text-gray-400 dark:text-[#9aa6bd]"
+                  }`}
+                />
+                <span>
+                  {" "}
+                  {allExpanded
+                    ? "Hide payment history"
+                    : "View payment history"}
+                </span>
+              </span>
+
+              {/* Toggle switch */}
+              <span
+                className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 ${
+                  allExpanded ? "bg-blue-600" : "bg-gray-300 dark:bg-white/20"
+                }`}
+              >
+                <span
+                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                    allExpanded ? "translate-x-[19px]" : "translate-x-[3px]"
+                  }`}
+                />
+              </span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Table */}

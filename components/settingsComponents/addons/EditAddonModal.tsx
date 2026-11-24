@@ -9,9 +9,9 @@ import ModalShell, {
 
 export type AddonFormValues = {
   name: string;
-  price: number;
+  price: number | undefined;
   description: string;
-  maxAvailable?: number;
+  maxAvailable?: number | undefined;
 };
 
 interface EditAddonModalProps {
@@ -70,7 +70,7 @@ const EditAddonModal = ({
               isLoading ||
               !form.name.trim() ||
               !Number.isFinite(form.price) ||
-              form.price < 0
+              (form.price ?? 0) <= 0
             }
             className="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white transition-all hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -140,16 +140,27 @@ const EditAddonModal = ({
               <input
                 type="number"
                 min="0"
-                step="0.01"
+                // step="0.01"
                 value={form.price}
                 onChange={(e) =>
                   onFormChange({
                     ...form,
-                    price: e.target.value === "" ? 0 : Number(e.target.value),
+                    price:
+                      e.target.value === ""
+                        ? undefined
+                        : Number(e.target.value),
                   })
                 }
                 placeholder="e.g. 100"
                 className={`${modalInput} mt-2`}
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                    e.preventDefault();
+                  }
+                }}
+                onWheelCapture={(e) => {
+                  e.currentTarget.blur();
+                }}
               />
             </div>
 
@@ -181,7 +192,6 @@ const EditAddonModal = ({
               <input
                 type="number"
                 min="0"
-                step="1"
                 value={form.maxAvailable ?? ""}
                 onChange={(e) =>
                   onFormChange({
@@ -189,10 +199,18 @@ const EditAddonModal = ({
                     maxAvailable:
                       e.target.value === ""
                         ? undefined
-                        : Math.max(0, Math.floor(Number(e.target.value))),
+                        : Number(e.target.value),
                   })
                 }
                 placeholder="Leave empty for no limit"
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                    e.preventDefault();
+                  }
+                }}
+                onWheelCapture={(e) => {
+                  e.currentTarget.blur();
+                }}
                 className={`${modalInput} mt-2`}
               />
             </div>

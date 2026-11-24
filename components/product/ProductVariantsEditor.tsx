@@ -16,10 +16,10 @@ export interface VariantRow {
   id?: string;
   optionValues: string[];
   isAvailable: boolean;
-  costPrice: number;
-  price: number;
-  inStock: number;
-  lowStock: number;
+  costPrice: number | undefined;
+  price: number | undefined;
+  inStock: number | undefined;
+  lowStock: number | undefined;
 }
 
 export const MAX_OPTIONS = 3;
@@ -74,7 +74,7 @@ export function buildVariantRows(
 }
 
 const numberInput =
-  "w-full h-8 rounded-lg border border-slate-200 px-2 text-[13px] text-slate-800 tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:text-[#e8ecf4]";
+  "w-full appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none  h-8 rounded-lg border border-slate-200 px-2 text-[13px] text-slate-800 tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:text-[#e8ecf4]";
 
 /** Values are entered as tags — type, press Enter. */
 function ValueTags({
@@ -450,9 +450,20 @@ export function VariantRowsEditor({
                       value={row[field]}
                       onChange={(e) =>
                         updateRow(row.key, {
-                          [field]: Number(e.target.value),
+                          [field]:
+                            e.target.value === ""
+                              ? undefined
+                              : Number(e.target.value),
                         } as Partial<VariantRow>)
                       }
+                      onKeyDown={(e) => {
+                        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                        }
+                      }}
+                      onWheelCapture={(e) => {
+                        e.currentTarget.blur();
+                      }}
                       className={`${numberInput} bg-white dark:bg-white/5 ${money ? "pl-7" : ""}`}
                     />
                   </div>

@@ -135,7 +135,7 @@ const STATUS_STYLES: Record<
   },
 };
 
-const SECTION_ACCENTS: Record<
+export const SECTION_ACCENTS: Record<
   string,
   { icon: string; glow: string; border: string; text: string }
 > = {

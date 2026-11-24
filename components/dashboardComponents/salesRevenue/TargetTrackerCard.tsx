@@ -227,12 +227,25 @@ export default function TargetTrackerCard() {
                   autoFocus
                   disabled={saving}
                   onChange={(e) => setDraft(e.target.value)}
+                  // onKeyDown={(e) => {
+                  //   if (e.key === "Enter") commitEdit();
+                  //   if (e.key === "Escape") cancelEdit();
+                  // }}
+
                   onKeyDown={(e) => {
+                    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                      e.preventDefault();
+                    }
+
                     if (e.key === "Enter") commitEdit();
                     if (e.key === "Escape") cancelEdit();
                   }}
+                  onWheelCapture={(e) => {
+                    e.currentTarget.blur();
+                  }}
                   placeholder="0"
-                  className="w-24 rounded-md border py-1 pl-7 pr-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 border-[#dadce0] dark:border-white/15"
+                  className="w-24 rounded-md border py-1 pl-7 pr-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 border-[#dadce0] dark:border-white/15
+                  appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]"
                 />
               </div>
               <button

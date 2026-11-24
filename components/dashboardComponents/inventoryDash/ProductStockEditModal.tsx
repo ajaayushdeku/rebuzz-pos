@@ -89,9 +89,19 @@ const StockControls = ({
         <input
           type="number"
           min={0}
-          value={inStock}
+          value={inStock || ""}
           onChange={(e) => onChange("inStock", Number(e.target.value))}
-          className="h-8 w-20 border-y border-slate-200 px-2 text-center text-[13px] tabular-nums text-slate-800 focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:text-[#e8ecf4]"
+          className="h-8 w-20 border-y border-slate-200 px-2 text-center text-[13px] tabular-nums text-slate-800 focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:text-[#e8ecf4]
+          appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]"
+          onKeyDown={(e) => {
+            if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+              e.preventDefault();
+            }
+          }}
+          onWheelCapture={(e) => {
+            e.currentTarget.blur();
+          }}
+          placeholder="e.g. 100"
         />
         <button
           type="button"
@@ -111,9 +121,18 @@ const StockControls = ({
       <input
         type="number"
         min={0}
-        value={lowStock}
+        value={lowStock || ""}
         onChange={(e) => onChange("lowStock", Number(e.target.value))}
-        className="h-8 w-16 rounded-lg border border-slate-200 px-2 text-center text-[13px] tabular-nums text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-white/15 dark:text-[#e8ecf4]"
+        className="h-8 w-16 rounded-lg border border-slate-200 px-2 text-center text-[13px] tabular-nums text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-white/15 dark:text-[#e8ecf4]appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]"
+        onKeyDown={(e) => {
+          if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+            e.preventDefault();
+          }
+        }}
+        onWheelCapture={(e) => {
+          e.currentTarget.blur();
+        }}
+        placeholder="e.g. 5"
       />
     </div>
   </div>
@@ -389,6 +408,7 @@ export default function ProductStockEditModal({
       });
 
       invalidateInventory();
+      handleClose();
     } catch (err) {
       console.error("Bulk save error:", err);
       toast.error(

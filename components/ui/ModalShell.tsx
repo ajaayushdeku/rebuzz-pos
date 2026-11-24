@@ -15,7 +15,7 @@ export function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 export const modalInput =
-  "h-10 sm:h-11 mt-1 w-full rounded-lg sm:rounded-xl border border-gray-300 bg-white px-3.5 text-[13px] outline-none transition focus:ring-2 dark:bg-white/5 dark:text-[#e8ecf4] dark:border-white/15 dark:placeholder:text-[#7b869b]";
+  "h-10 sm:h-11 mt-1 w-full rounded-lg sm:rounded-xl border border-gray-300 bg-white px-3.5 text-[13px] outline-none transition focus:ring-2 dark:bg-white/5 dark:text-[#e8ecf4] dark:border-white/15 dark:placeholder:text-[#7b869b] appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]";
 export const modalInputIdle =
   "border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 dark:border-white/15";
 export const modalInputError =

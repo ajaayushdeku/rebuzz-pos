@@ -137,7 +137,15 @@ function EditPaymentForm({
                 isOverMax
                   ? "border-red-300 focus:border-red-400 focus:ring-red-500/20 dark:focus:border-red-400/60 dark:border-red-400/40"
                   : "border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 dark:border-white/15"
-              }`}
+              } appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]`}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                  e.preventDefault();
+                }
+              }}
+              onWheelCapture={(e) => {
+                e.currentTarget.blur();
+              }}
             />
           </div>
 

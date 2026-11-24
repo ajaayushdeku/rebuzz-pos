@@ -264,7 +264,15 @@ export default function CreditPaymentModal({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0"
-                className={`h-11 w-full rounded-xl border bg-white dark:bg-white/5 pl-9 pr-3.5 text-[13px] tabular-nums outline-none transition focus:ring-2 ${inputClass}`}
+                className={`h-11 w-full rounded-xl border bg-white dark:bg-white/5 pl-9 pr-3.5 text-[13px] tabular-nums outline-none transition focus:ring-2 ${inputClass} appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]`}
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                    e.preventDefault();
+                  }
+                }}
+                onWheelCapture={(e) => {
+                  e.currentTarget.blur();
+                }}
               />
             </div>
 

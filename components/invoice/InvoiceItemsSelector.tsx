@@ -987,6 +987,14 @@ export default function InvoiceItemsSelector({
                       stockErrors[item.id] &&
                         "border-red-400 focus-visible:ring-red-400",
                     )}
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                        e.preventDefault();
+                      }
+                    }}
+                    onWheelCapture={(e) => {
+                      e.currentTarget.blur();
+                    }}
                   />
                   {stockErrors[item.id] && (
                     <span className="absolute right-0 mt-1 block text-right text-[9px] font-medium text-red-600 whitespace-nowrap dark:text-red-300">
@@ -1021,6 +1029,14 @@ export default function InvoiceItemsSelector({
                         showDiscountedUnit &&
                           "text-gray-400 line-through dark:text-[#9aa6bd]",
                       )}
+                      onKeyDown={(e) => {
+                        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                        }
+                      }}
+                      onWheelCapture={(e) => {
+                        e.currentTarget.blur();
+                      }}
                     />
                   </>
                   {showDiscountedUnit && (

@@ -26,6 +26,11 @@ import { formatCurrencySymbol } from "@/utils/helper";
 
 type TabKey = "standard" | "group";
 
+type TaxForm = {
+  name: string;
+  rate: number | undefined;
+};
+
 const Toggle = ({
   checked,
   loading,
@@ -76,7 +81,10 @@ export default function TaxSettingsPage() {
   // Edit Normal Tax modal state
   const [editNormalOpen, setEditNormalOpen] = useState(false);
   const [editingNormal, setEditingNormal] = useState<Tax | null>(null);
-  const [editNormalForm, setEditNormalForm] = useState({ name: "", rate: 0 });
+  const [editNormalForm, setEditNormalForm] = useState<TaxForm>({
+    name: "",
+    rate: 0,
+  });
 
   // Edit Group Tax modal state
   const [editGroupOpen, setEditGroupOpen] = useState(false);
@@ -198,14 +206,14 @@ export default function TaxSettingsPage() {
       !editingNormal ||
       !editingNormal._docId ||
       !editNormalForm.name.trim() ||
-      editNormalForm.rate <= 0
+      (editNormalForm.rate ?? 0) <= 0
     )
       return;
     updateNormalTax(
       {
         docId: editingNormal._docId,
         taxId: editingNormal._id,
-        payload: { name: editNormalForm.name, rate: editNormalForm.rate },
+        payload: { name: editNormalForm.name, rate: editNormalForm.rate ?? 0 },
       },
       {
         onSuccess: () => {

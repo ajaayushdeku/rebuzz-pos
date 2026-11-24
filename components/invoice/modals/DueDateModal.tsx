@@ -187,14 +187,21 @@ export default function DueDateModal({
             setValue(e.target.value);
             setAddError(null);
           }}
+          className="w-full bg-transparent text-[12px] sm:text-[13px] text-gray-800 outline-none dark:text-[#e8ecf4] appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]"
           onKeyDown={(e) => {
+            if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+              e.preventDefault();
+            }
+
             if (e.key !== "Enter") return;
             // Otherwise Enter reaches the footer's Save and stores a schedule
             // missing the number just typed.
             e.preventDefault();
             addOffset(value, direction, setValue);
           }}
-          className="w-full bg-transparent text-[12px] sm:text-[13px] text-gray-800 outline-none dark:text-[#e8ecf4]"
+          onWheelCapture={(e) => {
+            e.currentTarget.blur();
+          }}
         />
         <span className="select-none pl-2 text-[12px] text-gray-400 dark:text-[#9aa6bd]">
           days

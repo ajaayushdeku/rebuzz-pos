@@ -8,12 +8,6 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowUpDown,
-  // Eye,
-  // Pencil,
-  // Copy,
-  // Send,
-  // FileText,
-  // Printer,
   ChevronLeft,
   ChevronRight,
   FileText,
@@ -324,7 +318,8 @@ export default function InvoiceTable({
   return (
     <>
       {/* Controls */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+      {/* <div className="flex flex-col sm:flex-row gap-3 mb-4"> */}
+      <div className="mb-4 mt-0 flex flex-col gap-3 lg:flex-row lg:items-center">
         {/* Hide scrollbar styles */}
         <style jsx global>{`
           .scrollbar-hide {
