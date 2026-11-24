@@ -266,7 +266,7 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
       return;
     }
 
-    if (!Number.isFinite(addonForm.price) || addonForm.price < 0) {
+    if (!Number.isFinite(addonForm.price) || (addonForm.price ?? 0) < 0) {
       toast.error("Please enter a valid add-on price.");
       return;
     }
