@@ -31,6 +31,7 @@ import {
   LeadTile,
   SectionHeader,
   SectionMoreButton,
+  SectionRefreshButton,
   TagList,
   useMoney,
   type AccentName,
@@ -157,6 +158,11 @@ export default function MenuSuggestionsSection({
               showText={true}
             /> */}
 
+            <SectionRefreshButton
+              state={state}
+              textClassName="text-pink-600 hover:bg-pink-100 border-pink-300 hover:border-pink-400 dark:hover:border-pink-400/60 dark:hover:bg-pink-400/20 dark:border-pink-400/40 dark:text-pink-300"
+            />
+
             <SectionMoreButton
               state={state}
               textClassName="text-pink-600 hover:bg-pink-100 border-pink-300 hover:border-pink-400 dark:hover:border-pink-400/60 dark:hover:bg-pink-400/20 dark:border-pink-400/40 dark:text-pink-300"
@@ -248,28 +254,28 @@ export default function MenuSuggestionsSection({
                       onDismiss={() => onDismiss(item.id)}
                       dismissLabel={item.title}
                       dismissible={!added}
-                      corner={
-                        <button
-                          type="button"
-                          onClick={() => onToggleShortlist(item.id)}
-                          aria-pressed={starred}
-                          aria-label={
-                            starred
-                              ? `Remove ${item.title} from shortlist`
-                              : `Shortlist ${item.title}`
-                          }
-                          className={`rounded-md p-1 transition-colors hover:bg-[#f1f3f4] ${
-                            starred
-                              ? "text-amber-400"
-                              : "text-[#9aa0a6] hover:text-[#5f6368] dark:hover:text-[#e8ecf4] dark:text-[#9aa6bd]"
-                          } dark:hover:bg-white/10`}
-                        >
-                          <Star
-                            size={14}
-                            fill={starred ? "currentColor" : "none"}
-                          />
-                        </button>
-                      }
+                      // corner={
+                      //   <button
+                      //     type="button"
+                      //     onClick={() => onToggleShortlist(item.id)}
+                      //     aria-pressed={starred}
+                      //     aria-label={
+                      //       starred
+                      //         ? `Remove ${item.title} from shortlist`
+                      //         : `Shortlist ${item.title}`
+                      //     }
+                      //     className={`rounded-md p-1 transition-colors hover:bg-[#f1f3f4] ${
+                      //       starred
+                      //         ? "text-amber-400"
+                      //         : "text-[#9aa0a6] hover:text-[#5f6368] dark:hover:text-[#e8ecf4] dark:text-[#9aa6bd]"
+                      //     } dark:hover:bg-white/10`}
+                      //   >
+                      //     <Star
+                      //       size={14}
+                      //       fill={starred ? "currentColor" : "none"}
+                      //     />
+                      //   </button>
+                      // }
                       metrics={menuMetrics(item, money)}
                       // A new item is added on the products page.
                       // footer={

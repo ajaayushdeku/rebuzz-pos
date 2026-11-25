@@ -21,6 +21,8 @@ export async function GET(
     });
 
     const data = await res.json();
+    console.log("History:", data);
+
     return NextResponse.json(data, { status: res.status });
   } catch {
     return NextResponse.json(

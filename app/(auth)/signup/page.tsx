@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import registerUser from "@/services/authServices/apiRegister";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import ServerEnvBadge from "@/components/ServerEnvBadge";
 
@@ -40,7 +40,8 @@ const SignUpPage = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
+  const searchParams = useSearchParams();
+  const isAddingAccount = searchParams.get("add") === "1";
   const {
     register,
     handleSubmit,
@@ -74,7 +75,8 @@ const SignUpPage = () => {
     }
 
     sessionStorage.setItem("pendingVerifyEmail", signupData.email);
-    router.push("/signup/verify");
+
+    router.push(isAddingAccount ? "/signup/verify?add=1" : "/signup/verify");
   };
 
   return (
@@ -100,6 +102,9 @@ const SignUpPage = () => {
           <span className="text-2xl font-bold tracking-tight">
             <span className="text-[#244074] dark:text-[#7ba2e3]">Re</span>
             <span style={{ color: "#E26924" }}>Buzz</span>
+            <span className="ml-1.5 align-end text-[15px] font-semibold uppercase tracking-[2px] text-gray-400 dark:text-gray-350">
+              IQ
+            </span>
           </span>
         </Link>
       </header>
@@ -341,7 +346,7 @@ const SignUpPage = () => {
             <p className="text-xs text-gray-500 dark:text-[#9aa6bd]">
               Already have an account?{" "}
               <Link
-                href="/login"
+                href={isAddingAccount ? "/login?add=1" : "/login"}
                 className="font-semibold text-blue-600 transition-colors hover:text-blue-700 dark:text-[#7ba2e3] dark:hover:text-[#a8c4ee]"
               >
                 Log in
@@ -364,4 +369,12 @@ const SignUpPage = () => {
   );
 };
 
-export default SignUpPage;
+function SignUpPageWithSuspense() {
+  return (
+    <Suspense fallback={null}>
+      <SignUpPage />
+    </Suspense>
+  );
+}
+
+export default SignUpPageWithSuspense;

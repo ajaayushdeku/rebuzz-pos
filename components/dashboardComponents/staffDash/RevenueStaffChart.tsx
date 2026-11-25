@@ -10,7 +10,7 @@ import {
   Cell,
 } from "recharts";
 
-import SampleDataBadge from "@/components/ui/sampledatabadge";
+// import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -148,7 +148,7 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
         </div>
       }
     >
-      {isEmpty && <SampleDataBadge />}
+      {/* {isEmpty && <SampleDataBadge />} */}
 
       {/* Chart */}
       <div className="h-55 md:h-75">
@@ -164,7 +164,6 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
             barCategoryGap="15%"
           >
             <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
-
             <XAxis
               dataKey="name"
               axisLine={false}
@@ -189,12 +188,10 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
               width={isSmallScreen ? 55 : 80}
               label={!isSmallScreen ? yAxisTitle("Revenue") : undefined}
             />
-
             <Tooltip
               content={<CustomTooltip currency={currency} />}
               cursor={{ fill: CHART_PALETTE.hover }}
             />
-
             <Bar dataKey="revenue" radius={BAR_RADIUS}>
               {displayData.map((_, index) => (
                 <Cell key={index} fill={COLORS[index % COLORS.length]} />

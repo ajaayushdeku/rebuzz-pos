@@ -487,7 +487,7 @@ export function AiSectionBody<T>({
             )}
 
             <span className="text-slate-300 dark:text-slate-600">·</span>
-            <span>Updated {updatedLabel(data.generatedAt)}</span>
+            <span>Generated on {updatedLabel(data.generatedAt)}</span>
           </div>
         ))}
     </>

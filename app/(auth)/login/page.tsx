@@ -26,9 +26,12 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const router = useRouter();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
+
+  const isAddingAccount = searchParams.get("add") === "1";
 
   /**
    * Arrived here because the session ended, not because they asked to log in.
@@ -49,53 +52,101 @@ const LoginPage = () => {
     defaultValues: { email: searchParams.get("email") ?? "", password: "" },
   });
 
+  // const checkBusinessAndRedirect = async () => {
+  //   try {
+  //     const res = await fetch("/api/business");
+  //     if (res.ok) {
+  //       const data = await res.json();
+  //       // If business data exists (has _id or businessName), go to dashboard
+  //       if (
+  //         data?.status === "success" &&
+  //         (data?.data?.business?._id || data?.data?.business?.businessName)
+  //       ) {
+  //         router.replace("/dashboard");
+  //         return;
+  //       }
+  //     }
+  //   } catch {
+  //     // If the fetch fails or no business, redirect to onboarding
+  //     console.log("No business found, redirecting to onboarding");
+  //   }
+  //   router.replace("/onboarding");
+  // };
+
   const checkBusinessAndRedirect = async () => {
     try {
-      const res = await fetch("/api/business");
-      if (res.ok) {
-        const data = await res.json();
-        // If business data exists (has _id or businessName), go to dashboard
-        if (
-          data?.status === "success" &&
-          (data?.data?.business?._id || data?.data?.business?.businessName)
-        ) {
-          router.push("/dashboard");
-          return;
-        }
+      const res = await fetch("/api/business", {
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch business information");
       }
-    } catch {
-      // If the fetch fails or no business, redirect to onboarding
-      console.log("No business found, redirecting to onboarding");
+
+      const data = await res.json();
+
+      const hasBusiness =
+        data?.status === "success" &&
+        Boolean(
+          data?.data?.business?._id || data?.data?.business?.businessName,
+        );
+
+      if (hasBusiness) {
+        window.location.assign("/dashboard");
+        return;
+      }
+
+      window.location.assign("/onboarding");
+    } catch (error) {
+      console.error("Business check failed:", error);
+      setIsRedirecting(false);
+      setServerError(
+        "Unable to load your business information. Please try again.",
+      );
     }
-    router.push("/onboarding");
   };
 
   const onSubmit = async (loginData: LoginFormValues) => {
     setServerError(null);
     setIsLoading(true);
 
-    const result = await loginUser({
-      email_or_phone: loginData.email,
-      password: loginData.password,
-      deviceToken: "",
-    });
+    try {
+      const result = await loginUser({
+        email_or_phone: loginData.email,
+        password: loginData.password,
+        deviceToken: "",
+      });
 
-    setIsLoading(false);
+      if (!result.success) {
+        setIsLoading(false);
 
-    if (!result.success) {
-      if (result.forbidden) {
-        router.replace(ACCESS_DENIED_PATH);
+        if (result.forbidden) {
+          router.replace(ACCESS_DENIED_PATH);
+          return;
+        }
+
+        setServerError(result.error);
         return;
       }
 
-      setServerError(result.error);
-      return;
+      // Authentication succeeded. Keep the loading experience active
+      // while preparing the user's workspace.
+      setIsLoading(false);
+      setIsRedirecting(true);
+
+      // Mark old business data as stale without waiting for active
+      // queries to refetch. The business check below fetches fresh data.
+      await queryClient.invalidateQueries({
+        queryKey: ["business-profile"],
+        refetchType: "none",
+      });
+
+      await checkBusinessAndRedirect();
+    } catch {
+      setIsLoading(false);
+      setIsRedirecting(false);
+      setServerError("Something went wrong. Please try again.");
     }
-
-    // Invalidate cached business data so the new user's business is fetched
-    await queryClient.invalidateQueries({ queryKey: ["business-profile"] });
-
-    await checkBusinessAndRedirect();
   };
 
   return (
@@ -121,6 +172,9 @@ const LoginPage = () => {
           <span className="text-2xl font-bold tracking-tight">
             <span className="text-[#244074] dark:text-[#7ba2e3]">Re</span>
             <span style={{ color: "#E26924" }}>Buzz</span>
+            <span className="ml-1.5 align-end text-[15px] font-semibold uppercase tracking-[2px] text-gray-400 dark:text-gray-350">
+              IQ
+            </span>
           </span>
         </Link>
       </header>
@@ -131,11 +185,15 @@ const LoginPage = () => {
             Welcome back
           </p>
           <h1 className="text-2xl font-bold leading-tight tracking-tight text-gray-900 sm:text-3xl dark:text-[#e8ecf4]">
-            Log in and continue selling
+            Log in and pick up where you left off
           </h1>
-          <p className="mt-1.5 text-sm leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
+          {/* <p className="mt-1.5 text-sm leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
             Enter your details to pick up where you left off. Your customers are
             waiting for you.
+          </p> */}
+          <p className="mt-1.5 text-sm leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
+            Sign in to access your dashboard and keep your business running
+            smoothly.
           </p>
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
@@ -200,7 +258,11 @@ const LoginPage = () => {
               )}
               <div className="mt-1">
                 <Link
-                  href="/forgot-password"
+                  href={
+                    isAddingAccount
+                      ? "/forgot-password?add=1"
+                      : "/forgot-password"
+                  }
                   className="text-xs text-gray-500 hover:text-blue-600 transition-colors dark:text-[#9aa6bd] dark:hover:text-[#a8c4ee]"
                 >
                   Forgot your password?
@@ -230,11 +292,11 @@ const LoginPage = () => {
 
             <Button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || isRedirecting}
               className="h-12 w-full cursor-pointer rounded-full bg-blue-600 text-[15px] font-semibold text-white shadow-lg shadow-blue-600/25 transition-all hover:bg-blue-700 hover:shadow-blue-600/35 disabled:cursor-not-allowed disabled:opacity-60 disabled:shadow-none"
             >
               <LogIn size={24} className="text-white" />{" "}
-              {isLoading ? "Logging in..." : "Log In"}
+              {isLoading ? "Authenticating..." : "Log In"}
             </Button>
 
             {/* <Divider />*/}
@@ -244,7 +306,7 @@ const LoginPage = () => {
             <p className="text-xs text-gray-500 dark:text-[#9aa6bd]">
               New to ReBuzz?{" "}
               <Link
-                href="/signup"
+                href={isAddingAccount ? "/signup?add=1" : "/signup"}
                 className="font-semibold text-blue-600 transition-colors hover:text-blue-700 dark:text-[#7ba2e3] dark:hover:text-[#a8c4ee]"
               >
                 Create an account
@@ -275,7 +337,7 @@ const LoginPage = () => {
                   password: process.env.NEXT_PUBLIC_DEMO_PASSWORD!,
                 })
               }
-              disabled={isLoading}
+              disabled={isLoading || isRedirecting}
               className="h-11 w-full cursor-pointer rounded-full border border-dashed border-[2px] border-rose-400 bg-rose-50/60 text-[13px] font-medium text-rose-700 transition-all duration-200 hover:border-blue-400 hover:bg-blue-100 hover:text-cyan-800 disabled:cursor-not-allowed disabled:opacity-50 dark:text-rose-300 dark:bg-rose-400/10 dark:hover:bg-blue-400/20 dark:hover:text-cyan-300"
             >
               <span className="flex items-center justify-center gap-2">
@@ -295,6 +357,44 @@ const LoginPage = () => {
           </div>
         </div>
       </main>
+
+      {isRedirecting && (
+        <div
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white px-6 dark:bg-[#0f1420]"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="flex items-center gap-2">
+            <Image
+              src="/rebuzz.png"
+              alt=""
+              width={38}
+              height={38}
+              className="rounded-xl"
+              priority
+            />
+
+            <span className="text-2xl font-bold tracking-tight">
+              <span className="text-[#244074] dark:text-[#7ba2e3]">Re</span>
+              <span style={{ color: "#E26924" }}>Buzz</span>
+              <span className="ml-1.5 align-end text-[15px] font-semibold uppercase tracking-[2px] text-gray-400 dark:text-gray-350">
+                IQ
+              </span>
+            </span>
+          </div>
+
+          <Loader2 className="mt-10 h-7 w-7 animate-spin text-[#244074] dark:text-[#7ba2e3]" />
+
+          <h2 className="mt-5 text-base font-semibold text-gray-900 dark:text-[#e8ecf4]">
+            Preparing your workspace
+          </h2>
+
+          <p className="mt-2 max-w-xs text-center text-sm text-gray-500 dark:text-[#9aa6bd]">
+            Your account is ready. We&lsquo;re getting everything set up for
+            you.
+          </p>
+        </div>
+      )}
     </div>
   );
 };

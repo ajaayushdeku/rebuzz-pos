@@ -28,7 +28,11 @@ async function forward(
   }
 
   const url = aiApiUrl("/settings/ai");
-
+  console.info("[ai-settings] Request destination:", {
+    method,
+    destination: url ? new URL(url).host : null,
+    hasToken: Boolean(token),
+  });
   if (!url) {
     return NextResponse.json(
       { error: "AI service is not configured on this server" },
@@ -46,6 +50,9 @@ async function forward(
       },
       body: body === undefined ? undefined : JSON.stringify(body),
       cache: "no-store",
+    });
+    console.info("[ai-settings] Upstream response:", {
+      status: res.status,
     });
   } catch (error) {
     // Distinguished from a real failure: the usual cause is the service simply

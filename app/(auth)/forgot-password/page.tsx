@@ -271,6 +271,9 @@ export default function ForgotPasswordPage() {
           <span className="text-2xl font-bold tracking-tight">
             <span style={{ color: "#244074" }}>Re</span>
             <span style={{ color: "#E26924" }}>Buzz</span>
+            <span className="ml-1.5 align-end text-[15px] font-semibold uppercase tracking-[2px] text-gray-400 dark:text-gray-350">
+              IQ
+            </span>
           </span>
         </Link>
       </header>

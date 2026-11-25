@@ -11,6 +11,7 @@ const BASE = process.env.NEXT_PUBLIC_API_URL;
 export type InventoryItem = {
   id: string;
   name: string;
+  description?: string;
   unit: string;
   inStock: number;
   lowStock: number;

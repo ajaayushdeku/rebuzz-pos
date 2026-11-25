@@ -3,20 +3,19 @@ import type { NextRequest } from "next/server";
 
 import { ACCESS_DENIED_PATH, ROLE_COOKIE, isAdminRole } from "@/lib/auth/roles";
 
-// Pages that are accessible without authentication
+// Pages that are accessible without authentication.
 const publicPages = [
   "/",
   "/login",
   "/signup",
   "/forgot-password",
   "/signup/verify",
-  "/ai-design",
   // Reachable without a token on purpose: the token is cleared on the way in,
-  // so the page would bounce to /login and the reason would never be shown.
+  // so the page can explain why access was denied.
   ACCESS_DENIED_PATH,
 ];
 
-// Auth-only pages that authenticated users should be redirected away from
+// Auth pages that authenticated users should normally be redirected away from.
 const authOnlyPages = [
   "/login",
   "/signup",
@@ -29,7 +28,7 @@ export function middleware(request: NextRequest) {
   const role = request.cookies.get(ROLE_COOKIE)?.value;
   const { pathname } = request.nextUrl;
 
-  // Normalize pathname: remove trailing slash if present (except for root "/")
+  // Normalize pathname: remove trailing slash except for root.
   const normalizedPath =
     pathname.endsWith("/") && pathname !== "/"
       ? pathname.slice(0, -1)
@@ -39,60 +38,49 @@ export function middleware(request: NextRequest) {
     (page) => normalizedPath === page || normalizedPath.startsWith(page + "/"),
   );
 
-  // Adding another account: a logged-in user intentionally visits /login?add=1
-  // to sign into a second account. Skip the auth-only redirect for that case.
-  const isAddingAccount =
-    normalizedPath === "/login" &&
-    request.nextUrl.searchParams.get("add") === "1";
+  // Authentication pages that support adding or switching accounts.
+  const isAuthPage = authOnlyPages.some(
+    (page) => normalizedPath === page || normalizedPath.startsWith(page + "/"),
+  );
 
-  // ── Signed in as a known non-admin → out, and take the token with it ──
+  // Preserve the account-switching context across authentication pages.
+  // Example: /login?add=1 -> /forgot-password?add=1
+  const isAddingAccount =
+    isAuthPage && request.nextUrl.searchParams.get("add") === "1";
+
+  // ── Signed in as a known non-admin → deny access and clear session ──
   //
-  // Login already refuses these accounts, so a token here predates the check
-  // or was put there by hand. Clearing it on the way out means the next
-  // request arrives with nothing, rather than looping through this branch on
-  // every navigation.
-  //
-  // Deliberately keyed on a role that is present and wrong, not on one that is
-  // merely missing: sessions from before this cookie existed have a token and
-  // no role, and throwing every one of them out would sign out admins too.
-  // Those are caught by `app/(app)/layout.tsx`, which asks the profile
-  // endpoint instead of trusting a cookie — that check is also what catches a
-  // role cookie somebody edited to say "admin", since this one cannot.
-  //
-  // `pos_accounts` is left alone: it holds other accounts' tokens, and the
-  // switch route runs the same gate before any of them can become active.
+  // Deliberately keyed on a role that is present and wrong, not merely
+  // missing. Older sessions without a role cookie are checked by the
+  // authenticated app layout instead.
   const isKnownNonAdmin = role !== undefined && !isAdminRole(role);
 
   if (token && isKnownNonAdmin && normalizedPath !== ACCESS_DENIED_PATH) {
     const denied = NextResponse.redirect(
       new URL(ACCESS_DENIED_PATH, request.url),
     );
-    // Spelled out rather than `.delete(name)`: both cookies were written with
-    // an explicit path, and an expiry that does not match the original path
-    // leaves the cookie in place.
+
     const expire = { path: "/", maxAge: 0 };
     denied.cookies.set("token", "", expire);
     denied.cookies.set(ROLE_COOKIE, "", expire);
+
     return denied;
   }
 
-  // ── Authorized user on auth-only pages → redirect to dashboard ──
-  if (
-    token &&
-    isPublicPage &&
-    !isAddingAccount &&
-    authOnlyPages.some(
-      (page) =>
-        normalizedPath === page || normalizedPath.startsWith(page + "/"),
-    )
-  ) {
+  // ── Authenticated user on auth pages → dashboard ──
+  //
+  // Exception: ?add=1 allows the user to add another account,
+  // recover its password, or create another account without
+  // immediately leaving their current account.
+  if (token && isPublicPage && isAuthPage && !isAddingAccount) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // ── Unauthorized user on a non-public page → redirect to login ──
+  // ── Unauthenticated user on a protected page → login ──
   if (!token && !isPublicPage) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", normalizedPath);
+
     return NextResponse.redirect(loginUrl);
   }
 
@@ -101,7 +89,7 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Match all routes except static files, _next, api, and favicon
+    // Match all routes except static files, _next, API, and favicon.
     "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

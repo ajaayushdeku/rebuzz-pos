@@ -169,7 +169,7 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
   const [modalOpen, setModalOpen] = useState(false);
 
   // Sync selectedStaff when data changes (e.g. range filter changes)
-  useMemo(() => {
+  useEffect(() => {
     setSelectedStaff(allStaffNames);
   }, [allStaffNames]);
 
@@ -467,7 +467,7 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
         </div>
       }
     >
-      {isEmpty && <SampleDataBadge />}
+      {/* {isEmpty && <SampleDataBadge />} */}
 
       {/* Selected staff summary pills */}
       {!isEmpty && selectedStaff.length < allStaffNames.length && (

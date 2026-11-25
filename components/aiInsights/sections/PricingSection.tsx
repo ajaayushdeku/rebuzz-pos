@@ -40,6 +40,7 @@ import {
   useMoney,
   type AccentName,
   type Metric,
+  SectionRefreshButton,
 } from "../parts";
 import {
   fetchProductsListClient,
@@ -1146,7 +1147,12 @@ export default function PricingSection({
           body: `Each card compares what an item earns now against what it earned over ${windowText}. The suggested price is an estimate from your own sales, not a promise — nothing changes until you set it yourself.`,
         }}
         actions={
-          <div className="flex w-full flex-row items-end justify-end md:w-fit">
+          <div className="flex w-full flex-row items-end justify-end md:w-fit gap-2">
+            <SectionRefreshButton
+              state={state}
+              textClassName="text-emerald-600 hover:bg-emerald-100 border-emerald-300 hover:border-emerald-400 dark:hover:border-emerald-400/60 dark:hover:bg-emerald-400/20 dark:border-emerald-400/40 dark:text-emerald-300"
+            />
+
             <button
               type="button"
               onClick={() => setIsBodyExpanded((prev) => !prev)}

@@ -1,6 +1,6 @@
 "use client";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button"; // used only by the hidden resend button
 import Link from "next/link";
 // Resend feature temporarily hidden — re-enable RotateCw + resendToken when restoring.
@@ -77,6 +77,9 @@ function StepRail({ current }: { current: 1 | 2 }) {
 export default function VerifyForm() {
   const router = useRouter();
 
+  const searchParams = useSearchParams();
+  const isAddingAccount = searchParams.get("add") === "1";
+
   const [email] = useState<string>(() => {
     if (typeof window === "undefined") return "";
     return sessionStorage.getItem("pendingVerifyEmail") ?? "";
@@ -84,9 +87,9 @@ export default function VerifyForm() {
 
   useEffect(() => {
     if (!email) {
-      router.push("/signup");
+      router.replace(isAddingAccount ? "/signup?add=1" : "/signup");
     }
-  }, [email, router]);
+  }, [email, isAddingAccount, router]);
 
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const [secondsLeft, setSecondsLeft] = useState(EXPIRY_SECONDS);
@@ -111,12 +114,24 @@ export default function VerifyForm() {
     setIsVerifying(true);
     setServerError(null);
     const result = await verifyToken(business_slug, email, code);
+    // if (!result.success) {
+    //   setServerError(result.error);
+    //   setIsVerifying(false);
+    //   return;
+    // }
+    // router.push(isAddingAccount ? "/onboarding?add=1" : "/onboarding");
+
     if (!result.success) {
       setServerError(result.error);
       setIsVerifying(false);
       return;
     }
-    router.push("/onboarding");
+
+    sessionStorage.removeItem("pendingVerifyEmail");
+
+    router.push(
+      `/login?${isAddingAccount ? "add=1&" : ""}email=${encodeURIComponent(email)}`,
+    );
     setIsVerifying(false);
   };
 
@@ -208,6 +223,9 @@ export default function VerifyForm() {
           <span className="text-2xl font-bold tracking-tight">
             <span className="text-[#244074] dark:text-[#7ba2e3]">Re</span>
             <span style={{ color: "#E26924" }}>Buzz</span>
+            <span className="ml-1.5 align-end text-[15px] font-semibold uppercase tracking-[2px] text-gray-400 dark:text-gray-350">
+              IQ
+            </span>
           </span>
         </Link>
       </header>
@@ -316,7 +334,7 @@ export default function VerifyForm() {
 
             <div className="text-center">
               <Link
-                href="/signup"
+                href={isAddingAccount ? "/signup?add=1" : "/signup"}
                 className="text-xs font-medium text-gray-500 transition-colors hover:text-blue-700 dark:text-[#9aa6bd] dark:hover:text-[#a8c4ee]"
               >
                 Back to sign up

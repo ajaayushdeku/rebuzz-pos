@@ -28,6 +28,7 @@ import {
   // SectionRefreshButton,
   useMoney,
   type AccentName,
+  SectionRefreshButton,
 } from "../parts";
 import { useState } from "react";
 
@@ -123,11 +124,11 @@ export default function HourPlaybookSection({
           body: `Every bill from ${windowText} is grouped by the hour it was rung up, then averaged, so one exceptional day does not move an hour on its own.`,
         }}
         actions={
-          <div className=" flex flex-row w-full md:w-fit items-end justify-end">
-            {/* <SectionRefreshButton
+          <div className=" flex flex-row w-full md:w-fit items-end justify-end gap-2">
+            <SectionRefreshButton
               state={state}
-              textClassName="text-[#5f6368] dark:text-[#a9b4c7]"
-            /> */}
+              textClassName="text-violet-600 hover:bg-violet-100 border-violet-300 hover:border-violet-400 dark:hover:border-violet-400/60 dark:hover:bg-violet-400/20 dark:border-violet-400/40 dark:text-violet-300"
+            />
 
             {/* Collapse / Expand */}
             <button

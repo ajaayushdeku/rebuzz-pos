@@ -39,6 +39,7 @@ const OnBoarding = () => {
   const [animating, setAnimating] = useState(false);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [submitting, setSubmitting] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
   const [form, setForm] = useState<FormState>({
     firstName: "",
@@ -85,6 +86,7 @@ const OnBoarding = () => {
   // Submit the form data to create/update business
   const handleSubmit = async () => {
     setSubmitting(true);
+
     try {
       const payload = {
         businessName: form.businessName,
@@ -106,12 +108,13 @@ const OnBoarding = () => {
       });
 
       if (!res.ok) throw new Error("Failed to create business");
-      // Force full page navigation so all server-side data (business, profile) is fetched fresh
+
+      // Keep the loading screen visible while the dashboard loads.
+      setRedirecting(true);
       window.location.href = "/dashboard";
     } catch (err) {
       console.error(err);
       alert("Something went wrong. Please try again.");
-    } finally {
       setSubmitting(false);
     }
   };
@@ -155,6 +158,7 @@ const OnBoarding = () => {
           {step > 1 && (
             <Button
               variant="outline"
+              disabled={submitting}
               onClick={() => navigate(step - 1)}
               className="h-8 shrink-0 gap-2 rounded-xl border-slate-200 bg-white px-5 text-sm font-semibold shadow-sm transition-all hover:bg-slate-50 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10 sm:h-13 sm:px-6"
             >
@@ -229,6 +233,28 @@ const OnBoarding = () => {
           to   { opacity: 1; transform: scale(1); }
         }
       `}</style>
+
+      {redirecting && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white dark:bg-[#0f1420]">
+          <div className="flex flex-col items-center gap-5">
+            <div className="relative flex h-16 w-16 items-center justify-center">
+              <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-indigo-100 border-t-indigo-600 dark:border-white/10 dark:border-t-indigo-400" />
+
+              <Rocket className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+            </div>
+
+            <div className="text-center">
+              <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
+                Setting up your workspace
+              </h2>
+
+              <p className="mt-2 text-sm text-slate-500 dark:text-[#8995aa]">
+                Your business is ready. Taking you to your dashboard...
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

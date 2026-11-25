@@ -29,6 +29,7 @@ import {
   PackagePlus,
   Infinity as InfinityIcon,
   type LucideIcon,
+  Receipt,
 } from "lucide-react";
 import { useCategories } from "@/hooks/useCategories";
 import { useDiscounts } from "@/hooks/useDiscounts";
@@ -293,97 +294,97 @@ export default function ProductCard({
       )}
 
       <div className="flex flex-1 flex-col">
-        <div className="flex items-start gap-3">
+        {/* Product card header */}
+        <div className="flex flex-col">
           {/* Product image */}
-          <button
-            type="button"
-            onClick={() => gallery.length && openLightbox(0)}
-            disabled={!gallery.length}
-            aria-label={`View images of ${item.name}`}
-            className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-br-md sm:rounded-br-xl bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:h-30 sm:w-30 dark:bg-white/10"
-          >
-            {primary && !imgError ? (
-              <>
+          <div className="group relative aspect-[16/9] w-full overflow-hidden bg-gray-100 dark:bg-[#111827]">
+            <button
+              type="button"
+              onClick={() => gallery.length && openLightbox(0)}
+              disabled={!gallery.length}
+              aria-label={`View images of ${item.name}`}
+              className="absolute inset-0 h-full w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
+            >
+              {primary && !imgError ? (
                 <img
                   src={primary}
                   alt={item.name}
                   loading="lazy"
                   onError={() => setImgError(true)}
-                  className="absolute inset-0 h-full w-full object-cover"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                 />
-                <span className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/25">
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <img
+                    src={business?.logo || businessLogo.src}
+                    alt=""
+                    className="h-14 w-14 object-contain opacity-60"
+                  />
+                </div>
+              )}
+
+              {gallery.length > 0 && (
+                <span className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/20">
                   <Expand
-                    size={14}
-                    className="cursor-pointer text-white opacity-0 transition-opacity group-hover:opacity-100"
+                    size={19}
+                    className="text-white opacity-0 drop-shadow transition-opacity group-hover:opacity-100"
                   />
                 </span>
-                {gallery.length > 1 && (
-                  <span className="absolute bottom-1 right-1 rounded-full bg-black/60 px-1 py-px text-[9px] font-medium text-white">
-                    {gallery.length}
-                  </span>
-                )}
-              </>
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-white/5">
-                <img
-                  src={business?.logo || businessLogo.src}
-                  alt=""
-                  className="h-9 w-9 object-contain opacity-90"
-                />
+              )}
+            </button>
+
+            {/* Stock status */}
+            <div className="pointer-events-none absolute left-3 top-3">
+              <div
+                className={`group inline-flex h-8 items-center gap-0 overflow-hidden rounded-lg border px-2 shadow-sm backdrop-blur-md transition-all duration-300 ease-out group-hover:gap-1.5 hover:pr-3 ${cfg.badge}`}
+              >
+                <StatusIcon className="h-3.5 w-3.5 shrink-0" />
+
+                <span className="max-w-0 overflow-hidden whitespace-nowrap text-[10px] font-semibold opacity-0 transition-[max-width,opacity] duration-300 ease-out group-hover:max-w-24 group-hover:opacity-100">
+                  {cfg.label}
+                </span>
+              </div>
+            </div>
+
+            {/* Image count */}
+            {gallery.length > 1 && (
+              <div className="pointer-events-none absolute bottom-3 right-3">
+                <span className="inline-flex items-center gap-1 rounded-lg border border-white/20 bg-black/55 px-2 py-1.5 text-[10px] font-medium text-white shadow-sm backdrop-blur-md">
+                  <Expand size={11} />
+                  {gallery.length} images
+                </span>
               </div>
             )}
-          </button>
+
+            {/* Unavailable indicator */}
+            {!item.isAvailable && (
+              <div className="pointer-events-none absolute bottom-3 left-3">
+                <span className="rounded-md bg-gray-950/75 px-2 py-1 text-[9px] font-semibold text-white backdrop-blur-sm">
+                  UNAVAILABLE
+                </span>
+              </div>
+            )}
+          </div>
 
           {/* Product information */}
-          <div className="min-w-0 flex-1">
-            {/* Name */}
-            <h3 className="line-clamp-2 mt-2 text-sm font-semibold leading-snug text-[#303744] dark:text-[#e8ecf4]">
-              {item.name}
-            </h3>
+          <div className="flex flex-col px-3 pb-3 pt-3">
+            {/* Name and category */}
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <h3 className="line-clamp-2 min-h-[2rem] text-[15px] font-bold leading-5 tracking-[0.03em] text-[#303744] dark:text-[#e8ecf4]">
+                  {item.name}
+                </h3>
 
-            {/* Status and stock */}
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span
-                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${cfg.badge}`}
-              >
-                <StatusIcon className="h-3 w-3 shrink-0" aria-hidden />
-                {cfg.label}
-              </span>
-
-              {item.usesStocks && (
-                <span
-                  className={`text-[11px] font-medium tabular-nums ${cfg.text}`}
-                >
-                  {item.inStock.toLocaleString()} in stock
-                </span>
-              )}
-            </div>
-
-            {/* Price and discount */}
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="text-base font-bold tracking-tight tabular-nums text-[#303744] dark:text-[#e8ecf4]">
-                {fmt(item.price)}
-              </span>
-
-              {discountPercent > 0 && (
-                <span className="inline-flex items-center rounded-md bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-600 dark:bg-rose-400/10 dark:text-rose-400">
-                  {discountPercent}% OFF
-                </span>
-              )}
-            </div>
-
-            {/* Product attributes */}
-            {(item.isTaxable || item.categories || !item.isAvailable) && (
-              <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                {item.isTaxable && (
-                  <span className="rounded-md border border-blue-300 bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-600 dark:border-blue-400/60 dark:bg-blue-400/10 dark:text-[#8EC6FF]">
-                    Taxable
-                  </span>
+                {/* Product description */}
+                {item.description?.trim() && (
+                  <p className="mb-0.5 line-clamp-2 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                    {item.description}
+                  </p>
                 )}
 
-                {item?.categories && (
+                {item.categories && (
                   <span
-                    className="max-w-36 truncate rounded-md border px-2 py-0.5 text-[10px] font-medium truncate rounded-full border border-[var(--cat-edge)]  sm:text-[10px] text-[var(--cat-ink)] dark:border-[var(--cat-edge-dark)] dark:text-[var(--cat-ink-dark)]"
+                    className="max-w-36 truncate rounded-md border px-2 py-1 text-[11px] font-semibold truncate tracking-[0.03em] rounded-full border border-[var(--cat-edge)]  sm:text-[10px] text-[var(--cat-ink)] dark:border-[var(--cat-edge-dark)] dark:text-[var(--cat-ink-dark)]"
                     style={
                       {
                         "--cat-ink": categoryTextColor,
@@ -394,17 +395,52 @@ export default function ProductCard({
                       } as React.CSSProperties
                     }
                   >
-                    {category?.name}
+                    {category?.name ?? "Uncategorized"}
                   </span>
                 )}
 
-                {!item.isAvailable && (
-                  <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] font-medium text-gray-500 dark:border-white/15 dark:bg-white/5 dark:text-[#9aa6bd]">
-                    Unavailable
+                {item.isTaxable && (
+                  <span className="mt-0.5 ml-2 shrink-0 rounded-md border border-pink-300 bg-pink-50 px-2 py-1 text-[10px] font-semibold text-pink-600 dark:border-pink-400/60 dark:bg-pink-400/10 dark:text-pink-300">
+                    TAXABLE
                   </span>
                 )}
               </div>
-            )}
+            </div>
+
+            {/* Price */}
+            <div className="mt-3 flex items-end justify-between gap-2 border-t border-gray-100 pt-3 dark:border-white/[0.08]">
+              <div className="min-w-0">
+                <span className="block text-[9px] font-medium uppercase tracking-[0.12em] text-gray-400 dark:text-[#8491a8]">
+                  Selling price
+                </span>
+                <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <span className="text-xl font-bold leading-none tracking-tight tabular-nums text-[#303744] dark:text-[#e8ecf4]">
+                    {fmt(item.price)}
+                  </span>
+
+                  {discountPercent > 0 && (
+                    <span className="rounded-md bg-emerald-50 px-1.5 py-1 text-[9px] font-bold text-emerald-600 dark:bg-emerald-400/20 dark:text-emerald-400">
+                      {discountPercent}% OFF
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Stock quantity */}
+              {item.usesStocks && (
+                <div className="shrink-0 text-right">
+                  <span className="block text-[9px] font-medium uppercase tracking-[0.1em] text-gray-400 dark:text-[#8491a8]">
+                    Quantity
+                  </span>
+                  <span
+                    className={`mt-1 block text-sm font-bold tabular-nums ${cfg.text}`}
+                  >
+                    {item.inStock.toLocaleString()}
+                    <span className="ml-1 text-[9px] font-medium">units</span>
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

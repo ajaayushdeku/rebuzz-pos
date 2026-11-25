@@ -24,6 +24,7 @@ import {
   DismissButton,
   SectionHeader,
   SectionMoreButton,
+  SectionRefreshButton,
 } from "../parts";
 import { useState } from "react";
 
@@ -82,6 +83,11 @@ export default function SalesRecommendationsSection({
         }}
         actions={
           <div className="flex flex-row w-full md:w-fit items-end justify-end gap-2">
+            <SectionRefreshButton
+              state={state}
+              textClassName="text-cyan-700 hover:bg-cyan-100 border-cyan-300 hover:border-cyan-400 dark:hover:border-cyan-400/60 dark:hover:bg-cyan-400/20 dark:border-cyan-400/40 dark:text-cyan-300"
+            />
+
             <SectionMoreButton
               state={state}
               textClassName="text-cyan-700 hover:bg-cyan-100 border-cyan-300 hover:border-cyan-400 dark:hover:border-cyan-400/60 dark:hover:bg-cyan-400/20 dark:border-cyan-400/40 dark:text-cyan-300"
@@ -114,11 +120,6 @@ export default function SalesRecommendationsSection({
                 <ChevronDown size={15} />
               )}
             </button>
-
-            {/* <SectionRefreshButton
-              state={state}
-              textClassName="text-blue-700 hover:bg-blue-100 border-blue-300 hover:border-blue-400 dark:hover:border-blue-400/60 dark:hover:bg-blue-400/20 dark:border-blue-400/40 dark:text-blue-300"
-            /> */}
           </div>
         }
       />

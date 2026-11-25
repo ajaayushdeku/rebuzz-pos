@@ -1,6 +1,25 @@
 /** Shared types, tier styling and date parsing for the customer detail page. */
 
+export type PurchaseHistoryVariant = {
+  variant: string;
+  name: string;
+  quantity: number;
+  unitPrice: number;
+  costPrice: number;
+};
+
+export type PurchaseHistoryProduct = {
+  product: string;
+  productName: string;
+  unitPrice: number;
+  quantity: number;
+  costPrice: number;
+  variantItems?: PurchaseHistoryVariant;
+};
+
 export type PurchaseHistoryItem = {
+  _id: string;
+  orderId: string;
   grandTotal: number;
   paidAt?: string;
   createdAt?: string;
@@ -8,7 +27,7 @@ export type PurchaseHistoryItem = {
   invoiceNo?: number;
   paymentMethod?: string;
   ticketName?: string;
-  orderId?: string;
+  items: PurchaseHistoryProduct[];
 };
 
 export type PurchaseHistoryResponse = {

@@ -29,6 +29,7 @@ import {
   LeadTile,
   Recommendation,
   SectionHeader,
+  SectionRefreshButton,
   // SectionRefreshButton,
   useMoney,
   type AccentName,
@@ -211,7 +212,7 @@ export default function StaffingSection({
     <section>
       <SectionHeader
         icon={Users}
-        iconClassName="bg-amber-50 text-amber-600 dark:text-amber-300 dark:bg-amber-400/10"
+        iconClassName="bg-orange-50 text-orange-600 dark:text-orange-300 dark:bg-orange-400/10"
         title="Staffing Recommendations"
         // Said up front: the POS only records who rang up each bill, so this
         // is about the till, not the whole floor or the kitchen.
@@ -221,11 +222,11 @@ export default function StaffingSection({
           body: `The POS records who rang up each bill, so this covers the till in ${windowText} — not the kitchen, the floor or anyone working a shift without taking orders.`,
         }}
         actions={
-          <div className=" flex flex-row w-full md:w-fit items-end justify-end">
-            {/* <SectionRefreshButton
+          <div className=" flex flex-row w-full md:w-fit items-end justify-end gap-2">
+            <SectionRefreshButton
               state={state}
-              textClassName="text-amber-700 hover:bg-amber-100 border-amber-300 hover:border-amber-400 dark:hover:border-amber-400/60 dark:hover:bg-amber-400/20 dark:border-amber-400/40 dark:text-amber-300"
-            /> */}
+              textClassName="text-orange-700 hover:bg-orange-100 border-orange-300 hover:border-orange-400 dark:hover:border-orange-400/60 dark:hover:bg-orange-400/20 dark:border-orange-400/40 dark:text-orange-300"
+            />
 
             {/* Collapse / Expand */}
             <button
@@ -241,11 +242,11 @@ export default function StaffingSection({
   rounded-lg border border-[#e2e6ed]
   bg-white p-2 text-[#737b89]
   transition-all duration-200
-  hover:border-amber-300 hover:bg-amber-50 hover:text-amber-600
+  hover:border-orange-300 hover:bg-orange-50 hover:text-orange-600
   dark:border-[#293750] dark:bg-[#182338]
   dark:text-[#aab4c4]
-  dark:hover:border-amber-400/40
-  dark:hover:bg-amber-400/10 dark:hover:text-amber-300
+  dark:hover:border-oraange-400/40
+  dark:hover:bg-orange-400/10 dark:hover:text-orange-300
 "
             >
               {isBodyExpanded ? (

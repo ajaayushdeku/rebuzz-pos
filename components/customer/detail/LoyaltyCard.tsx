@@ -65,7 +65,7 @@ export default function LoyaltyCard({
   return (
     <ChartCard
       icon={Star}
-      iconColor="#f59e0b"
+      iconColor="#f88305"
       iconBorder="#fde68a"
       iconBg="#fffbeb"
       title="Loyalty Program"

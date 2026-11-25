@@ -13,6 +13,7 @@ export const MAX_STOCK = 5000;
 export type InventoryItem = {
   id: string;
   name: string;
+  description?: string;
   unit: string;
   inStock: number;
   lowStock: number;

@@ -203,6 +203,7 @@ export const fetchAiSection = async <T>(
       toMessage("AI_MALFORMED_RESPONSE"),
     );
   }
+
   return json.data;
 };
 

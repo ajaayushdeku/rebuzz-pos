@@ -27,6 +27,7 @@ export function mapInventoryProduct(p: any): InventoryItem {
   return {
     id: p._id,
     name: p.name ?? "Unnamed Product",
+    description: p.description ?? "No Description",
     unit: p.soldBy ?? "each",
     inStock: typeof p.inStock === "number" ? p.inStock : 0,
     lowStock: typeof p.lowStock === "number" ? p.lowStock : 0,

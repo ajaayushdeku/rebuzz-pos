@@ -22,6 +22,7 @@ import type {
   PurchaseHistoryItem,
   PurchaseHistoryResponse,
 } from "@/components/customer/detail/customerDetailHelpers";
+import TopBoughtItemSection from "@/components/customer/detail/TopBoughtItemSection";
 
 export default function CustomerDetailPage() {
   const params = useParams();
@@ -140,6 +141,8 @@ export default function CustomerDetailPage() {
             onEdit={() => setLoyaltyOpen(true)}
           />
         </div>
+
+        <TopBoughtItemSection history={history} loading={historyLoading} />
 
         <OrderHistorySection
           customerName={customer.name}

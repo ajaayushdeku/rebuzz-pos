@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { ChevronsLeft, ChevronsRight, Plus } from "lucide-react";
+import { ChevronsLeft, Plus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -13,7 +13,7 @@ import SidebarItem from "./SidebarItem";
 import SidebarSection from "./SidebarSection";
 import SidebarPlanCard from "./SidebarPlanCard";
 import Link from "next/link";
-import { navigationConfig } from "@/lib/config/navigation";
+import { navigationConfig, NavigationItem } from "@/lib/config/navigation";
 import { useHasSavedAiKey } from "@/hooks/useAiKey";
 
 export default function Sidebar() {
@@ -23,10 +23,27 @@ export default function Sidebar() {
 
   // Entries for features the business has not set up are left out entirely
   // rather than shown disabled: there is nothing to do with them from here.
-  const visibleNavigation = navigationConfig.filter(
-    (item) => item.type !== "single" || !item.requiresAiKey || hasAiKey,
-  );
+  const visibleNavigation = navigationConfig
+    .map((item) => {
+      // Filter individual navigation items
+      if (item.type === "single") {
+        return item.requiresAiKey && !hasAiKey ? null : item;
+      }
 
+      // Filter children inside navigation sections
+      const visibleItems = item.items.filter(
+        (subItem) => !subItem.requiresAiKey || hasAiKey,
+      );
+
+      return {
+        ...item,
+        items: visibleItems,
+      };
+    })
+    .filter(
+      (item): item is NavigationItem =>
+        item !== null && (item.type === "single" || item.items.length > 0),
+    );
   const activeSectionFromUrl = navigationConfig.find(
     (item) =>
       item.type === "section" &&
@@ -54,7 +71,7 @@ export default function Sidebar() {
     >
       <div
         className={cn(
-          "my-1 pb-2 flex shrink-0 items-center border-b border-gray-100 px-1  dark:border-white/10 sm:my-2",
+          "my-1  pt-3 pb-2 flex shrink-0 items-center border-b border-gray-100 px-1  dark:border-white/10 sm:my-2",
           "transition-all duration-300 ease-in-out motion-reduce:transition-none",
           isCollapsed ? "justify-center" : "justify-between",
         )}
@@ -70,7 +87,7 @@ export default function Sidebar() {
         >
           <Link href="/invoices/add" tabIndex={isCollapsed ? -1 : 0}>
             <Button
-              className="w-full py-5 whitespace-nowrap bg-white text-left text-blue-500 hover:bg-blue-100 dark:bg-transparent dark:text-[#7ba2e3] dark:hover:bg-white/10 cursor-pointer"
+              className=" py-5 whitespace-nowrap bg-white text-left  text-blue-500 hover:bg-blue-100 dark:bg-transparent dark:text-[#7ba2e3] dark:hover:bg-white/10 cursor-pointer"
               size="sm"
             >
               <Plus className="mr-1 h-3 w-3 shrink-0 font-bold" />
@@ -85,7 +102,7 @@ export default function Sidebar() {
           variant="ghost"
           size="icon"
           className={cn(
-            "h-8 w-8 shrink-0 cursor-pointer text-blue-500 hover:text-blue-600 dark:text-[#7ba2e3] dark:hover:text-[#a8c4ee]",
+            "h-8 w-8  shrink-0 cursor-pointer text-blue-500 hover:text-blue-600 dark:text-[#7ba2e3] dark:hover:text-[#a8c4ee]",
             "transition-transform duration-300 ease-in-out motion-reduce:transition-none",
             isCollapsed ? "rotate-180" : "rotate-0",
           )}

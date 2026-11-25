@@ -19,8 +19,8 @@ import {
   Clock,
   ChartNoAxesCombined,
   Users,
-  GitBranch,
-  Layers,
+  // GitBranch,
+  // Layers,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import toast from "react-hot-toast";
@@ -55,8 +55,8 @@ const SAVED_INSIGHT_COLUMNS: TableColumn[] = [
   { key: "period", label: "Period" },
   { key: "section", label: "Insight Section" },
   { key: "lastUpdatedAt", label: "Last Updated" },
-  { key: "versions", label: "Versions" },
-  { key: "currentversion", label: "Current Version" },
+  // { key: "versions", label: "Versions" },
+  // { key: "currentversion", label: "Current Version" },
   { key: "provider", label: "Provider / Model" },
   { key: "itemCount", label: "Items" },
   { key: "actions", label: "Actions", locked: true },
@@ -70,8 +70,8 @@ const COLUMN_WIDTHS: Record<string, string> = {
   period: "18%",
   section: "20%",
   lastUpdatedAt: "17%",
-  versions: "11%",
-  currentversion: "11%",
+  // versions: "11%",
+  // currentversion: "11%",
   provider: "19%",
   itemCount: "8%",
   actions: "7%",
@@ -659,7 +659,7 @@ export default function SavedInsightsScreen({
                 </th>
               )}
 
-              {showColumn("versions") && (
+              {/* {showColumn("versions") && (
                 <th className="px-4 py-3 text-center font-normal">Versions</th>
               )}
 
@@ -667,7 +667,7 @@ export default function SavedInsightsScreen({
                 <th className="px-4 py-3 text-center font-normal">
                   Current Version
                 </th>
-              )}
+              )} */}
 
               {showColumn("provider") && (
                 <th className="px-4 py-3 text-left font-normal">
@@ -740,7 +740,6 @@ export default function SavedInsightsScreen({
                       </div>
                     </td>
                   )}
-
                   {/* Section */}
                   {showColumn("section") && (
                     <td className="px-4 py-3">
@@ -767,7 +766,6 @@ export default function SavedInsightsScreen({
                       })()}
                     </td>
                   )}
-
                   {/* Last updated */}
                   {showColumn("lastUpdatedAt") && (
                     <td className="px-4 py-3">
@@ -782,7 +780,7 @@ export default function SavedInsightsScreen({
                     </td>
                   )}
 
-                  {/* Versions */}
+                  {/*
                   {showColumn("versions") && (
                     <td className="px-4 py-3 text-center">
                       <div className="inline-flex items-center gap-1.5">
@@ -794,8 +792,6 @@ export default function SavedInsightsScreen({
                       </div>
                     </td>
                   )}
-
-                  {/* Versions */}
                   {showColumn("currentversion") && (
                     <td className="px-4 py-3 text-center">
                       <div className="inline-flex items-center gap-1.5">
@@ -806,7 +802,7 @@ export default function SavedInsightsScreen({
                         </span>
                       </div>
                     </td>
-                  )}
+                  )} */}
 
                   {/* Provider / model */}
                   {showColumn("provider") && (
@@ -826,7 +822,6 @@ export default function SavedInsightsScreen({
                       </div>
                     </td>
                   )}
-
                   {/* Item count */}
                   {showColumn("itemCount") && (
                     <td className="px-4 py-3 text-center">
@@ -835,7 +830,6 @@ export default function SavedInsightsScreen({
                       </span>
                     </td>
                   )}
-
                   {/* Actions */}
                   {showColumn("actions") && isAdmin && (
                     <td className="px-4 py-3">

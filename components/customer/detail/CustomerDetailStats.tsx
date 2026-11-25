@@ -58,8 +58,8 @@ export default function CustomerDetailStats({
         </>
       ),
       icon: Star,
-      iconColor: "text-amber-500",
-      bgColor: "bg-amber-50 dark:bg-amber-400/10",
+      iconColor: "text-orange-500",
+      bgColor: "bg-orange-50 dark:bg-orange-400/10",
     },
     {
       key: "spent",

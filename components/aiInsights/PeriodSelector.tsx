@@ -78,7 +78,7 @@ export default function PeriodSelector({
   return (
     <div
       className="
-        sticky top-0 z-30
+        sticky top-4 z-10
         -mx-2 sm:-mx-0
         rounded-xl border border-slate-200/80
         bg-white/95 px-2.5 py-2
@@ -113,7 +113,7 @@ export default function PeriodSelector({
             "
           >
             <CalendarRange
-              className="h-4 w-4 text-[#D96524] dark:text-orange-300"
+              className="h-4 w-4 text-blue-500 dark:text-blue-300"
               strokeWidth={2.1}
               aria-hidden
             />
@@ -125,8 +125,8 @@ export default function PeriodSelector({
                 Analytics period
               </p>
 
-              <span className="h-1 w-1 shrink-0 rounded-full bg-orange-400" />
-              <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.2em] text-orange-600/80 dark:text-orange-300/80">
+              <span className="h-1 w-1 shrink-0 rounded-full bg-blue-400" />
+              <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.2em] text-blue-600/80 dark:text-blue-300/80">
                 History
               </span>
             </div>

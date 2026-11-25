@@ -91,7 +91,6 @@ export interface SavedPeriodInsight {
   promptVersions: string[];
   versionCount: number;
   generatedAt: string | null;
-  lastRegeneratedAt: string | null;
   lastUpdatedAt: string;
   provider: string | null;
   model: string | null;

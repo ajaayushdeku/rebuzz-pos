@@ -28,6 +28,7 @@ import {
   TipList,
   SectionHeader,
   type AccentName,
+  SectionRefreshButton,
 } from "../parts";
 
 import { CreateDiscountDialog } from "@/components/invoice/CreateDiscount";
@@ -189,7 +190,12 @@ export default function SlowItemsSection({
           body: `An item is flagged when its sales in ${windowText} fall well behind the rest of your menu. A new item with little history can appear here simply because it has not had time to sell.`,
         }}
         actions={
-          <div className="flex w-full flex-row items-end justify-end md:w-fit">
+          <div className="flex w-full flex-row items-end justify-end md:w-fit gap-2">
+            <SectionRefreshButton
+              state={state}
+              textClassName="text-rose-600 hover:bg-rose-100 border-rose-300 hover:border-rose-400 dark:hover:border-rose-400/60 dark:hover:bg-rose-400/20 dark:border-rose-400/40 dark:text-rose-300"
+            />
+
             <button
               type="button"
               onClick={() => setIsBodyExpanded((prev) => !prev)}
