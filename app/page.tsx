@@ -42,7 +42,7 @@ const Page = async () => {
       <InvoiceAiHero token={token} />
       {/* <InvoiceCreditWorkflowSection token={token} /> */}
 
-      <AiInsightsProvider briefingData={briefingData}>
+      <AiInsightsProvider>
         <AiInsightsSection isAPIKeySet={APIKeyActive} />
       </AiInsightsProvider>
 
