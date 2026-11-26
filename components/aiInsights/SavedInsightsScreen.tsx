@@ -87,6 +87,16 @@ const SECTION_ICONS: Record<string, LucideIcon> = {
   staffing: Users,
 };
 
+const SAVED_INSIGHT_SECTIONS = [
+  "retention",
+  "menu-suggestions",
+  "slow-items",
+  "pricing",
+  "hour-playbook",
+  "sales-recommendations",
+  "staffing",
+] as const;
+
 const DEFAULT_SECTION_ACCENT = {
   icon: "bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-400",
   glow: "",
@@ -114,6 +124,7 @@ function formatSection(section: string) {
 function formatPeriod(item: SavedPeriodInsight) {
   if (item.periodKind === "month") {
     const date = new Date(`${item.periodId}-01T00:00:00`);
+
     if (!Number.isNaN(date.getTime())) {
       return date.toLocaleDateString("en", {
         month: "long",
@@ -227,6 +238,7 @@ function EmptyState({
 type FilterOption = {
   value: string;
   label: string;
+  icon?: LucideIcon;
 };
 
 function FilterDropdown({
@@ -244,6 +256,7 @@ function FilterDropdown({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find((option) => option.value === value);
+  const SelectedIcon = selectedOption?.icon;
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
@@ -282,8 +295,17 @@ function FilterDropdown({
         onClick={() => setOpen((current) => !current)}
         className="flex w-full items-center justify-between gap-2 rounded-xl border border-gray-200 bg-white py-2.5 pl-3 pr-2.5 text-[13px] text-gray-600 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#a9b4c7]"
       >
-        <span className="truncate">
-          {selectedOption?.label ?? options[0]?.label}
+        <span className="flex min-w-0 items-center gap-2">
+          {SelectedIcon && (
+            <SelectedIcon
+              size={14}
+              className="shrink-0 text-[#244074] dark:text-blue-300"
+            />
+          )}
+
+          <span className="truncate">
+            {selectedOption?.label ?? options[0]?.label}
+          </span>
         </span>
 
         <ChevronDown
@@ -295,31 +317,40 @@ function FilterDropdown({
       </button>
 
       <div
-        className={`absolute z-30 mt-1.5 max-h-64 w-full origin-top overflow-y-auto rounded-md border border-gray-200 bg-white p-1 shadow-lg transition-all duration-200 dark:border-white/15 dark:bg-[#1b2436] ${
+        role="listbox"
+        className={`absolute z-30 mt-1.5 max-h-fit w-full origin-top overflow-y-auto rounded-md border border-gray-200 bg-white p-1 shadow-lg transition-all duration-200 dark:border-white/15 dark:bg-[#1b2436] ${
           open
             ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
             : "pointer-events-none -translate-y-1 scale-95 opacity-0"
         }`}
       >
-        {options.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            role="option"
-            aria-selected={value === option.value}
-            onClick={() => {
-              onChange(option.value);
-              setOpen(false);
-            }}
-            className={`w-full cursor-pointer rounded-md px-3 py-1.5 text-left text-[13px] transition-colors ${
-              value === option.value
-                ? "bg-blue-50 font-medium text-blue-700 dark:bg-blue-400/10 dark:text-blue-300"
-                : "text-gray-600 hover:bg-gray-100 dark:text-[#a9b4c7] dark:hover:bg-white/10"
-            }`}
-          >
-            {option.label}
-          </button>
-        ))}
+        {options.map((option) => {
+          const OptionIcon = option.icon;
+
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="option"
+              aria-selected={value === option.value}
+              onClick={() => {
+                onChange(option.value);
+                setOpen(false);
+              }}
+              className={`flex w-full cursor-pointer items-center gap-2.5 rounded-md px-3 py-2 text-left text-[13px] transition-colors ${
+                value === option.value
+                  ? "bg-blue-50 font-medium text-blue-700 dark:bg-blue-400/10 dark:text-blue-300"
+                  : "text-gray-600 hover:bg-gray-100 dark:text-[#a9b4c7] dark:hover:bg-white/10"
+              }`}
+            >
+              {OptionIcon && (
+                <OptionIcon size={14} className="shrink-0 opacity-80" />
+              )}
+
+              <span className="truncate">{option.label}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -372,40 +403,45 @@ export default function SavedInsightsScreen({
     });
   };
 
-  const queryParams = useMemo(
-    () => ({
-      ...(periodKind ? { kind: periodKind } : {}),
-      ...(section ? { section } : {}),
-      ...(search.trim() ? { search: search.trim() } : {}),
-      page,
-      limit: PAGE_SIZE,
-    }),
-    [periodKind, section, search, page],
-  );
-
+  // Fetch all saved insights. Search and filtering happen locally.
   const { data, isLoading, isFetching, isError, refetch } =
-    useSavedPeriodInsights(queryParams);
+    useSavedPeriodInsights();
 
   const deleteMutation = useDeletePeriodSection();
 
-  const items = useMemo(() => data?.items ?? [], [data?.items]);
-  const total = data?.total ?? 0;
-  const totalPages = Math.max(1, data?.totalPages ?? 1);
+  const allItems = data ?? [];
 
-  // Use the section values returned by the API instead of assuming
-  // particular section identifiers.
-  const sectionOptions = useMemo(
-    () =>
-      Array.from(new Set(items.map((item) => item.section))).sort((a, b) =>
-        formatSection(a).localeCompare(formatSection(b)),
-      ),
-    [items],
-  );
+  // Apply search and filters to the complete dataset.
+  const filteredItems = useMemo(() => {
+    const query = search.trim().toLowerCase();
 
+    return allItems.filter((item) => {
+      const matchesPeriodKind = !periodKind || item.periodKind === periodKind;
+
+      const matchesSection = !section || item.section === section;
+
+      const periodName = formatPeriod(item).toLowerCase();
+      const sectionName = formatSection(item.section).toLowerCase();
+
+      const matchesSearch =
+        !query ||
+        periodName.includes(query) ||
+        item.periodId.toLowerCase().includes(query) ||
+        sectionName.includes(query) ||
+        item.section.toLowerCase().includes(query);
+
+      return matchesPeriodKind && matchesSection && matchesSearch;
+    });
+  }, [allItems, search, periodKind, section]);
+
+  const total = filteredItems.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  // Sort all matching records before applying pagination.
   const sortedItems = useMemo(() => {
-    if (!sortConfig) return items;
+    if (!sortConfig) return filteredItems;
 
-    return [...items].sort((a, b) => {
+    return [...filteredItems].sort((a, b) => {
       const direction = sortConfig.direction === "asc" ? 1 : -1;
 
       switch (sortConfig.key) {
@@ -437,7 +473,24 @@ export default function SavedInsightsScreen({
           return 0;
       }
     });
-  }, [items, sortConfig]);
+  }, [filteredItems, sortConfig]);
+
+  // Display only the current page after filtering and sorting.
+  const paginatedItems = useMemo(() => {
+    const startIndex = (page - 1) * PAGE_SIZE;
+
+    return sortedItems.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [sortedItems, page]);
+
+  // Build dropdown options from every saved insight, not just the current page.
+  const sectionOptions: FilterOption[] = [
+    { value: "", label: "All sections" },
+    ...SAVED_INSIGHT_SECTIONS.map((section) => ({
+      value: section,
+      label: formatSection(section),
+      icon: SECTION_ICONS[section],
+    })),
+  ];
 
   const hasFilters = Boolean(search.trim() || periodKind || section);
 
@@ -489,9 +542,9 @@ export default function SavedInsightsScreen({
           toast.success("Saved insight deleted");
           setDeleteTarget(null);
 
-          // If the current page only contained the deleted row,
-          // move back one page rather than leaving an empty page.
-          if (items.length === 1 && page > 1) {
+          // If deleting the only row on the current page,
+          // return to the previous page.
+          if (paginatedItems.length === 1 && page > 1) {
             setPage((current) => current - 1);
           }
         },
@@ -551,13 +604,7 @@ export default function SavedInsightsScreen({
 
           <FilterDropdown
             value={section}
-            options={[
-              { value: "", label: "All sections" },
-              ...sectionOptions.map((option) => ({
-                value: option,
-                label: formatSection(option),
-              })),
-            ]}
+            options={sectionOptions}
             onChange={changeSection}
           />
 
@@ -717,14 +764,14 @@ export default function SavedInsightsScreen({
                   </div>
                 </td>
               </tr>
-            ) : sortedItems.length === 0 ? (
+            ) : paginatedItems.length === 0 ? (
               <tr>
                 <td colSpan={isAdmin ? 7 : 6}>
                   <EmptyState hasFilters={hasFilters} onClear={clearFilters} />
                 </td>
               </tr>
             ) : (
-              sortedItems.map((item) => (
+              paginatedItems.map((item) => (
                 <tr
                   key={`${item.periodKind}-${item.periodId}-${item.section}`}
                   className="border-b border-gray-50 transition-colors last:border-0 hover:bg-gray-50/70 dark:border-white/5 dark:hover:bg-white/5"
@@ -740,6 +787,7 @@ export default function SavedInsightsScreen({
                       </div>
                     </td>
                   )}
+
                   {/* Section */}
                   {showColumn("section") && (
                     <td className="px-4 py-3">
@@ -766,6 +814,7 @@ export default function SavedInsightsScreen({
                       })()}
                     </td>
                   )}
+
                   {/* Last updated */}
                   {showColumn("lastUpdatedAt") && (
                     <td className="px-4 py-3">
@@ -822,6 +871,7 @@ export default function SavedInsightsScreen({
                       </div>
                     </td>
                   )}
+
                   {/* Item count */}
                   {showColumn("itemCount") && (
                     <td className="px-4 py-3 text-center">
@@ -830,6 +880,7 @@ export default function SavedInsightsScreen({
                       </span>
                     </td>
                   )}
+
                   {/* Actions */}
                   {showColumn("actions") && isAdmin && (
                     <td className="px-4 py-3">

@@ -523,6 +523,69 @@ export const getSalesByCategory = async (): Promise<CategorySalesData[]> => {
   }));
 };
 
+type DailySalesBill = {
+  grandTotal: number;
+  paidAt: string;
+  isRefunded: boolean;
+};
+
+export type OverviewActivitySnapshot = {
+  salesCount: number;
+  totalSales: number;
+  latestSaleAt: string | null;
+};
+
+export const getTodayActivitySnapshot =
+  async (): Promise<OverviewActivitySnapshot> => {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    const today = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kathmandu",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+
+    const res = await fetch(
+      `${BASE}/business/report/dailySalesReport?date=${today}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+      },
+    );
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch daily sales report: ${res.status}`);
+    }
+
+    const json = await res.json();
+
+    const bills: DailySalesBill[] =
+      json?.data?.dailySalesReport?.allBills ?? [];
+
+    const validSales = bills.filter((bill) => !bill.isRefunded && bill.paidAt);
+
+    return {
+      salesCount: validSales.length,
+      totalSales: validSales.reduce(
+        (sum, bill) => sum + (bill.grandTotal ?? 0),
+        0,
+      ),
+      latestSaleAt: validSales.reduce<string | null>(
+        (latest, bill) =>
+          !latest ||
+          new Date(bill.paidAt).getTime() > new Date(latest).getTime()
+            ? bill.paidAt
+            : latest,
+        null,
+      ),
+    };
+  };
+
 // Fetch Hourly Sales of the Day (Today)
 export const getHourlySalesData = async (): Promise<HourlyData[]> => {
   const cookieStore = await cookies();

@@ -77,16 +77,19 @@ export default function PeriodSelector({
 
   return (
     <div
+      // className="
+      //   sticky top-4 z-10
+      //   -mx-2 sm:-mx-0
+      //   rounded-xl border border-slate-200/80
+      //   bg-white/95 px-2.5 py-2
+      //   shadow-sm shadow-slate-900/[0.04]
+      //   backdrop-blur-xl
+      //   transition-shadow duration-200
+      //   dark:border-white/10 dark:bg-[#161d2e]/95
+      //   dark:shadow-black/20
+      // "
       className="
-        sticky top-4 z-10
-        -mx-2 sm:-mx-0
-        rounded-xl border border-slate-200/80
-        bg-white/95 px-2.5 py-2
-        shadow-sm shadow-slate-900/[0.04]
-        backdrop-blur-xl
-        transition-shadow duration-200
-        dark:border-white/10 dark:bg-[#161d2e]/95
-        dark:shadow-black/20
+        sticky top-3 z-10 -mx-2 sm:-mx-0 px-2.5 py-2 duration-200 bg-white/95  dark:bg-[#161d2e]/95
       "
     >
       {/* Compact header */}
@@ -107,7 +110,7 @@ export default function PeriodSelector({
             focus-visible:ring-2 focus-visible:ring-blue-400
           "
         >
-          <div
+          {/* <div
             className="
               flex h-8 w-8 shrink-0 items-center justify-center
             "
@@ -117,9 +120,9 @@ export default function PeriodSelector({
               strokeWidth={2.1}
               aria-hidden
             />
-          </div>
+          </div> */}
 
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 ml-1">
             <div className="flex min-w-0 items-center gap-2">
               <p className="truncate text-[13px] tracking-[0.04em] text-slate-800 dark:text-slate-100">
                 Analytics period

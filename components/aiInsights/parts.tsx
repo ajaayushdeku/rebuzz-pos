@@ -413,7 +413,8 @@ export function AiSectionBody<T>({
       </ul>
     ) : (
       <div
-        className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+        // className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+        className={STAT_ROW_AI_INSIGHTS}
         aria-label="Loading"
       >
         {[0, 1, 2].map((i) => (

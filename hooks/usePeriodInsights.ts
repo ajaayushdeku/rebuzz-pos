@@ -15,6 +15,7 @@ import {
   type SavedPeriodInsightsParams,
   type SavedPeriodInsightsResponse,
   type StoredSection,
+  SavedPeriodInsight,
 } from "@/services/apiPeriodInsights.client";
 import {
   AiInsightsError,
@@ -83,15 +84,48 @@ export function usePeriodInsights(kind: PeriodKind, id: string | null) {
 }
 
 /**
+ * Fetch every saved insight.
+ *
+ * The API still paginates its responses, but search and filtering are
+ * intentionally handled by the frontend.
+ */
+async function fetchAllSavedPeriodInsights(): Promise<SavedPeriodInsight[]> {
+  const limit = 100;
+
+  const firstPage = await fetchSavedPeriodInsights({
+    page: 1,
+    limit,
+  });
+
+  if (firstPage.totalPages <= 1) {
+    return firstPage.items;
+  }
+
+  const remainingPages = await Promise.all(
+    Array.from({ length: firstPage.totalPages - 1 }, (_, index) =>
+      fetchSavedPeriodInsights({
+        page: index + 2,
+        limit,
+      }),
+    ),
+  );
+
+  return [
+    ...firstPage.items,
+    ...remainingPages.flatMap((response) => response.items),
+  ];
+}
+
+/**
  * All saved period insights for the management page.
  *
  * Supports searching, filtering and pagination.
  * Reading saved insights never triggers AI generation or spends quota.
  */
-export function useSavedPeriodInsights(params: SavedPeriodInsightsParams = {}) {
-  return useQuery<SavedPeriodInsightsResponse, AiInsightsError>({
-    queryKey: periodKeys.saved(params),
-    queryFn: () => fetchSavedPeriodInsights(params),
+export function useSavedPeriodInsights() {
+  return useQuery<SavedPeriodInsight[], AiInsightsError>({
+    queryKey: ["period-insights", "saved", "all"],
+    queryFn: fetchAllSavedPeriodInsights,
     staleTime: REUSE_MS,
     refetchOnWindowFocus: false,
     retry: false,

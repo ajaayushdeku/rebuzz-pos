@@ -1,26 +1,28 @@
 "use client";
 
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
 import type { ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { useAiInsights } from "@/hooks/useAiInsights";
-import { buildBriefing } from "@/lib/ai-insights/buildBriefing";
+import {
+  useCachedOverviewInsight,
+  useGenerateOverviewInsight,
+} from "@/hooks/useAiInsights";
+
+import type { AiInsightsResponse } from "@/lib/ai-insights/contract";
+
 import type {
-  AiInsightsResponse,
-  BriefingData,
-} from "@/lib/ai-insights/contract";
-import type { AiInsightsError } from "@/services/apiAiInsights.client";
+  AiInsightsError,
+  OverviewActivitySnapshot,
+} from "@/services/apiAiInsights.client";
 
 type AiInsightsState = {
-  /** The dashboard data this generation was based on (rendered as fallback). */
-  briefingData: BriefingData;
   status: "loading" | "success" | "error";
-  /** Undefined until the first successful generation. */
   data?: AiInsightsResponse;
   error?: AiInsightsError;
   model?: string;
   generatedAt?: string;
-  /** Run another generation. Costs the merchant's quota — call on purpose. */
+  newSalesCount: number;
   regenerate: () => void;
 };
 
@@ -28,71 +30,101 @@ const AiInsightsContext = createContext<AiInsightsState | null>(null);
 
 export function useAiInsightsResult(): AiInsightsState {
   const ctx = useContext(AiInsightsContext);
+
   if (!ctx) {
     throw new Error(
       "useAiInsightsResult must be used inside <AiInsightsProvider>",
     );
   }
+
   return ctx;
 }
 
-/**
- * Generates the insights once and shares them with every card below it.
- *
- * One generation, not one per card: each call is a real Gemini request spent
- * from the merchant's own quota, and the story and the insights card describe
- * the same business — asking the model twice would double the spend and could
- * make the two cards disagree.
- *
- * A generation is reused for a while rather than made on every mount; the
- * window and the reasoning live in `useAiInsights`. React Query also
- * de-duplicates the request, so StrictMode's double-mounted effects in
- * development cannot spend a second call — the job the ref guard used to do.
- */
-export function AiInsightsProvider({
-  briefingData,
-  children,
-}: {
-  briefingData: BriefingData;
-  children: ReactNode;
-}) {
-  // The briefing is assembled on the client so the payload stays inspectable
-  // in devtools, and so the debug console output (gated by the ai-insights-debug
-  // localStorage flag) is visible where you are looking for it.
-  const briefing = useMemo(() => buildBriefing(briefingData), [briefingData]);
-  const query = useAiInsights("overview", briefing);
+export function AiInsightsProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
 
-  // An explicit request, so it bypasses the reuse window. `cancelRefetch: false`
-  // makes a second click while one is running join that call instead of
-  // cancelling it: cancelling only stops the browser waiting, and Gemini would
-  // still bill the abandoned request.
+  const cacheQuery = useCachedOverviewInsight();
+  const generateMutation = useGenerateOverviewInsight();
+
+  // Prevent duplicate automatic generation during React StrictMode effect replay.
+  const autoGenerationStarted = useRef(false);
+
+  const cacheMiss =
+    cacheQuery.isError && cacheQuery.error.code === "OVERVIEW_CACHE_MISS";
+
+  // Generate automatically only when the server confirms today's cache is missing.
+  useEffect(() => {
+    if (
+      cacheMiss &&
+      !autoGenerationStarted.current &&
+      !generateMutation.isPending
+    ) {
+      autoGenerationStarted.current = true;
+      generateMutation.mutate();
+    }
+  }, [cacheMiss, generateMutation.isPending, generateMutation.mutate]);
+
   const regenerate = () => {
-    void query.refetch({ cancelRefetch: false });
+    if (generateMutation.isPending) return;
+
+    autoGenerationStarted.current = true;
+    generateMutation.mutate();
   };
 
-  const state: AiInsightsState = {
-    briefingData,
-    // Loading until there is something to show. The old mapping reported
-    // "success" for the idle moment before the first request went out, so
-    // both cards briefly rendered their empty state — "No insights for this
-    // period yet" — on every visit, before switching to a spinner.
-    status: query.isFetching
+  // Once generation succeeds, refresh the cached response to retrieve
+  // its saved activity snapshot and the latest sales snapshot.
+  useEffect(() => {
+    if (generateMutation.isSuccess) {
+      void queryClient.invalidateQueries({
+        queryKey: ["ai-insights", "overview-cache"],
+      });
+    }
+  }, [generateMutation.isSuccess, queryClient]);
+
+  const cachedData = cacheQuery.data;
+
+  const data =
+    generateMutation.data?.insights &&
+    typeof generateMutation.data.insights !== "string"
+      ? generateMutation.data.insights
+      : cachedData?.insights;
+
+  const activitySnapshot: OverviewActivitySnapshot | null =
+    cachedData?.activitySnapshot ?? null;
+
+  const currentActivitySnapshot: OverviewActivitySnapshot | null =
+    cachedData?.currentActivitySnapshot ?? null;
+
+  const newSalesCount =
+    activitySnapshot && currentActivitySnapshot
+      ? Math.max(
+          0,
+          currentActivitySnapshot.salesCount - activitySnapshot.salesCount,
+        )
+      : 0;
+
+  const isGenerating = generateMutation.isPending;
+
+  const error =
+    generateMutation.error ??
+    (cacheMiss ? undefined : (cacheQuery.error ?? undefined));
+
+  const status: AiInsightsState["status"] =
+    isGenerating || (cacheQuery.isPending && !cachedData)
       ? "loading"
-      : query.isError
+      : error
         ? "error"
-        : query.data
+        : data
           ? "success"
-          : "loading",
-    // The envelope types insights as `Response | string` because the service
-    // can technically receive raw prose; the route always sends the schema,
-    // and the client already guards that case, so narrow to the object here.
-    data:
-      query.data && typeof query.data.insights !== "string"
-        ? query.data.insights
-        : undefined,
-    error: query.error ?? undefined,
-    model: query.data?.model,
-    generatedAt: query.data?.generatedAt,
+          : "loading";
+
+  const state: AiInsightsState = {
+    status,
+    data,
+    error,
+    model: generateMutation.data?.model ?? cachedData?.model,
+    generatedAt: generateMutation.data?.generatedAt ?? cachedData?.generatedAt,
+    newSalesCount,
     regenerate,
   };
 

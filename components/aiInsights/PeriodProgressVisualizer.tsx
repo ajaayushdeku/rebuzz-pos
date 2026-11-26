@@ -154,9 +154,8 @@ export const SECTION_ACCENTS: Record<
   "slow-items": {
     icon: "bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400",
     glow: "group-hover:shadow-rose-500/10",
-    border:
-      "group-hover:border-emerald-300 dark:group-hover:border-emerald-500/30",
-    text: "text-emerald-600 dark:text-emerald-400",
+    border: "group-hover:border-rose-300 dark:group-hover:border-rose-500/30",
+    text: "text-rose-600 dark:text-rose-400",
   },
   pricing: {
     icon: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400",

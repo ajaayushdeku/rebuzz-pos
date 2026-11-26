@@ -379,16 +379,29 @@ export const HourlySalesTrendWrapper = async () => {
  * show thirty days and the story talks about today. That is why these two
  * cards carry no RANGE badge: they do not follow the filter.
  */
+// export const AiInsightsSection = async () => {
+//   // Hidden entirely without a saved key, and checked before the briefing is
+//   // collected so a business that has not set AI up pays for none of its
+//   // dashboard fetches. Returning nothing leaves no gap: the section has no
+//   // wrapper of its own on the page.
+//   if (!(await hasSavedAiKey())) return null;
+
+//   const briefingData = await collectBriefingData();
+//   return (
+//     <AiInsightsProvider briefingData={briefingData}>
+//       <div className="w-full flex items-center justify-center">
+//         <AIBusinessStory />
+//       </div>
+//       <BusinessInsightsAlerts />
+//     </AiInsightsProvider>
+//   );
+// };
 export const AiInsightsSection = async () => {
-  // Hidden entirely without a saved key, and checked before the briefing is
-  // collected so a business that has not set AI up pays for none of its
-  // dashboard fetches. Returning nothing leaves no gap: the section has no
-  // wrapper of its own on the page.
+  // Don't render the AI section when no provider key is configured.
   if (!(await hasSavedAiKey())) return null;
 
-  const briefingData = await collectBriefingData();
   return (
-    <AiInsightsProvider briefingData={briefingData}>
+    <AiInsightsProvider>
       <div className="w-full flex items-center justify-center">
         <AIBusinessStory />
       </div>

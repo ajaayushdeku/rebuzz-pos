@@ -26,6 +26,23 @@ export type AiSectionName =
   | "retention"
   | "staffing";
 
+export type OverviewActivitySnapshot = {
+  salesCount: number;
+  totalSales: number;
+  latestSaleAt: string | null;
+};
+
+export type CachedOverviewInsight = {
+  insights: AiInsightsResponse;
+  model: string;
+  provider: string;
+  usage: null;
+  generatedAt: string;
+  cached: true;
+  activitySnapshot: OverviewActivitySnapshot | null;
+  currentActivitySnapshot: OverviewActivitySnapshot | null;
+};
+
 /**
  * The service's error codes, as sentences.
  *
@@ -207,29 +224,87 @@ export const fetchAiSection = async <T>(
   return json.data;
 };
 
+export const fetchCachedOverviewInsight =
+  async (): Promise<CachedOverviewInsight> => {
+    let res: Response;
+
+    try {
+      res = await fetch("/api/ai-insights", {
+        method: "GET",
+        cache: "no-store",
+      });
+    } catch {
+      throw new AiInsightsError(
+        "NETWORK",
+        "Couldn't reach the server. Check your connection and try again.",
+      );
+    }
+
+    const json = (await res.json().catch(() => ({}))) as {
+      data?: CachedOverviewInsight;
+      error?: unknown;
+      retryAfter?: unknown;
+    };
+
+    if (!res.ok) {
+      throw errorFromBody(json);
+    }
+
+    const data = json.data;
+
+    if (
+      !data ||
+      !data.insights ||
+      typeof data.insights !== "object" ||
+      Array.isArray(data.insights)
+    ) {
+      throw new AiInsightsError(
+        "AI_MALFORMED_RESPONSE",
+        toMessage("AI_MALFORMED_RESPONSE"),
+      );
+    }
+
+    const isValidSnapshot = (
+      snapshot: OverviewActivitySnapshot | null,
+    ): boolean =>
+      snapshot === null ||
+      (typeof snapshot.salesCount === "number" &&
+        Number.isFinite(snapshot.salesCount) &&
+        typeof snapshot.totalSales === "number" &&
+        Number.isFinite(snapshot.totalSales) &&
+        (snapshot.latestSaleAt === null ||
+          typeof snapshot.latestSaleAt === "string"));
+
+    if (
+      !isValidSnapshot(data.activitySnapshot) ||
+      !isValidSnapshot(data.currentActivitySnapshot)
+    ) {
+      throw new AiInsightsError(
+        "AI_MALFORMED_RESPONSE",
+        toMessage("AI_MALFORMED_RESPONSE"),
+      );
+    }
+
+    return data;
+  };
+
 /**
- * Ask for insights on a briefing already built by `buildBriefing`.
+ * Generate the Overview insight.
  *
- * `responseSchema` is always sent by the route handler, so the service always
- * parses the model's answer and `insights` is the structured object. The string
- * case in the envelope's type is unreachable from here; it is narrowed below
- * and guarded rather than asserted, so a future change that stops sending the
- * schema fails loudly instead of rendering a paragraph into a card.
+ * The server collects the dashboard briefing and activity snapshot.
+ * This request is only made on a cache miss or explicit regeneration.
  */
-export const fetchAiInsights = async (
-  briefing: string,
-): Promise<AiInsightsEnvelope> => {
+export const fetchAiInsights = async (): Promise<AiInsightsEnvelope> => {
   let res: Response;
+
   try {
     res = await fetch("/api/ai-insights", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ briefing }),
+      body: JSON.stringify({ refresh: true }),
+      cache: "no-store",
     });
   } catch {
-    // Only a network failure reaches here — a refused connection, or the tab
-    // going offline. Distinct message because the fix is "try again", not
-    // "change something in settings".
     throw new AiInsightsError(
       "NETWORK",
       "Couldn't reach the server. Check your connection and try again.",
@@ -243,6 +318,7 @@ export const fetchAiInsights = async (
   if (!res.ok) throw errorFromBody(json);
 
   const envelope = json?.data;
+
   if (!envelope?.insights || typeof envelope.insights === "string") {
     throw new AiInsightsError(
       "AI_MALFORMED_RESPONSE",
@@ -250,7 +326,10 @@ export const fetchAiInsights = async (
     );
   }
 
-  return { ...envelope, insights: envelope.insights as AiInsightsResponse };
+  return {
+    ...envelope,
+    insights: envelope.insights as AiInsightsResponse,
+  };
 };
 
 type MenuSuggestionPeriodKind = "month" | "quarter" | "year";

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 import {
@@ -7,6 +7,9 @@ import {
 } from "@/lib/ai-insights/contract";
 
 import { aiApiUrl, readAiError } from "@/lib/ai-insights/posAiApi.server";
+import { getTodayActivitySnapshot } from "@/services/dashboardServices/apiOverview";
+import { collectBriefingData } from "@/lib/ai-insights/collectBriefingData.server";
+import { buildBriefing } from "@/lib/ai-insights/buildBriefing";
 
 /**
  * Server-side bridge to the BYOK AI service's insights endpoint.
@@ -55,7 +58,90 @@ function rateLimitHeaders(res: Response): Record<string, string> {
 }
 const MAX_BRIEFING_CHARS = 16_000;
 
-export async function POST(req: NextRequest) {
+export async function GET() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  if (!token) {
+    return NextResponse.json({ error: "AUTH_REQUIRED" }, { status: 401 });
+  }
+
+  const url = aiApiUrl("/ai-insights/overview");
+
+  if (!url) {
+    return NextResponse.json(
+      { error: "AI service is not configured on this server" },
+      { status: 503 },
+    );
+  }
+
+  try {
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      const { error, raw, retryAfter } = readAiError(json);
+
+      return NextResponse.json(
+        { error, raw, retryAfter },
+        {
+          status: res.status,
+          headers: {
+            ...rateLimitHeaders(res),
+            ...retryAfterHeader(res),
+            "Cache-Control": "no-store",
+          },
+        },
+      );
+    }
+
+    // The cache exists. Now retrieve the latest sales activity.
+    // Failure here must not prevent the cached insight from loading.
+    let currentActivitySnapshot = null;
+
+    try {
+      currentActivitySnapshot = await getTodayActivitySnapshot();
+    } catch (error) {
+      console.error(
+        "[ai-insights] Failed to get current activity snapshot:",
+        error,
+      );
+    }
+
+    return NextResponse.json(
+      {
+        ...json,
+        data: {
+          ...json.data,
+          activitySnapshot: json.data?.activitySnapshot ?? null,
+          currentActivitySnapshot,
+        },
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+          ...rateLimitHeaders(res),
+        },
+      },
+    );
+  } catch (error) {
+    console.error("[ai-insights] GET overview failed:", error);
+
+    return NextResponse.json(
+      { error: "AI service is unreachable — is it running?" },
+      { status: 503 },
+    );
+  }
+}
+
+export async function POST() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
@@ -72,18 +158,50 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const body = await req.json().catch(() => null);
-  const briefing =
-    typeof body?.briefing === "string" ? body.briefing.trim() : "";
+  // Collect dashboard data only when generation is actually requested.
+  let briefing: string;
 
-  if (!briefing) {
-    return NextResponse.json({ error: "BRIEFING_REQUIRED" }, { status: 400 });
+  try {
+    const briefingData = await collectBriefingData();
+    briefing = buildBriefing(briefingData);
+
+    if (!briefing.trim()) {
+      return NextResponse.json({ error: "BRIEFING_REQUIRED" }, { status: 400 });
+    }
+
+    if (briefing.length > MAX_BRIEFING_CHARS) {
+      return NextResponse.json({ error: "BRIEFING_TOO_LONG" }, { status: 400 });
+    }
+  } catch (error) {
+    console.error("[ai-insights] Failed to collect briefing data:", error);
+
+    return NextResponse.json(
+      { error: "SALES_DATA_UNAVAILABLE" },
+      { status: 503 },
+    );
   }
-  if (briefing.length > MAX_BRIEFING_CHARS) {
-    return NextResponse.json({ error: "BRIEFING_TOO_LONG" }, { status: 400 });
+
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kathmandu",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+
+  const cacheKey = `overview:v1:${today}`;
+
+  // Activity snapshot is useful for the new-sales badge,
+  // but failure should not prevent insight generation.
+  let activitySnapshot = null;
+
+  try {
+    activitySnapshot = await getTodayActivitySnapshot();
+  } catch (error) {
+    console.error("[ai-insights] Failed to get activity snapshot:", error);
   }
 
   let res: Response;
+
   try {
     res = await fetch(url, {
       method: "POST",
@@ -95,12 +213,16 @@ export async function POST(req: NextRequest) {
         briefing,
         systemInstruction: AI_SYSTEM_PROMPT,
         responseSchema: AI_INSIGHTS_RESPONSE_SCHEMA,
+        cacheKey,
+        refresh: true,
+        ...(activitySnapshot ? { activitySnapshot } : {}),
       }),
       cache: "no-store",
     });
   } catch (error) {
     const cause =
       (error as { cause?: { code?: string; message?: string } })?.cause ?? {};
+
     console.error(
       `[ai-insights] POST ${url} failed:`,
       (error as Error)?.message,
@@ -117,21 +239,24 @@ export async function POST(req: NextRequest) {
   const json = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    // Codes pass through intact: NOT_CONFIGURED and AI_DISABLED are 424s the UI
-    // answers by pointing at the settings screen, the rest are 502s naming an
-    // upstream failure. Collapsing them would lose the only actionable part.
-    // `retryAfter` rides along on a 429 and becomes "try again in N s".
     const { error, raw, retryAfter } = readAiError(json);
+
     return NextResponse.json(
       { error, raw, retryAfter },
       {
         status: res.status,
-        headers: { ...rateLimitHeaders(res), ...retryAfterHeader(res) },
+        headers: {
+          ...rateLimitHeaders(res),
+          ...retryAfterHeader(res),
+        },
       },
     );
   }
 
   return NextResponse.json(json, {
-    headers: { "Cache-Control": "no-store", ...rateLimitHeaders(res) },
+    headers: {
+      "Cache-Control": "no-store",
+      ...rateLimitHeaders(res),
+    },
   });
 }
