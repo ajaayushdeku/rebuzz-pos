@@ -108,6 +108,10 @@ export default function SlowItemsSection({
   const [completedFreebieIds, setCompletedFreebieIds] = useState<Set<string>>(
     () => new Set(),
   );
+  // Track successfully applied discounts immediately in the UI.
+  const [completedDiscountIds, setCompletedDiscountIds] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   const handleFreebieSuggestion = (item: SlowItemInsight) => {
     setFreebieItem(item);
@@ -145,6 +149,9 @@ export default function SlowItemsSection({
         discount.name.trim().toLowerCase() ===
         discountName.trim().toLowerCase(),
     );
+
+    console.log("Existing Discount Name:", discountName);
+    console.log("Existing Discount id:", existingDiscount);
 
     if (existingDiscount) {
       // Reuse the existing discount directly.
@@ -248,7 +255,9 @@ export default function SlowItemsSection({
                 const isDismissed = item.status === "dismissed";
 
                 const isApplied =
-                  item.status === "applied" || completedFreebieIds.has(item.id);
+                  item.status === "applied" ||
+                  completedFreebieIds.has(item.id) ||
+                  completedDiscountIds.has(item.id);
 
                 return (
                   <InsightCard
@@ -275,7 +284,8 @@ export default function SlowItemsSection({
                       isApplied ? (
                         <div className="flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs font-semibold text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
                           <CheckCircle2 size={14} aria-hidden />
-                          {item.actionType === "discount-applied"
+                          {item.actionType === "discount-applied" ||
+                          completedDiscountIds.has(item.id)
                             ? "Discount applied"
                             : item.actionType === "freebie-created" ||
                                 completedFreebieIds.has(item.id)
@@ -367,21 +377,6 @@ export default function SlowItemsSection({
         />
       )}
 
-      {/* Existing discount application dialog. */}
-      {selectedDiscountItem && (
-        <ApplySlowItemDiscountDialog
-          open={true}
-          onClose={() => setSelectedDiscountItem(null)}
-          productId={selectedDiscountItem.productId}
-          productName={selectedDiscountItem.productName}
-          discountId={selectedDiscountItem.discountId}
-          kind={selectedDiscountItem.kind}
-          periodId={selectedDiscountItem.periodId}
-          promptVersion={selectedDiscountItem.promptVersion}
-          suggestionId={selectedDiscountItem.suggestionId}
-        />
-      )}
-
       {/* Existing discount creation dialog. */}
       {itemForDiscount && (
         <CreateDiscountDialog
@@ -393,11 +388,37 @@ export default function SlowItemsSection({
           initialRate={itemForDiscount.discountRate ?? 0}
           initialType="percentage"
           onCreated={(discountId) => {
+            console.log("ID received from CreateDiscountDialog:", discountId);
+
             setSelectedDiscountItem({
               ...itemForDiscount,
               discountId,
             });
+
+            setItemForDiscount(null);
           }}
+        />
+      )}
+
+      {/* Existing discount application dialog. */}
+      {selectedDiscountItem && (
+        <ApplySlowItemDiscountDialog
+          open={true}
+          onClose={() => setSelectedDiscountItem(null)}
+          onApplied={() => {
+            setCompletedDiscountIds((previous) => {
+              const next = new Set(previous);
+              next.add(selectedDiscountItem.suggestionId);
+              return next;
+            });
+          }}
+          productId={selectedDiscountItem.productId}
+          productName={selectedDiscountItem.productName}
+          discountId={selectedDiscountItem.discountId}
+          kind={selectedDiscountItem.kind}
+          periodId={selectedDiscountItem.periodId}
+          promptVersion={selectedDiscountItem.promptVersion}
+          suggestionId={selectedDiscountItem.suggestionId}
         />
       )}
     </section>

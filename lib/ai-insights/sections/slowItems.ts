@@ -290,7 +290,7 @@ For each item:
 - icon: one emoji that fits the item.
 - description: one sentence on what is going wrong, under 140 characters.
 - tips: two or three different things to try, best first. Each one short sentence under 140 characters, and each a genuinely different approach \u2014 not the same fix worded twice.
-- move: where the owner goes to act on it — "discount" (run a percentage or flat Rs offer on it), "freebie" (give it away with a best seller, as a free-item or buy-one-get-one offer), "reprice" (change its menu price for good), "rework" (change the recipe or format), or "remove" (take it off the menu).
+- move: where the owner goes to act on it — "discount" (run a percentage or flat Rs offer on it), "freebie" (give it away with a best seller, as a free-item or buy-one-get-one offer), "reprice" (change its menu price for good), "rework" (change the recipe or format).
 - action: a short button label for the move, under 30 characters, naming the thing the owner is about to set up — e.g. "20% off for a week", "Free with Milk Tea", "Take off the menu".
 
 Rules:
@@ -301,7 +301,9 @@ Rules:
 - When you say sales fell, give both sides in the same unit, then the percent: "fell from 94 a week to 6 a week (down 94%)", using the figures given. Never a percent with only one side, as in "fell 94% to 6 a week".
 - When a lot of stock is sitting unsold, say how much money is tied up.
 - When the margin is unknown, do not judge the margin.
-- Plain words for a busy owner. No markdown. The only emoji goes in icon.`;
+- Plain words for a busy owner. No markdown. The only emoji goes in icon.
+- Never recommend removing an item from the menu. Do not use "remove" as the move. Even when an item has no sales or is performing very poorly, suggest a suitable discount or freebie offer to encourage customers to try it.
+- Prefer "discount" for slow-selling items: suggest a percentage or flat Rs discount that the owner can configure in the offer builder. Use "freebie" only when pairing it with a listed best seller makes practical sense.`;
 
 export const SLOW_ITEMS_SCHEMA = {
   type: "object",

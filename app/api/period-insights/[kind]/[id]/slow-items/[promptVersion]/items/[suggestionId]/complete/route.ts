@@ -113,6 +113,10 @@ export async function PATCH(
       { status: res.status },
     );
   }
+  const normalizedData =
+    json?.status === "success" && json.data !== undefined ? json.data : json;
 
-  return NextResponse.json(json);
+  return NextResponse.json(normalizedData, {
+    status: res.status,
+  });
 }

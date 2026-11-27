@@ -181,7 +181,10 @@ export async function DELETE(
 
     const data = await response.json().catch(() => ({}));
 
-    return NextResponse.json(data, {
+    const normalizedData =
+      data?.status === "success" && data.data !== undefined ? data.data : data;
+
+    return NextResponse.json(normalizedData, {
       status: response.status,
     });
   } catch (error) {

@@ -458,6 +458,20 @@ export default function AiInsightsScreen({ isAdmin }: { isAdmin: boolean }) {
     section: "retention",
     stored: stored.retention,
   });
+  console.log("[Retention period debug]", {
+    selectedKind: kind,
+    selectedPeriodId: periodId,
+
+    hasPeriodData: Boolean(insights.data),
+    availableSections: Object.keys(insights.data?.sections ?? {}),
+
+    storedRetention: stored.retention,
+    retentionData: retentionSection.data,
+
+    error: retentionSection.error,
+    isError: retentionSection.isError,
+    isLoading: retentionSection.isLoading,
+  });
   const hourPlaybook = usePeriodSection<HourInsight>({
     ...shared,
     section: "hour-playbook",

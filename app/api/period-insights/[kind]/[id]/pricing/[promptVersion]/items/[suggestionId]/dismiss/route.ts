@@ -68,5 +68,10 @@ export async function PATCH(
     );
   }
 
-  return NextResponse.json(json);
+  const normalizedData =
+    json?.status === "success" && json.data !== undefined ? json.data : json;
+
+  return NextResponse.json(normalizedData, {
+    status: res.status,
+  });
 }

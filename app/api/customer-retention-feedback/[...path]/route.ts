@@ -98,7 +98,24 @@ async function proxyFeedbackRequest(
   }
 
   // 5. Return the successful backend response.
-  return NextResponse.json(json, {
+  // return NextResponse.json(json, {
+  //   status: response.status,
+  //   headers: {
+  //     "Cache-Control": "no-store",
+  //   },
+  // });
+
+  // 5. Normalize successful responses.
+  // Supports both standalone flat responses and POS JSend responses.
+  const normalizedData =
+    json &&
+    typeof json === "object" &&
+    json.status === "success" &&
+    json.data !== undefined
+      ? json.data
+      : json;
+
+  return NextResponse.json(normalizedData, {
     status: response.status,
     headers: {
       "Cache-Control": "no-store",

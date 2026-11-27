@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 import type { AiSectionState } from "@/hooks/useAiSection";
 import { useGenerateSection } from "@/hooks/usePeriodInsights";
@@ -13,37 +13,13 @@ import type {
   StoredSection,
 } from "@/services/apiPeriodInsights.client";
 
-/**
- * A stored period insight, in the shape the section components already read.
- *
- * The eight section components take an `AiSectionState` — data, error, refresh,
- * generate-more and the loading flags — and know nothing about where it came
- * from. So rather than rewrite seven of them for periods, this presents the
- * stored answer in the same shape.
- *
- * It is not a pretence. The meanings line up, with one exception worth knowing:
- *
- *   `refresh`     regenerates the stored answer, replacing it
- *   `reload`      asks for the answer, generating only if nothing is stored
- *   `isLoading`   the period's read is still in flight
- *   `cached`      always true — a stored answer is, by definition
- *
- * What is gone is the day-scoped idea of a *stale* answer: an insight about a
- * finished period cannot go out of date, so `stale` is never set. Where a card
- * used to say "from an earlier model because today's failed", a period card
- * either exists or does not.
- */
 export function usePeriodSection<T>(options: {
   kind: PeriodKind;
   periodId: string;
   section: string;
-  /** The stored answer, or undefined when this section has never been generated. */
   stored: StoredSection | undefined;
-  /** The period read, so a section can show the page's own loading state. */
   isPeriodLoading: boolean;
-  /** Whether this section offers further batches at all. */
   supportsMore?: boolean;
-  /** How the model should describe a card it must not repeat. */
   describe?: (item: T) => string;
 }): AiSectionState<T> {
   const {
@@ -58,37 +34,26 @@ export function usePeriodSection<T>(options: {
 
   const generate = useGenerateSection(kind, periodId);
 
+  // Clear mutation state when switching periods or sections.
+  // This prevents an old generation error from leaking into another period.
+  const resetGeneration = generate.reset;
+
+  useEffect(() => {
+    resetGeneration();
+  }, [kind, periodId, section, resetGeneration]);
+
   /**
-   * Which request is in flight, if any.
-   *
-   * Gated on `isPending`, and that gate is the whole point. A mutation's
-   * `variables` are set when it starts and then *kept* — React Query holds the
-   * last call's arguments until the next `mutate` or a `reset`. Reading the mode
-   * straight off `generate.variables` therefore answered "what was the last
-   * thing asked for?" and not "what is happening now?", so once a
-   * generate-more had finished, `isGeneratingMore` stayed true for good and the
-   * button sat on "Generating…" until the page was reloaded. `isRefreshing` had
-   * it too.
-   *
-   * It also explains the flicker in the console: the flag went false only when
-   * something dropped this hook's mutation — a remount — and true again on the
-   * next click, never in between.
+   * Only treat mutation variables as active while a request is pending.
    */
   const pending = generate.isPending ? generate.variables : undefined;
   const pendingMode = pending?.mode;
   const isThisSection = pending?.section === section;
 
-  /**
-   * Memoised because `reload` closes over it: rebuilt every render, it would make
-   * every callback here a new function and defeat the memoisation entirely.
-   */
   const data: AiSectionResult<T> | undefined = useMemo(
     () =>
       stored
         ? {
             items: (stored.items ?? []) as T[],
-            // `windows` rides along in the stored answer's extras; a stored insight
-            // from before that was recorded simply has none.
             windows: (stored as unknown as { windows?: SalesWindows })
               .windows ?? {
               current: { startDate: "", endDate: "" },
@@ -97,7 +62,6 @@ export function usePeriodSection<T>(options: {
             reason: stored.reason as AiSectionResult<T>["reason"],
             model: stored.model ?? undefined,
             generatedAt: stored.generatedAt ?? undefined,
-            // A stored answer always was: nothing was spent showing it.
             cached: true,
             moreBatches: stored.batches,
             noMore: stored.noMore,
@@ -107,8 +71,6 @@ export function usePeriodSection<T>(options: {
   );
 
   const refresh = useCallback(() => {
-    // The mutation's own guard stops a second click; this stops a click landing
-    // while the first request is still being set up.
     if (generate.isPending) return;
     generate.mutate({ section, mode: "regenerate" });
   }, [generate, section]);
@@ -118,22 +80,24 @@ export function usePeriodSection<T>(options: {
       await generate.mutateAsync({ section, mode: "ensure" });
       return { isError: false, data };
     } catch {
-      // The error is already on the mutation, and on screen through `error`.
       return { isError: true, data };
     }
   }, [generate, section, data]);
 
   const generateMore = useCallback(() => {
     if (generate.isPending || !stored) return;
+
     generate.mutate({
       section,
       mode: "more",
-      // What is on screen already, in the words the model will read.
       exclude: describe
         ? ((stored.items ?? []) as T[]).map(describe).filter(Boolean)
         : [],
     });
   }, [generate, section, stored, describe]);
+
+  // Only expose an error when the currently selected section has no stored data.
+  const currentError = stored ? undefined : (generate.error ?? undefined);
 
   return {
     data,
@@ -146,12 +110,10 @@ export function usePeriodSection<T>(options: {
     ),
     generateMore,
     isGeneratingMore: isThisSection && pendingMode === "more",
-    error: generate.error ?? undefined,
-    // Loading means the page is still fetching what exists, not that a model is
-    // thinking: a generation shows as `isFetching` instead, so a card does not
-    // flash its skeleton over cards already on screen.
+    error: currentError,
     isLoading: isPeriodLoading && !stored,
     isError: Boolean(generate.error) && !stored,
+
     retry: () => void reload(),
     reload,
     isFetching: isPeriodLoading || isThisSection,

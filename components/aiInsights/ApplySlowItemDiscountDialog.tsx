@@ -67,6 +67,9 @@ export default function ApplySlowItemDiscountDialog({
 
   const updateProductMutation = useUpdateProduct();
 
+  console.log("All Discount list:", discounts);
+  console.log("Matching Discount Id:", discountId);
+
   const product = products.find((item) => item.id === productId);
   const discount = discounts.find((item) => item._id === discountId);
 

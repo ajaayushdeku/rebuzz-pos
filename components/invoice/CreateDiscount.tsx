@@ -11,6 +11,8 @@ import { useCreateDiscount } from "@/hooks/useDiscounts";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbolOnly } from "@/utils/helper";
 import HeaderActionButton from "@/components/ui/HeaderActionButton";
+import toast from "react-hot-toast";
+import { fetchDiscounts } from "@/services/apiDiscounts.client";
 
 export const DISCOUNT_TYPES: {
   value: "percentage" | "fixed";
@@ -50,7 +52,7 @@ export const CreateDiscountDialog = ({
   const isControlled = openProp !== undefined;
   const open = isControlled ? openProp : internalOpen;
 
-  const { mutate: createDiscount, isPending } = useCreateDiscount();
+  const { mutateAsync: createDiscount, isPending } = useCreateDiscount();
 
   const [formData, setFormData] = useState<DiscountFormData>({
     name: initialName,
@@ -78,12 +80,55 @@ export const CreateDiscountDialog = ({
     }
   };
 
-  const handleSave = () => {
+  // const handleSave = () => {
+  //   if (!formData.name.trim() || (formData.rate ?? 0) <= 0) return;
+
+  //   if (formData.type === "percentage" && (formData.rate ?? 0) > 100) {
+  //     return;
+  //   }
+
+  //   const payload = {
+  //     discounts: [
+  //       {
+  //         name: formData.name.trim(),
+  //         rate: formData.rate,
+  //         type: formData.type,
+  //         isEnabled: false,
+  //       },
+  //     ],
+  //   };
+
+  //   createDiscount(payload, {
+  //     onSuccess: (response) => {
+  //       const result = response as unknown as {
+  //         data?: {
+  //           message?: {
+  //             discounts?: Array<{ _id?: string }>;
+  //           };
+  //         };
+  //       };
+
+  //       const discountId = result?.data?.message?.discounts?.[0]?._id;
+
+  //       if (discountId) {
+  //         console.log("Created discount response:", response);
+  //         console.log("Extracted discount ID:", discountId);
+  //         onCreated?.(discountId);
+  //       }
+
+  //       handleOpenChange(false);
+  //     },
+  //   });
+  // };
+
+  const handleSave = async () => {
     if (!formData.name.trim() || (formData.rate ?? 0) <= 0) return;
 
     if (formData.type === "percentage" && (formData.rate ?? 0) > 100) {
       return;
     }
+
+    if (isPending) return;
 
     const payload = {
       discounts: [
@@ -96,25 +141,54 @@ export const CreateDiscountDialog = ({
       ],
     };
 
-    createDiscount(payload, {
-      onSuccess: (response) => {
-        const result = response as unknown as {
-          data?: {
-            message?: {
-              discounts?: Array<{ _id?: string }>;
-            };
-          };
-        };
+    try {
+      // Only take a snapshot when the caller needs the newly created ID.
+      const previousIds = onCreated
+        ? new Set((await fetchDiscounts()).map((discount) => discount._id))
+        : null;
 
-        const discountId = result?.data?.message?.discounts?.[0]?._id;
+      // Exactly one creation request.
+      const response = await createDiscount(payload);
 
-        if (discountId) {
-          onCreated?.(discountId);
-        }
+      console.log("Created discount response:", response);
 
+      // Regular discount creation doesn't need ID identification.
+      if (!onCreated) {
         handleOpenChange(false);
-      },
-    });
+        return;
+      }
+
+      // Fetch the updated list to identify the new discount.
+      const latestDiscounts = await fetchDiscounts();
+
+      const createdDiscount = latestDiscounts.find(
+        (discount) =>
+          !previousIds?.has(discount._id) &&
+          discount.name.trim().toLowerCase() ===
+            formData.name.trim().toLowerCase() &&
+          discount.rate === formData.rate &&
+          discount.type === formData.type,
+      );
+
+      if (!createdDiscount) {
+        toast.error(
+          "Discount was created, but its ID could not be identified. Please refresh and try again.",
+        );
+        return;
+      }
+
+      onCreated(createdDiscount._id);
+      handleOpenChange(false);
+    } catch (error) {
+      console.error("Discount creation failed:", error);
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to create discount. Please try again.";
+
+      toast.error(message);
+    }
   };
 
   const isInvalidRate =

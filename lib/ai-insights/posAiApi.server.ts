@@ -42,6 +42,7 @@ export const periodInsightsAvailable = () => Boolean(AI_SERVICE_URL);
 /** The fields the browser reads from a failed AI request. */
 export interface AiErrorBody {
   error: string;
+  message?: string;
   available?: string[];
   detail?: string;
   retryAfter?: number;
@@ -88,6 +89,11 @@ export function readAiError(json: unknown): AiErrorBody {
 
   return {
     error,
+    message:
+      (typeof data.message === "string" && data.message) ||
+      (typeof body.message === "string" && body.message) ||
+      undefined,
+
     available: data.available ?? body.available ?? undefined,
     detail: data.detail ?? body.detail ?? undefined,
     retryAfter: data.retryAfter ?? body.retryAfter ?? undefined,
